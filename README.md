@@ -7,7 +7,7 @@
 [Deadline](https://classroom.github.com/a/r1QxwNOh)  
 [Se hela tidplanen](https://docs.google.com/spreadsheets/d/1kti9O242bkX7J6k_bEON9HNTtaCuefqLBKRLH9RBc4g/edit?usp=sharing)
 
-**Jag har uppskattat arbetat att ta ca 124 timmar**
+**Jag har uppskattat projektets totala tidsåtgång till ca 124 timmar**
 
 - Kravanalys och avgränsning	  3,5 tim
 - Projektstart                  2,5 tim
