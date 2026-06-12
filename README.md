@@ -4,8 +4,7 @@
 
 ## Tidplan
 
-[Deadline](https://classroom.github.com/a/r1QxwNOh)  
-[Se hela tidplanen](https://docs.google.com/spreadsheets/d/1kti9O242bkX7J6k_bEON9HNTtaCuefqLBKRLH9RBc4g/edit?usp=sharing)
+Deadline 2026-08-25 23:59 (CEST)´
 
 **Jag har uppskattat projektets totala tidsåtgång till ca 124 timmar**
 
@@ -30,3 +29,5 @@
 - Sluttest	                    8 tim
 - Dokumentation	                3 tim
 - Slutkontroll och inlämning	  2,5 tim
+
+[Se den detaljerade tidplanen här](https://docs.google.com/spreadsheets/d/1kti9O242bkX7J6k_bEON9HNTtaCuefqLBKRLH9RBc4g/edit?usp=sharing)
