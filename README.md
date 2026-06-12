@@ -1,6 +1,6 @@
 # E-handel – Inlämningsuppgift 1, Systemutveckling (FSU25D)
 
-[Uppgiftsbeskrivning](https://github.com/Medieinstitutet/fsu25d-systemutveckling-uppgift-1-min-egna-e-handel-niloscar/blob/main/assignments-description.md)
+[Uppgiftsbeskrivning](https://github.com/Medieinstitutet/fsu25d-systemutveckling-uppgift-1-min-egna-e-handel-niloscar/blob/main/docs/assignments-description.md)
 
 _Oscar Nilsson_  
 _oscar@ondproduktion.se_  
