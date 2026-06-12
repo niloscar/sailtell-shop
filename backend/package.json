@@ -2,7 +2,6 @@
   "name": "backend",
   "version": "1.0.0",
   "description": "Backend for e-shop assignment",
-  "license": "ISC",
   "author": "Oscar Nilsson",
   "type": "commonjs",
   "main": "index.js",
