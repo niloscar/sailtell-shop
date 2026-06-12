@@ -12,7 +12,7 @@ Deadline 2026-08-25 23:59 (CEST)´
 - Projektstart                  2,5 tim
 - Diagram och tidplan	          4,5 tim
 - Frontend- och backendstruktur	6 tim
-- Databas (grundläggande)	      5,5 tim
+- Databas                       5,5 tim
 - Produkt-API	                  5,5 tim
 - Adminvy för produkter	        8,5 tim
 - Publik produktvy	            5 tim
@@ -20,13 +20,13 @@ Deadline 2026-08-25 23:59 (CEST)´
 - Order-API	                    7 tim
 - Checkout och betalning	      5,5 tim
 - Adminvy för ordrar	          6 tim
-- Testning (grundversionen)	    9 tim
+- Testning            	        9 tim
 - Deployment	                  7 tim
 - Databas (VG)	                5,5 tim
-- Inloggning	                  9 tim
-- Databasbaserad varukorg	      8 tim
-- Orderstatus	                  5,5 tim
-- Sluttest	                    8 tim
+- Inloggning  (VG)              9 tim
+- Databasbaserad varukorg (VG)  8 tim
+- Orderstatus	(VG)              5,5 tim
+- Sluttest (G och VG)           8 tim
 - Dokumentation	                3 tim
 - Slutkontroll och inlämning	  2,5 tim
 
