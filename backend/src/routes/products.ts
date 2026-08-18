@@ -9,13 +9,13 @@ const productsRouter = Router()
 /* Mock data for products. */
 const brands = [
   { id: 1, name: 'Adidas', description: 'German sportswear manufacturer', url: 'https://www.adidas.com' },
-  { id: 2, name: 'The North Face', description: 'American outdoor clothing and gear retailer', url: 'https://www.thenorthface.com' },
+  { id: 2, name: 'Nike', description: 'American sportswear manufacturer', url: 'https://www.nike.com' },
   { id: 3, name: 'The North Face', description: 'American outdoor clothing and gear retailer', url: 'https://www.thenorthface.com' }
 ]
 
 const products = [
   { id: 1, name: 'Adizero Evo SL', brandId: 1, price: 1799 },
-  { id: 2, name: 'Altamesa 500 v2', brandId: 2, price: 1499 },
+  { id: 2, name: 'Altamesa 500 v2', brandId: 3, price: 1499 },
   { id: 3, name: 'Vectiv Summit Pro 3', brandId: 3, price: 2899 }
 ]
 
