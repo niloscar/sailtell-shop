@@ -49,7 +49,7 @@ En enklare e-handelsapplikation där kunder kan visa produkter, lägga dem i en 
 
 * Visa produkter
 * Lägga produkter i varukorgen
-* Ändra antal och ta bort produkter
+* Ändra antal och ta bort produkter från varukorgen
 * Genomföra simulerad betalning
 * Skapa en order
 
@@ -272,7 +272,7 @@ Följande flöden ska testas:
 
 ## Dokumentation
 
-Utöver denna readme innehåller projektet (se docs/):
+Utöver denna readme innehåller projektet (se docs/) följande dokumentation:
 
 * Databasdiagram
 * Sitemap
