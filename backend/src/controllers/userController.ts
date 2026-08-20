@@ -3,13 +3,11 @@
  */
 
 import { Request, Response } from 'express'
-import { mockUsers } from '../data/mockdata'
+import { mockUsers as users } from '../data/mockdata'
 
 type UserParams = {
   id: string
 }
-
-const users = mockUsers
 
 export async function getUsers(req: Request, res: Response) {
   console.log('getUsers called')
@@ -27,10 +25,6 @@ export async function getUser(req: Request<UserParams>, res: Response) {
   }
 }
 
-export async function createUser(req: Request, res: Response) {
-  console.log('createUser called')
-}
-
 export async function updateUser(req: Request<UserParams>, res: Response) {
     const userId = parseInt(req.params.id)
     const userIndex = users.findIndex(user => user.id === userId)
@@ -42,8 +36,4 @@ export async function updateUser(req: Request<UserParams>, res: Response) {
     } else {
       res.status(404).json({ error: 'Användaren du vill ändra kunde inte hittas.' })
     }
-}
-
-export async function deleteUser(req: Request, res: Response) {
-  console.log('deleteUser called')
 }

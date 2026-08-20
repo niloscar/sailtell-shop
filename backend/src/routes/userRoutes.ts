@@ -3,7 +3,7 @@
  */
 
 import { Router } from 'express'
-import { getUsers, getUser, createUser, updateUser, deleteUser } from '../controllers/userController'
+import { getUsers, getUser, updateUser } from '../controllers/userController'
 
 const usersRouter = Router()
 
