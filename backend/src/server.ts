@@ -11,11 +11,11 @@ import path from 'path'
 import { connect as mysqlConnect } from './database'
 
 /* Import route handlers */
-import customerRoutes from './routes/customers'
-import productRoutes from './routes/products'
-import orderRoutes from './routes/orders'
-import usersRouter from './routes/users'
-import authRouter from './routes/auth'
+import customerRoutes from './routes/customerRoutes'
+import productRoutes from './routes/productRoutes'
+import orderRoutes from './routes/orderRoutes'
+import usersRouter from './routes/userRoutes'
+import authRouter from './routes/authRoutes'
 
 /* Load environment variables from .env file */
 dotenv.config()
