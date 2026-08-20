@@ -1,4 +1,4 @@
-import ProductDetails from '../components/ProductDetails'
+import ProductDetails from '../../components/ProductDetails'
 import { Link } from 'react-router-dom'
 
 function PageSingleProduct() {

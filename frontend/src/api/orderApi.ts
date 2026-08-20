@@ -6,7 +6,7 @@ export function getOrders() {
   return api.get('/orders')
 }
 
-export function getOrderById(id: number) {
+export function getOrder(id: number) {
   return api.get(`/orders/${id}`)
 }
 
