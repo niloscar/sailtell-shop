@@ -35,6 +35,13 @@ ordersRouter.get('/:id', (req, res) => {
   }
 })
 
+/* POST /api/orders - Create a new order */
+ordersRouter.post('/', (req, res) => {
+  const newOrder = req.body
+  orders.push(newOrder)
+  res.status(201).json(newOrder)
+})
+
 /* PATCH /api/orders/:id - Update an order by ID */
 ordersRouter.patch('/:id', (req, res) => {
   const orderId = parseInt(req.params.id)

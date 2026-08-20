@@ -42,4 +42,38 @@ productsRouter.get('/:id', (req, res) => {
   }
 })
 
+/* POST /api/products - Create a new product */
+productsRouter.post('/', (req, res) => {
+  const newProduct = req.body
+  products.push(newProduct)
+  res.status(201).json(newProduct)
+})
+
+/* PATCH /api/products/:id - Update a product by ID */
+productsRouter.patch('/:id', (req, res) => {
+  const productId = parseInt(req.params.id)
+  const productIndex = products.findIndex(product => product.id === productId)
+
+  if (productIndex !== -1) {
+    const updatedProduct = { ...products[productIndex], ...req.body }
+    products[productIndex] = updatedProduct
+    res.json(updatedProduct)
+  } else {
+    res.status(404).json({ error: 'Produkten du vill ändra kunde inte hittas.' })
+  }
+})
+
+/* DELETE /api/products/:id - Delete a product by ID */
+productsRouter.delete('/:id', (req, res) => {
+  const productId = parseInt(req.params.id)
+  const productIndex = products.findIndex(product => product.id === productId)
+
+  if (productIndex !== -1) {
+    products.splice(productIndex, 1)
+    res.status(204).send()
+  } else {
+    res.status(404).json({ error: 'Produkten du vill ta bort kunde inte hittas.' })
+  }
+})
+
 export default productsRouter
