@@ -3,12 +3,13 @@
  */
 
 import { Router } from 'express'
-import { getUsers, getUser, updateUser } from '../controllers/userController'
+import { createUserHandler, updateUserHandler, getUserHandler, getUsersHandler } from '../controllers/userController'
 
 const usersRouter = Router()
 
-usersRouter.get('/', getUsers)
-usersRouter.get('/:id', getUser)
-usersRouter.patch('/:id', updateUser)
+usersRouter.get('/', getUsersHandler)
+usersRouter.get('/:id', getUserHandler)
+usersRouter.post('/', createUserHandler)
+usersRouter.patch('/:id', updateUserHandler)
 
 export default usersRouter

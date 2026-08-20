@@ -8,7 +8,7 @@ import express from 'express'
 import expressSession from 'express-session'
 import dotenv from 'dotenv'
 import path from 'path'
-import { connect as mysqlConnect } from './database'
+import { connect } from './database'
 
 /* Import route handlers */
 import customerRoutes from './routes/customerRoutes'
@@ -60,7 +60,7 @@ app.use(express.static(publicPath))
 
 
 const start = async () => {
-  await mysqlConnect() // Ensure database connection is established before starting the server
+  await connect() // Ensure database connection is established before starting the server
 
   /* Start the server */
   app.listen(port, () => {

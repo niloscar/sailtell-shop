@@ -9,3 +9,19 @@ export interface User {
   email: string
   role: 'admin' | 'editor' | 'user'
 }
+
+export interface PublicUser {
+  id?: number
+  fname?: string
+  lname?: string
+  email: string
+  role: 'admin' | 'editor' | 'user'
+}
+
+export interface UpdateUser {
+  fname?: string
+  lname?: string
+  email?: string
+  password?: string
+  role?: 'admin' | 'editor' | 'user'
+}

@@ -15,7 +15,7 @@ export async function login(req: Request, res: Response) {
   }
 
   try {
-      const loginResult = loginUser(email, password)
+      const loginResult = await loginUser(email, password)
 
       setSessionUserId(req, loginResult.user.id) // Store the user ID in the session to keep the user logged in
 
