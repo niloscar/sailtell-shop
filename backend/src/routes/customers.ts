@@ -3,15 +3,12 @@
  */
 
 import { Router } from 'express'
+import { mockCustomers } from '../data/mockdata'
 
 const customersRouter = Router()
 
 /* Mock data for customers. */
-const customers = [
-  { id: 1, fname: 'Anders', lname: 'Andersson', email: 'anders@example.com' },
-  { id: 2, fname: 'Erik', lname: 'Eriksson', email: 'erik@example.com' },
-  { id: 3, fname: 'John', lname: 'Johnsson', email: 'john@example.com' }
-]
+const customers = mockCustomers
 
 /* GET /api/customers - Get all customers */
 customersRouter.get('/', (req, res) => {
@@ -26,7 +23,7 @@ customersRouter.get('/:id', (req, res) => {
   if (customer) {
     res.json(customer)
   } else {
-    res.status(404).json({ error: 'Customer not found' })
+    res.status(404).json({ error: 'Kunden kunde inte hittas.' })
   }
 })
 

@@ -8,11 +8,14 @@ import express from 'express'
 import expressSession from 'express-session'
 import dotenv from 'dotenv'
 import path from 'path'
+import { connect as mysqlConnect } from './database'
 
 /* Import route handlers */
 import customerRoutes from './routes/customers'
 import productRoutes from './routes/products'
-// import orderRoutes from './routes/orders'
+import orderRoutes from './routes/orders'
+import usersRouter from './routes/users'
+import authRouter from './routes/auth'
 
 /* Load environment variables from .env file */
 dotenv.config()
@@ -38,14 +41,31 @@ app.use(expressSession({
 
 /* API routes */
 app.use('/api/customers', customerRoutes)
+app.use('/api/users', usersRouter)
 app.use('/api/products', productRoutes)
-// app.use('/api/orders', orderRoutes)
+app.use('/api/orders', orderRoutes)
+app.use('/api/auth', authRouter)
+
+/* Handle unknown API endpoints */
+app.use('/api', (req, res) => {
+  res.status(404).json({
+    error: 'Ogiltig metod och/eller endpoint',
+    message: `${req.method} och ${req.originalUrl} är ingen giltig kombination.`,
+  })
+})
 
 /* Serve frontend from the "public" folder */
 const publicPath = path.resolve(process.cwd(), 'public')
 app.use(express.static(publicPath))
 
-/* Start the server */
-app.listen(port, () => {
-  console.log(`Server is running on http://${host}:${port}`)
-})
+
+const start = async () => {
+  await mysqlConnect() // Ensure database connection is established before starting the server
+
+  /* Start the server */
+  app.listen(port, () => {
+    console.log(`Server is running on http://${host}:${port}`)
+  })
+}
+
+start()
