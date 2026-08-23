@@ -3,14 +3,14 @@
  */
 
 import { Router } from 'express'
-import { getOrders, getOrder, createOrder, updateOrder, deleteOrder } from '../controllers/orderController'
+import { getOrdersHandler, getOrderHandler, createOrderHandler, updateOrderHandler, deleteOrderHandler } from '../controllers/orderController'
 
 const ordersRouter = Router()
 
-ordersRouter.get('/', getOrders)
-ordersRouter.get('/:id', getOrder)
-ordersRouter.post('/', createOrder)
-ordersRouter.patch('/:id', updateOrder)
-ordersRouter.delete('/:id', deleteOrder)
+ordersRouter.get('/', getOrdersHandler)
+ordersRouter.get('/:id', getOrderHandler)
+ordersRouter.post('/', createOrderHandler)
+ordersRouter.patch('/:id', updateOrderHandler)
+ordersRouter.delete('/:id', deleteOrderHandler)
 
 export default ordersRouter

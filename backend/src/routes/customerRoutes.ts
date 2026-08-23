@@ -3,14 +3,14 @@
  */
 
 import { Router } from 'express'
-import { getCustomers, getCustomer, createCustomer, updateCustomer, deleteCustomer } from '../controllers/customerController'
+import { getCustomersHandler, getCustomerHandler, createCustomerHandler, updateCustomerHandler, deleteCustomerHandler } from '../controllers/customerController'
 
 const customersRouter = Router()
 
-customersRouter.get('/', getCustomers)
-customersRouter.get('/:id', getCustomer)
-customersRouter.post('/', createCustomer)
-customersRouter.patch('/:id', updateCustomer)
-customersRouter.delete('/:id', deleteCustomer)
+customersRouter.get('/', getCustomersHandler)
+customersRouter.get('/:id', getCustomerHandler)
+customersRouter.post('/', createCustomerHandler)
+customersRouter.patch('/:id', updateCustomerHandler)
+customersRouter.delete('/:id', deleteCustomerHandler)
 
 export default customersRouter

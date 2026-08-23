@@ -7,17 +7,44 @@ import type { Product, UpdateProduct } from '../types/product'
 
 export async function getProducts() {
   const { rows } = await pool.query<Product>(
-    `SELECT DISTINCT ON (products.id)
+    `SELECT
       products.id,
       products.name,
       products.brand_name,
       products.description,
       products.details,
       products.stock,
-      prices.price AS "price"
+      latest_price.price,
+      COALESCE(
+        JSONB_AGG(
+          DISTINCT JSONB_BUILD_OBJECT(
+            'id', categories.id,
+            'name', categories.name
+          )
+        ) FILTER (WHERE categories.id IS NOT NULL),
+        '[]'::jsonb
+      ) AS categories
     FROM products
-    JOIN prices ON products.id = prices.product_id
-    ORDER BY products.id, prices.set_at DESC`
+
+    LEFT JOIN LATERAL (
+      SELECT price
+      FROM prices
+      WHERE prices.product_id = products.id
+      ORDER BY prices.set_at DESC
+      LIMIT 1
+    ) AS latest_price ON true
+
+    LEFT JOIN product_categories
+      ON product_categories.product_id = products.id
+
+    LEFT JOIN categories
+      ON categories.id = product_categories.category_id
+
+    GROUP BY
+      products.id,
+      latest_price.price
+
+    ORDER BY products.id;`
   )
 
   if (rows.length === 0) throw new Error('Inga produkter kunde hittas.')
@@ -34,9 +61,25 @@ export async function getProduct(id: number) {
       products.description,
       products.details,
       products.stock,
-      prices.price AS "price"
+      prices.price AS "price",
+      COALESCE(
+        (
+          SELECT JSONB_AGG(
+            JSONB_BUILD_OBJECT(
+              'id', categories.id,
+              'name', categories.name
+            )
+          )
+          FROM product_categories
+          JOIN categories
+            ON categories.id = product_categories.category_id
+          WHERE product_categories.product_id = products.id
+        ),
+        '[]'::jsonb
+      ) AS categories
     FROM products
-    JOIN prices ON products.id = prices.product_id
+    JOIN prices
+      ON products.id = prices.product_id
     WHERE products.id = $1
     ORDER BY products.id, prices.set_at DESC`,
     [id]
@@ -102,7 +145,8 @@ export async function updateProduct(id: number, updates: UpdateProduct) {
 
 export async function deleteProduct(id: number) {
   const { rowCount } = await pool.query(
-    `DELETE FROM products 
+    `UPDATE products
+    SET deleted_at = NOW()
       WHERE id = $1`,
     [id]
   )
