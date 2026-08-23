@@ -40,11 +40,12 @@ export async function getProducts() {
     LEFT JOIN categories
       ON categories.id = product_categories.category_id
 
+    WHERE products.deleted_at IS NULL
+
     GROUP BY
       products.id,
       latest_price.price
 
-    WHERE products.deleted_at IS NULL
     ORDER BY products.id`
   )
 
