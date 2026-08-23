@@ -44,7 +44,8 @@ export async function getProducts() {
       products.id,
       latest_price.price
 
-    ORDER BY products.id;`
+    wHERE products.deleted_at IS NULL
+    ORDER BY products.id`
   )
 
   if (rows.length === 0) throw new Error('Inga produkter kunde hittas.')
@@ -80,7 +81,7 @@ export async function getProduct(id: number) {
     FROM products
     JOIN prices
       ON products.id = prices.product_id
-    WHERE products.id = $1
+    WHERE products.id = $1 AND products.deleted_at IS NULL
     ORDER BY products.id, prices.set_at DESC`,
     [id]
   )

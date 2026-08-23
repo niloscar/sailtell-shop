@@ -3,7 +3,7 @@
  */
 
 import { Request, Response } from 'express'
-import { getUsers, getUser, createUser, updateUser } from '../services/userService'
+import { getUsers, getUser, createUser } from '../services/userService'
 
 type UserParams = {
   id: string
@@ -29,17 +29,4 @@ export async function createUserHandler(req: Request, res: Response) {
   const user = req.body
   const createdUser = await createUser(user.fname, user.lname, user.email, user.password, user.role)
   res.status(201).json(createdUser)
-}
-
-export async function updateUserHandler(req: Request<UserParams>, res: Response) {
-  const userId = parseInt(req.params.id)
-  const updates = req.body
-
-  const updatedUser = await updateUser(userId, updates)
-
-  if (updatedUser) {
-    res.json(updatedUser)
-  } else {
-    res.status(404).json({ error: 'Användaren du vill ändra kunde inte hittas.' })
-  }
 }

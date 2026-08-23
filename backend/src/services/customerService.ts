@@ -68,17 +68,3 @@ export async function updateCustomer(id: number, customerData: UpdateCustomer) {
 
   return rows[0]
 }
-
-export async function deleteCustomer(id: number) {
-  const { rows } = await pool.query(
-    `UPDATE customers
-     SET deleted_at = NOW()
-     WHERE id = $1
-     RETURNING id`,
-    [id]
-  )
-
-  if (rows.length === 0) throw new Error('Kunden kunde inte tas bort.')
-
-  return rows[0]
-}

@@ -26,15 +26,8 @@ export async function getOrderHandler(req: Request<OrderParams>, res: Response) 
 }
 
 export async function createOrderHandler(req: Request, res: Response) {
-  const newOrder = req.body
-  const order = await createOrder(
-    newOrder.customer_id,
-    newOrder.payment_method_id,
-    newOrder.delivery_method_id,
-    newOrder.ordered_at,
-    newOrder.sum
-  )
-  res.status(201).json(order)
+  const newOrder = await createOrder(req.body)
+  res.status(201).json(newOrder)
 }
 
 export async function updateOrderHandler(req: Request<OrderParams>, res: Response) {

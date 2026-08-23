@@ -3,13 +3,12 @@
  */
 
 import { Router } from 'express'
-import { createUserHandler, updateUserHandler, getUserHandler, getUsersHandler } from '../controllers/userController'
+import { createUserHandler, getUserHandler, getUsersHandler } from '../controllers/userController'
 
-const usersRouter = Router()
+const userRouter = Router()
 
-usersRouter.get('/', getUsersHandler)
-usersRouter.get('/:id', getUserHandler)
-usersRouter.post('/', createUserHandler)
-usersRouter.patch('/:id', updateUserHandler)
+userRouter.get('/', getUsersHandler)
+userRouter.get('/:id', getUserHandler)
+userRouter.post('/', createUserHandler)
 
-export default usersRouter
+export default userRouter

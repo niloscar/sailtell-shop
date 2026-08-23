@@ -2,8 +2,13 @@
  * Order service functions for handling order-related operations such as creating orders, updating order status, and deleting orders.
  */
 
-import pool from '../database'
-import type { Order, UpdateOrder } from '../types/order'
+import pool, { withTransaction } from '../database'
+import type { Pool, PoolClient } from 'pg'
+import type { Order, UpdateOrder, CreateShippingAddress, CreateOrderItem, CreateOrder } from '../types/order'
+import { DbClient } from '../types/database'
+import { createShippingAddress } from './shippingAddressService'
+import { createOrderItems } from './orderItemService'
+import { createOrderStatus } from './orderStatusService'
 
 export async function getOrders() {
   const { rows } = await pool.query<Order>(
@@ -42,6 +47,7 @@ export async function getOrders() {
       LIMIT 1
     ) AS current_status ON true
 
+    WHERE orders.deleted_at IS NULL
     ORDER BY orders.id`
   )
 
@@ -50,8 +56,8 @@ export async function getOrders() {
   return rows
 }
 
-export async function getOrder(id: number) {
-  const { rows } = await pool.query<Order>(
+export async function getOrder(id: number, db: Pool | PoolClient = pool) {
+  const { rows } = await db.query<Order>(
     `SELECT
       orders.id,
       orders.customer_id,
@@ -132,7 +138,7 @@ export async function getOrder(id: number) {
       LIMIT 1
     ) AS current_status ON true
 
-    WHERE orders.id = $1;`,
+    WHERE orders.id = $1 AND orders.deleted_at IS NULL`,
     [id]
   )
 
@@ -141,122 +147,93 @@ export async function getOrder(id: number) {
   return rows[0]
 }
 
-export async function createOrder(customer_id: number, payment_method_id: number, delivery_method_id: number, ordered_at: string, sum: number) {
-  const { rows } = await pool.query<Order>(
-    `INSERT INTO orders (customer_id, payment_method_id, delivery_method_id, ordered_at)
-    VALUES ($1, $2, $3, $4, $5)
-    RETURNING id, customer_id, payment_method_id, delivery_method_id, ordered_at`,
-    [customer_id, payment_method_id, delivery_method_id, ordered_at, sum]
-  )
+export async function createOrder(
+  order: CreateOrder
+) {
+  // Create the order
+  return withTransaction(async (client) => {
+    const { rows } = await client.query<{ id: number }>(
+      `INSERT INTO orders (
+        customer_id,
+        payment_method_id,
+        delivery_method_id,
+        ordered_at
+      )
+      VALUES ($1, $2, $3, $4)
+      RETURNING id`,
+      [
+        order.customer_id,
+        order.payment_method_id,
+        order.delivery_method_id,
+        order.ordered_at
+      ]
+    )
 
-  return rows[0]
+    if (rows.length === 0) {
+      throw new Error('Beställningen kunde inte skapas.')
+    }
+
+    const orderId = rows[0].id
+
+    // Create the shipping address
+    await createShippingAddress(
+      orderId,
+      order.shipping_address.fname,
+      order.shipping_address.lname,
+      order.shipping_address.street,
+      order.shipping_address.city,
+      order.shipping_address.zipcode,
+      order.shipping_address.country,
+      client
+    )
+
+    // Create the order items
+    await createOrderItems(
+      orderId,
+      order.order_items,
+      client
+    )
+
+    // Set the initial order status to "Mottagen"
+    await createOrderStatus(
+      orderId,
+      1,
+      client
+    )
+
+    // Return the complete order details
+    return getOrder(orderId, client)
+  })
 }
 
 export async function updateOrder(id: number, updates: UpdateOrder) {
+  if (Object.keys(updates).length === 0) throw new Error('Inga uppgifter att uppdatera.')
+
   const setClauses = Object.keys(updates).map((key, index) => `${key} = $${index + 2}`)
+
   const values = Object.values(updates)
 
-  const { rows } = await pool.query<Order>(
+  const { rows } = await pool.query<{ id: number }>(
     `UPDATE orders
-    SET ${setClauses.join(', ')}
-    WHERE id = $1
-    RETURNING id, customer_id, payment_method_id, delivery_method_id, ordered_at`,
+     SET ${setClauses.join(', ')}
+     WHERE id = $1
+       AND deleted_at IS NULL
+     RETURNING id`,
     [id, ...values]
   )
 
-  if (rows.length === 0) throw new Error('Beställningen kunde inte uppdateras.')
+  if (rows.length === 0) throw new Error('Beställningen du vill uppdatera kunde inte hittas.')
 
-  return rows[0]
+  return getOrder(rows[0].id)
 }
 
 export async function deleteOrder(id: number) {
   const { rowCount } = await pool.query(
     `UPDATE orders
     SET deleted_at = NOW()
-    WHERE id = $1`,
+    WHERE id = $1 AND deleted_at IS NULL`,
     [id]
   )
 
-  if (rowCount === 0) throw new Error('Beställningen kunde inte tas bort.')
-}
-
-export async function addOrderStatus(orderId: number) {
-  const { rows } = await pool.query(
-    `INSERT INTO order_statuses (order_id, status_id)
-    VALUES ($1, 1)
-    RETURNING id, order_id, status_id, set_at`,
-    [orderId]
-  )
-
-  if (rows.length === 0) throw new Error('Orderstatus kunde inte läggas till.')
-
-  return rows[0]
-}
-
-export async function updateOrderStatus(orderId: number, statusId: number) {
-  const { rows } = await pool.query(
-    `UPDATE order_statuses
-    SET status_id = $2, set_at = NOW()
-    WHERE order_id = $1
-    RETURNING id, order_id, status_id, set_at`,
-    [orderId, statusId]
-  )
-
-  if (rows.length === 0) throw new Error('Orderstatus kunde inte uppdateras.')
-
-  return rows[0]
-}
-
-export async function addShippingAddress(
-  orderId: number, 
-  fname: string, 
-  lname: string, 
-  street: string, 
-  city: string, 
-  zipcode: string, 
-  country: string) {
-  const { rows } = await pool.query(
-    `INSERT INTO shipping_addresses (order_id, fname, lname, street, city, zipcode, country)
-    VALUES ($1, $2, $3, $4, $5, $6, $7)
-    RETURNING id, order_id, fname, lname, street, city, zipcode, country`,
-    [orderId, fname, lname, street, city, zipcode, country]
-  )
-
-  if (rows.length === 0) throw new Error('Leveransadress kunde inte läggas till.')
-
-  return rows[0]
-}
-
-export async function getShippingAddress(orderId: number) {
-  const { rows } = await pool.query(
-    `SELECT id, order_id, fname, lname, street, city, zipcode, country
-    FROM shipping_addresses
-    WHERE order_id = $1`,
-    [orderId]
-  )
-
-  if (rows.length === 0) throw new Error('Leveransadress kunde inte hittas.')
-
-  return rows[0]
-}
-
-export async function addOrderItems(orderId: number, items: { product_id: number, quantity: number }[]) {
-  const values = items.map((item, index) => {
-  const productId = index * 2 + 2 // Since the first parameter always is the orderId, we need to offset productId by 2 for each item.
-  const quantity = index * 2 + 3 // Same as for productId, offset by 2 for each item.
-
-  return `($1, $${productId}, $${quantity})`
-}).join(', ')
-  const queryParams = [orderId, ...items.flatMap(item => [item.product_id, item.quantity])]
-
-  const { rows } = await pool.query(
-    `INSERT INTO order_items (order_id, product_id, quantity)
-    VALUES ${values}
-    RETURNING id, order_id, product_id, quantity`,
-    queryParams
-  )
-
-  if (rows.length === 0) throw new Error('Orderartiklar kunde inte läggas till.')
-
-  return rows
+  if (rowCount === 0) throw new Error('Beställningen du vill ta bort kunde inte hittas.')
 }

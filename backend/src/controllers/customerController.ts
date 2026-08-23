@@ -3,7 +3,7 @@
  */
 
 import { Request, Response } from 'express'
-import { getCustomers, getCustomer, createCustomer, updateCustomer, deleteCustomer } from '../services/customerService'
+import { getCustomers, getCustomer, createCustomer, updateCustomer } from '../services/customerService'
 
 type CustomerParams = {
   id: string
@@ -37,11 +37,4 @@ export async function updateCustomerHandler(req: Request<CustomerParams>, res: R
 
   const updatedCustomer = await updateCustomer(customerId, updatedCustomerData)
   res.json(updatedCustomer)
-}
-
-export async function deleteCustomerHandler(req: Request<CustomerParams>, res: Response) {
-  const customerId = parseInt(req.params.id)
-
-  await deleteCustomer(customerId)
-  res.json({ message: 'Kunden har tagits bort.' })
 }
