@@ -3,14 +3,18 @@
  */
 
 import { Router } from 'express'
-import { getProducts, getProduct, createProduct, updateProduct, deleteProduct } from '../controllers/productController'
+import { getProductHandler, deleteProductHandler, updateProductHandler, createProductHandler, getProductsHandler } from '../controllers/productController'
+import priceRouter from './priceRoutes'
 
-const productsRouter = Router()
+const productRouter = Router()
 
-productsRouter.get('/', getProducts)
-productsRouter.get('/:id', getProduct)
-productsRouter.post('/', createProduct)
-productsRouter.patch('/:id', updateProduct)
-productsRouter.delete('/:id', deleteProduct)
+productRouter.get('/', getProductsHandler)
+productRouter.post('/', createProductHandler)
 
-export default productsRouter
+productRouter.use('/:productId', priceRouter)
+
+productRouter.get('/:id', getProductHandler)
+productRouter.patch('/:id', updateProductHandler)
+productRouter.delete('/:id', deleteProductHandler)
+
+export default productRouter

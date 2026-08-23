@@ -3,19 +3,20 @@
  */
 
 import { Request, Response } from 'express'
-import { mockCustomers as customers } from '../data/mockdata'
+import { getCustomers, getCustomer, createCustomer, updateCustomer } from '../services/customerService'
 
 type CustomerParams = {
   id: string
 }
 
-export async function getCustomers(req: Request, res: Response) {
+export async function getCustomersHandler(req: Request, res: Response) {
+  const customers = await getCustomers()
   res.json(customers)
 }
 
-export async function getCustomer(req: Request<CustomerParams>, res: Response) {
+export async function getCustomerHandler(req: Request<CustomerParams>, res: Response) {
   const customerId = parseInt(req.params.id)
-  const customer = customers.find(customer => customer.id === customerId)
+  const customer = await getCustomer(customerId)
 
   if (customer) {
     res.json(customer)
@@ -24,33 +25,16 @@ export async function getCustomer(req: Request<CustomerParams>, res: Response) {
   }
 }
 
-export async function createCustomer(req: Request, res: Response) {
+export async function createCustomerHandler(req: Request, res: Response) {
   const newCustomer = req.body
-  customers.push(newCustomer)
-  res.status(201).json(newCustomer)
+  const createdCustomer = await createCustomer(newCustomer)
+  res.status(201).json(createdCustomer)
 }
 
-export async function updateCustomer(req: Request<CustomerParams>, res: Response) {
+export async function updateCustomerHandler(req: Request<CustomerParams>, res: Response) {
   const customerId = parseInt(req.params.id)
-  const customerIndex = customers.findIndex(customer => customer.id === customerId)
+  const updatedCustomerData = req.body
 
-  if (customerIndex !== -1) {
-    const updatedCustomer = { ...customers[customerIndex], ...req.body }
-    customers[customerIndex] = updatedCustomer
-    res.json(updatedCustomer)
-  } else {
-    res.status(404).json({ error: 'Kunden du vill ändra kunde inte hittas.' })
-  }
-}
-
-export async function deleteCustomer(req: Request<CustomerParams>, res: Response) {
-  const customerId = parseInt(req.params.id)
-  const customerIndex = customers.findIndex(customer => customer.id === customerId)
-
-  if (customerIndex !== -1) {
-    customers.splice(customerIndex, 1)
-    res.json({ message: 'Kunden har tagits bort.' })
-  } else {
-    res.status(404).json({ error: 'Kunden du vill ta bort kunde inte hittas.' })
-  }
+  const updatedCustomer = await updateCustomer(customerId, updatedCustomerData)
+  res.json(updatedCustomer)
 }

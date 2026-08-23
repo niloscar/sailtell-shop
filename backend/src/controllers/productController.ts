@@ -3,19 +3,20 @@
  */
 
 import { Request, Response } from 'express'
-import { mockProducts as products } from '../data/mockdata'
+import { getProducts, getProduct, createProduct, updateProduct, deleteProduct } from '../services/productService'
 
 type ProductParams = {
   id: string
 }
 
-export async function getProducts(req: Request, res: Response) {
+export async function getProductsHandler(req: Request, res: Response) {
+  const products = await getProducts()
   res.json(products)
 }
 
-export async function getProduct(req: Request<ProductParams>, res: Response) {
+export async function getProductHandler(req: Request<ProductParams>, res: Response) {
   const productId = parseInt(req.params.id)
-  const product = products.find(product => product.id === productId)
+  const product = await getProduct(productId)
 
   if (product) {
     res.json(product)
@@ -24,33 +25,27 @@ export async function getProduct(req: Request<ProductParams>, res: Response) {
   }
 }
 
-export async function createProduct(req: Request, res: Response) {
-  const newProduct = req.body
-  products.push(newProduct)
-  res.status(201).json(newProduct)
+export async function createProductHandler(req: Request, res: Response) {
+  const product = req.body
+  const createdProduct = await createProduct(product.name, product.description, product.details, product.stock)
+  res.status(201).json(createdProduct)
 }
 
-export async function updateProduct(req: Request<ProductParams>, res: Response) {
+export async function updateProductHandler(req: Request<ProductParams>, res: Response) {
   const productId = parseInt(req.params.id)
-  const productIndex = products.findIndex(product => product.id === productId)
+  const updates = req.body
 
-  if (productIndex !== -1) {
-    const updatedProduct = { ...products[productIndex], ...req.body }
-    products[productIndex] = updatedProduct
+  const updatedProduct = await updateProduct(productId, updates)
+
+  if (updatedProduct) {
     res.json(updatedProduct)
   } else {
     res.status(404).json({ error: 'Produkten du vill ändra kunde inte hittas.' })
   }
 }
 
-export async function deleteProduct(req: Request<ProductParams>, res: Response) {
+export async function deleteProductHandler(req: Request<ProductParams>, res: Response) {
   const productId = parseInt(req.params.id)
-  const productIndex = products.findIndex(product => product.id === productId)
-
-  if (productIndex !== -1) {
-    products.splice(productIndex, 1)
-    res.status(204).send()
-  } else {
-    res.status(404).json({ error: 'Produkten du vill ta bort kunde inte hittas.' })
-  }
+  await deleteProduct(productId)
+  res.status(204).send()
 }

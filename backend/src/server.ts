@@ -8,7 +8,7 @@ import express from 'express'
 import expressSession from 'express-session'
 import dotenv from 'dotenv'
 import path from 'path'
-import { connect as mysqlConnect } from './database'
+import { connect } from './database'
 
 /* Import route handlers */
 import customerRoutes from './routes/customerRoutes'
@@ -16,6 +16,7 @@ import productRoutes from './routes/productRoutes'
 import orderRoutes from './routes/orderRoutes'
 import usersRouter from './routes/userRoutes'
 import authRouter from './routes/authRoutes'
+import categoryRoutes from './routes/categoryRoutes'
 
 /* Load environment variables from .env file */
 dotenv.config()
@@ -42,6 +43,7 @@ app.use(expressSession({
 /* API routes */
 app.use('/api/customers', customerRoutes)
 app.use('/api/users', usersRouter)
+app.use('/api/categories', categoryRoutes)
 app.use('/api/products', productRoutes)
 app.use('/api/orders', orderRoutes)
 app.use('/api/auth', authRouter)
@@ -60,7 +62,7 @@ app.use(express.static(publicPath))
 
 
 const start = async () => {
-  await mysqlConnect() // Ensure database connection is established before starting the server
+  await connect() // Ensure database connection is established before starting the server
 
   /* Start the server */
   app.listen(port, () => {

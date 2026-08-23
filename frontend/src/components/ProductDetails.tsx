@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { getProduct } from '../api/productApi'
+import formatPrice from '../utilities/priceFormat'
 import type { Product } from '../types/productTypes'
 
 function ProductDetails() {
@@ -33,6 +34,7 @@ function ProductDetails() {
             <li key={index}>{detail}</li>
           ))}
         </ul>
+        <p className='price'>{formatPrice(Number(product.price))}</p>
         { renderStock(product.stock) }
       </div>
     )

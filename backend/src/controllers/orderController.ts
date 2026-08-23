@@ -3,19 +3,20 @@
  */
 
 import { Request, Response } from 'express'
-import { mockOrders as orders } from '../data/mockdata'
+import { getOrders, getOrder, createOrder, updateOrder, deleteOrder } from '../services/orderService'
 
 type OrderParams = {
   id: string
 }
 
-export async function getOrders(req: Request, res: Response) {
+export async function getOrdersHandler(req: Request, res: Response) {
+  const orders = await getOrders()
   res.json(orders)
 }
 
-export async function getOrder(req: Request<OrderParams>, res: Response) {
+export async function getOrderHandler(req: Request<OrderParams>, res: Response) {
   const orderId = parseInt(req.params.id)
-  const order = orders.find(order => order.id === orderId)
+  const order = await getOrder(orderId)
 
   if (order) {
     res.json(order)
@@ -24,33 +25,24 @@ export async function getOrder(req: Request<OrderParams>, res: Response) {
   }
 }
 
-export async function createOrder(req: Request, res: Response) {
-  const newOrder = req.body
-  orders.push(newOrder)
+export async function createOrderHandler(req: Request, res: Response) {
+  const newOrder = await createOrder(req.body)
   res.status(201).json(newOrder)
 }
 
-export async function updateOrder(req: Request<OrderParams>, res: Response) {
+export async function updateOrderHandler(req: Request<OrderParams>, res: Response) {
   const orderId = parseInt(req.params.id)
-  const orderIndex = orders.findIndex(order => order.id === orderId)
+  const order = await updateOrder(orderId, req.body)
 
-  if (orderIndex !== -1) {
-    const updatedOrder = { ...orders[orderIndex], ...req.body }
-    orders[orderIndex] = updatedOrder
-    res.json(updatedOrder)
+  if (order) {
+    res.json(order)
   } else {
-    res.status(404).json({ error: 'Ordern du vill ändra kunde inte hittas.' })
+    res.status(404).json({ error: 'Ordern kunde inte hittas.' })
   }
 }
 
-export async function deleteOrder(req: Request<OrderParams>, res: Response) {
+export async function deleteOrderHandler(req: Request<OrderParams>, res: Response) {
   const orderId = parseInt(req.params.id)
-  const orderIndex = orders.findIndex(order => order.id === orderId)
-
-  if (orderIndex !== -1) {
-    orders.splice(orderIndex, 1)
-    res.status(204).send()
-  } else {
-    res.status(404).json({ error: 'Ordern du vill ta bort kunde inte hittas.' })
-  }
+  await deleteOrder(orderId)
+  res.status(204).send()
 }
