@@ -44,7 +44,7 @@ export async function getProducts() {
       products.id,
       latest_price.price
 
-    wHERE products.deleted_at IS NULL
+    WHERE products.deleted_at IS NULL
     ORDER BY products.id`
   )
 
