@@ -1,12 +1,15 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { getProduct } from '../api/productApi'
-import formatPrice from '../utilities/priceFormat'
+import formatPrice from '../utilities/formatPrice'
+import ToCartButton from './ToCartButton'
+import QuantitySelector from './ToCartQuantity'
 import type { Product } from '../types/productTypes'
 
 function ProductDetails() {
   const { id } = useParams<{ id: string }>()
   const [product, setProduct] = useState<Product | null>(null)
+  const [quantity, setQuantity] = useState<number>(1)
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -23,19 +26,74 @@ function ProductDetails() {
     }
   }, [id])
 
+  const stockMessage = product && quantity > product.stock
+    ? 'Observera att du vill lägga till fler än vad som finns i lager. En del av din beställning kommer att få ett senare leveransdatum.'
+    : ''
+
   if (product !== null) {
     return (
-      <div className='product-details'>
-        <h2>{product.name}</h2>
-        <p className='description'>{product.description}</p>
-        <p className='brand-name'>{product.brand}</p>
-        <ul className='details'>
-          {product.details.map((detail, index) => (
-            <li key={index}>{detail}</li>
-          ))}
-        </ul>
-        <p className='price'>{formatPrice(Number(product.price))}</p>
-        { renderStock(product.stock) }
+      <div className='product-page'>
+
+        {product.img_url && (
+          <img
+            className='product-image'
+            src={`${product.img_url}`}
+            alt={product.name}
+          />
+        )}
+
+        <div className='product-details'>
+
+          <h1 className="heading-size-1">{product.name}</h1>
+          <p className='description'>{product.description}</p>
+          <p className='brand-name'>{product.brand}</p>
+          <ul className='details'>
+            {product.details.map((detail, index) => (
+              <li key={index}>{detail}</li>
+            ))}
+          </ul>
+
+          {product.purchase_type === 'external' ? (
+
+            <section className="external-purchase-section">
+              <p>
+                Appen finns tillgänglig för nedladdning i AppStore och på Google Play.
+              </p>
+
+              <div className="download-badges">
+                {product.product_distribution_links.map((link) => (
+                  <a
+                    key={link.id}
+                    href={link.download_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <img
+                      src={link.badge_url}
+                      className="download-badge"
+                      alt={link.distributor} />
+                  </a>
+                ))}
+              </div>
+            </section>
+
+          ) : (
+
+            <section className="to-cart-section">
+              <div>
+                <p className='price'>{formatPrice(Number(product.price))}</p>
+                {renderStock(product.stock)}
+              </div>
+              <div className="button-group">
+                <QuantitySelector quantity={quantity} setQuantity={setQuantity} />
+                <ToCartButton product={product} quantity={quantity} />
+              </div>
+              {stockMessage && <p className="stock-message">{stockMessage}</p>}
+            </section>
+
+          )}
+
+        </div>
       </div>
     )
   } else {

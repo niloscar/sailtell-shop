@@ -2,8 +2,9 @@ import api from './apiClient'
 
 import type { Product } from '../types/productTypes'
 
-export function getProducts() {
-  return api.get('/products')
+export function getProducts({ category }: { category?: string } = {}) {
+  const url = category ? `/products/category/${category}` : '/products'
+  return api.get(url)
 }
 
 export function getProduct(id: number) {

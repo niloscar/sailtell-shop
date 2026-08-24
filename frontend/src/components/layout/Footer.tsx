@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import FooterLogo from "../FooterLogo";
 
 export default function Footer() {
@@ -10,7 +11,7 @@ export default function Footer() {
           <nav>
             <ul className="unstyled">
               <li>
-                <a href="/about">Om oss</a>
+                <Link to="/about">Om oss</Link>
               </li>
             </ul>
           </nav>
@@ -20,22 +21,22 @@ export default function Footer() {
           <nav>
             <ul className="unstyled">
               <li>
-                <a href="/contact">Kontakta oss</a>
+                <Link to="/contact">Kontakta oss</Link>
               </li>
               <li>
-                <a href="/right-of-withdrawal">Ångerrätt</a>
+                <Link to="/right-of-withdrawal">Ångerrätt</Link>
               </li>
               <li>
-                <a href="/shipping">Leveransvillkor</a>
+                <Link to="/shipping">Leveransvillkor</Link>
               </li>
               <li>
-                <a href="/returns">Returvillkor</a>
+                <Link to="/returns">Returvillkor</Link>
               </li>
               <li>
-                <a href="/terms">Användarvillkor</a>
+                <Link to="/terms">Användarvillkor</Link>
               </li>
               <li>
-                <a href="/privacy">Integritetspolicy</a>
+                <Link to="/privacy">Integritetspolicy</Link>
               </li>
             </ul>
           </nav>

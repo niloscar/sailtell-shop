@@ -1,13 +1,19 @@
 import ProductDetails from '../../components/ProductDetails'
 import { Link } from 'react-router-dom'
+import { ArrowLeftIcon } from '@phosphor-icons/react'
 
 function PageSingleProduct() {
 
   return (
     <div>
-      <h1>Produktinformation</h1>
       <ProductDetails />
-      <Link to="/">Tillbaka till startsidan</Link>
+      <Link 
+        to="/"
+        className="link-back"
+      >
+        <ArrowLeftIcon size={20} />
+        <span>Tillbaka</span>
+      </Link>
     </div>
   )
 }

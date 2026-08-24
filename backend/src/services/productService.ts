@@ -4,8 +4,9 @@
 
 import pool from '../database'
 import type { Product, UpdateProduct } from '../types/product'
+import { getCategoryBySlug } from './categoryService'
 
-export async function getProducts() {
+async function getProducts({ categoryId }: { categoryId?: number } = {}) {
   const { rows } = await pool.query<Product>(
     `SELECT
       products.id,
@@ -13,7 +14,9 @@ export async function getProducts() {
       products.brand_name,
       products.description,
       products.details,
+      products.img_url,
       products.stock,
+      products.sort_order,
       latest_price.price,
       COALESCE(
         JSONB_AGG(
@@ -41,17 +44,49 @@ export async function getProducts() {
       ON categories.id = product_categories.category_id
 
     WHERE products.deleted_at IS NULL
+      AND (
+        $1::int IS NULL
+        OR EXISTS (
+          SELECT 1
+          FROM product_categories pc
+          WHERE pc.product_id = products.id
+            AND pc.category_id = $1
+        )
+      )
 
     GROUP BY
       products.id,
       latest_price.price
 
-    ORDER BY products.id`
+    ORDER BY 
+      products.sort_order ASC, 
+      products.id ASC`,
+    [categoryId ?? null]
   )
 
-  if (rows.length === 0) throw new Error('Inga produkter kunde hittas.')
-
   return rows
+}
+
+export async function getAllProducts() {
+  const products = await getProducts()
+
+  return {
+    products,
+    category: null
+  }
+}
+
+export async function getProductsByCategorySlug(categorySlug: string) {
+  const category = await getCategoryBySlug(categorySlug)
+
+  if (!category) throw new Error('Kategorin kunde inte hittas.')
+
+  const products = await getProducts({ categoryId: category.id })
+
+  return {
+    products,
+    category
+  }
 }
 
 export async function getProduct(id: number) {
@@ -62,8 +97,11 @@ export async function getProduct(id: number) {
       products.brand_name,
       products.description,
       products.details,
+      products.img_url,
       products.stock,
+      products.purchase_type,
       prices.price AS "price",
+
       COALESCE(
         (
           SELECT JSONB_AGG(
@@ -78,16 +116,36 @@ export async function getProduct(id: number) {
           WHERE product_categories.product_id = products.id
         ),
         '[]'::jsonb
-      ) AS categories
+      ) AS categories,
+
+      COALESCE(
+        (
+          SELECT JSONB_AGG(
+            JSONB_BUILD_OBJECT(
+              'id', product_distribution_links.id,
+              'distributor', product_distribution_links.distributor,
+              'download_url', product_distribution_links.download_url,
+              'badge_url', product_distribution_links.badge_url
+            )
+          )
+          FROM product_distribution_links
+          WHERE product_distribution_links.product_id = products.id
+        ),
+        '[]'::jsonb
+      ) AS product_distribution_links
+
     FROM products
     JOIN prices
       ON products.id = prices.product_id
-    WHERE products.id = $1 AND products.deleted_at IS NULL
+    WHERE products.id = $1
+      AND products.deleted_at IS NULL
     ORDER BY products.id, prices.set_at DESC`,
     [id]
   )
 
-  if (rows.length === 0) throw new Error('Produkten kunde inte hittas.')
+  if (rows.length === 0) {
+    throw new Error('Produkten kunde inte hittas.')
+  }
 
   return rows[0]
 }
@@ -108,7 +166,10 @@ const columnMap = {
   brand_name: 'brand_name',
   description: 'description',
   details: 'details',
-  stock: 'stock'
+  img_url: 'img_url',
+  stock: 'stock',
+  purchase_type: 'purchase_type',
+  sort_order: 'sort_order'
 } as const
 
 export async function updateProduct(id: number, updates: UpdateProduct) {
@@ -134,7 +195,7 @@ export async function updateProduct(id: number, updates: UpdateProduct) {
     `UPDATE products 
         SET ${fieldsToUpdate.join(', ')} 
         WHERE id = $${values.length} 
-        RETURNING id, name, description, stock, created_at, updated_at`,
+        RETURNING id, name, description, img_url,stock, sort_order, created_at, updated_at`,
     values
   )
 

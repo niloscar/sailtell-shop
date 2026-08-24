@@ -4,9 +4,16 @@
   --warning: #facc15;
 
   --page-width: 1200px;
+
   @media (max-width: 1024px) {
     --page-width: 100%;
   }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
 a {
@@ -44,14 +51,15 @@ ul {
 .product-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 20px;
-  padding: 20px;
+  --gap: 20px;
+  gap: var(--gap);
+  justify-content: space-evenly;
 
   & .list-item {
-    flex: 0 1 calc(33.333% - 20px);
+    flex: 0 1 calc(33.333% - var(--gap));
 
     @media (max-width: 1024px) {
-      flex: 0 1 calc(50% - 20px);
+      flex: 0 1 calc(50% - var(--gap));
     }
 
     box-sizing: border-box;
@@ -59,10 +67,28 @@ ul {
   }
 }
 
+.product-page {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.product-image {
+  width: 100%;
+  max-width: 400px;
+  height: auto;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05),
+              0 4px 8px rgba(0, 0, 0, 0.05);
+}
+
 .product-details {
   text-align: left;
 
   & .stock {
+    font-size: .875rem;
+
     &.success {
       color: var(--success);
     }
@@ -75,6 +101,12 @@ ul {
       color: var(--warning);
     }
   }
+}
+
+.link-back {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 2rem;
 }
 
 table {
@@ -104,14 +136,14 @@ header.page-header {
   background-image: url('./assets/img/hobie16.png');
   background-size: cover;
   background-position: center;
-  
+
   & h1 {
     margin: 0;
     line-height: 1;
     color: #fff;
     display: flex;
     flex-direction: column;
-    
+
 
     & span {
       display: block;
@@ -141,6 +173,8 @@ div.main-nav-track {
 
 nav.main-nav {
   background-color: var(--bg);
+  max-width: var(--page-width);
+  width: 100%;
   padding: 1rem;
   text-align: center;
   position: sticky;
@@ -159,12 +193,19 @@ nav.main-nav {
     margin: 0 .5rem;
     text-decoration: none;
     color: var(--text);
-    display: block;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
     padding: .5rem 1rem;
 
-    &:hover {
+    &:hover, &.active {
       text-decoration: underline;
     }
+  }
+
+  img.nav-logo {
+    height: 2rem;
+    width: auto;
   }
 }
 
@@ -172,7 +213,9 @@ main.page-main {
   flex: 1;
   display: flex;
   flex-direction: column;
+  text-align: left;
   padding: 1rem;
+  gap: .5rem;
 
   width: 100%;
   max-width: var(--page-width);
@@ -186,7 +229,7 @@ footer.page-footer {
   background-color: #002f3f;
   color: #f5f5f5;
 
-  & > div.container {
+  &>div.container {
     width: 100%;
     max-width: var(--page-width);
     display: flex;
@@ -201,7 +244,8 @@ footer.page-footer {
     box-sizing: border-box;
   }
 
-  & a, & h2 {
+  & a,
+  & h2 {
     color: inherit;
   }
 
@@ -243,5 +287,154 @@ footer.page-footer {
   & img {
     height: 100%;
     width: auto;
+  }
+}
+
+.to-cart-section {
+  display: flex;
+  background-color: #f5f5f5;
+  border-radius: 4px;
+  padding: 1rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+
+  & .button-group {
+    display: flex;
+    gap: 1rem;
+  }
+}
+
+.to-cart-button {
+  display: flex;
+  align-items: center;
+  gap: .25rem;
+  padding: .5rem 1rem;
+  font-size: 1rem;
+  cursor: pointer;
+  border: none;
+  border-radius: 4px;
+  background-color: var(--success);
+  color: #fff;
+
+  &:hover {
+    opacity: .9;
+  }
+}
+
+.to-cart-quantity {
+  display: flex;
+  align-items: center;
+  background-color: #e5e5e5;
+  overflow: hidden;
+  border-radius: 4px;
+
+  & button {
+    display: flex;
+    align-items: center;
+    padding: .5rem .5rem;
+    font-size: 1rem;
+    cursor: pointer;
+    width: 2rem;
+    border: none;
+    background-color: transparent;
+
+    &:hover {
+      background-color: #d5d5d5;
+    }
+  }
+
+  & span.quantity-value {
+    min-width: 2.5rem;
+    text-align: center;
+    display: inline-block;
+  }
+
+  & span.quantity-unit {
+    margin-left: .25rem;
+  }
+}
+
+p.note {
+  font-size: .875rem;
+  opacity: .75;
+}
+
+.external-purchase-section {
+  margin: 2rem 0;
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+
+  & .download-badges {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  & a {
+    display: inline-block;
+    width: auto;
+    height: 3rem;
+
+    & img {
+      width: auto;
+      height: 100%;
+    }
+  }
+}
+
+h1, h2, h3, h4, h5, h6 {
+  margin: .5em 0 .25em 0;
+
+  &:first-child {
+    margin-top: 0;
+  }
+}
+
+h1.heading-size-1,
+h2.heading-size-1,
+h3.heading-size-1,
+h4.heading-size-1 {
+  font-size: 2em;
+
+  @media (max-width: 1024px) {
+    font-size: 1.5em;
+  }
+}
+
+h1.heading-size-2,
+h2.heading-size-2,
+h3.heading-size-2,
+h4.heading-size-2 {
+  font-size: 1.5em;
+
+  @media (max-width: 1024px) {
+    font-size: 1.25em;
+  }
+}
+
+h1.heading-size-3,
+h2.heading-size-3,
+h3.heading-size-3,
+h4.heading-size-3 {
+  font-size: 1.25em;
+
+  @media (max-width: 1024px) {
+    font-size: 1.125em;
+  }
+}
+
+h1.heading-size-4,
+h2.heading-size-4,
+h3.heading-size-4,
+h4.heading-size-4 {
+  font-size: 1.125em;
+
+  @media (max-width: 1024px) {
+    font-size: 1em;
   }
 }
