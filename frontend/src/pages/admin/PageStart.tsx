@@ -4,17 +4,19 @@ import { useNavigate } from 'react-router-dom'
 import { getOrders } from '../../api/orderApi'
 import { getCustomers } from '../../api/customerApi'
 
+import formatDateTime from '../../utilities/formatDateTime'
+import formatPrice from '../../utilities/formatPrice'
+
 import type { Order } from '../../types/orderTypes'
 import type { Customer } from '../../types/customerTypes'
 
 
 function PageAdmin() {
   return (
-    <div>
-      <h1>Admin Page</h1>
+    <>
       <OrdersList />
       <CustomersList />
-    </div>
+    </>
   )
 }
 
@@ -45,18 +47,20 @@ function OrdersList() {
         <thead>
           <tr>
             <th>Datum</th>
-            <th>Order ID</th>
-            <th>Kund ID</th>
+            <th>Ordernummer</th>
+            <th>Kundnummer</th>
             <th>Summa</th>
+            <th>Status</th>
           </tr>
         </thead>
         <tbody>
           {orders.map((order: Order) => (
             <tr key={order.id} onClick={() => navigate(`order/${order.id}`)}>
-              <td>{order.ordered_at}</td>
+              <td>{formatDateTime(order.ordered_at)}</td>
               <td>{order.id}</td>
               <td>{order.customer_id}</td>
-              <td>{order.sum}</td>
+              <td>{formatPrice(Number(order.sum))}</td>
+              <td>{order.order_status?.name || 'Ingen status'}</td>
             </tr>
           ))}
         </tbody>
