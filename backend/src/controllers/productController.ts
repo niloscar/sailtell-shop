@@ -3,14 +3,29 @@
  */
 
 import { Request, Response } from 'express'
-import { getProducts, getProduct, createProduct, updateProduct, deleteProduct } from '../services/productService'
+import { getAllProducts, getProductsByCategorySlug, getProduct, createProduct, updateProduct, deleteProduct } from '../services/productService'
 
 type ProductParams = {
   id: string
 }
 
-export async function getProductsHandler(req: Request, res: Response) {
-  const products = await getProducts()
+type CategoryParams = {
+  categorySlug: string
+}
+
+export async function getAllProductsHandler(req: Request, res: Response) {
+  const { products, category: categoryData } = await getAllProducts()
+  res.json({ products, category: categoryData })
+}
+
+export async function getProductsByCategoryHandler(
+  req: Request<CategoryParams>,
+  res: Response
+) {
+  const { categorySlug } = req.params
+
+  const products = await getProductsByCategorySlug(categorySlug)
+
   res.json(products)
 }
 

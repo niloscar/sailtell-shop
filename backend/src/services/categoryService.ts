@@ -4,6 +4,7 @@
 
 import pool from '../database'
 import type { Category, UpdateCategory } from '../types/category'
+import slugify from '../utilities/slugify'
 
 export async function getCategories() {
     const { rows } = await pool.query<Category>(
@@ -28,6 +29,15 @@ export async function getCategory(id: number) {
     if (rows.length === 0) throw new Error('Kategorin kunde inte hittas.')
 
     return rows[0]
+}
+
+export async function getCategoryBySlug(slug: string) {
+  const { rows } = await pool.query<Category>(
+    `SELECT id, name
+     FROM categories`
+  )
+
+  return rows.find(category => slugify(category.name) === slug)
 }
 
 export async function createCategory(name: string, description: string) {
