@@ -292,7 +292,7 @@ export default function PageAdminSingleOrder() {
       )}
 
       <Link 
-        to="/admin"
+        to="/admin/orders"
         className="link-back"
       >
         <ArrowLeftIcon size={20} />
