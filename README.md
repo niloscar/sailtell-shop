@@ -6,7 +6,7 @@ _Oscar Nilsson_
 _oscar@ondproduktion.se_  
 [_GitHub_](https://github.com/niloscar)
 
-## Blablabutiken
+## SailTell shop
 
 En enklare e-handelsapplikation där kunder kan visa produkter, lägga dem i en varukorg och skapa en order. Administratörer kan hantera produkter och se inkomna ordrar.
 
@@ -48,16 +48,16 @@ En enklare e-handelsapplikation där kunder kan visa produkter, lägga dem i en 
 ### Kund
 
 * Visa produkter
-* Lägga produkter i varukorgen
+* Lägga produkter i varukorgen (sparas i databasen)
 * Ändra antal och ta bort produkter från varukorgen
 * Genomföra simulerad betalning
 * Skapa en order
 
 ### Administratör
 
+* Logga in som administratör
 * Lägga till och redigera produkter
 * Visa ordrar och beställda produkter
-* Logga in som administratör
 * Uppdatera orderstatus
 
 ## Tech stack
@@ -134,14 +134,28 @@ Installera backend:
 ```bash
 cd backend
 npm install
-npm run dev
 ```
 
 Installera frontend:
 
 ```bash
-cd frontend
+cd ../frontend
 npm install
+```
+
+Starta backend och frontend i varsin terminal.
+
+Backend:
+
+```bash
+cd backend
+npm run dev
+```
+
+Frontend:
+
+```bash
+cd frontend
 npm run dev
 ```
 
@@ -157,12 +171,6 @@ DB_NAME=
 DB_USER=
 DB_PASSWORD=
 SECRET_KEY=
-```
-
-Exempel i frontend:
-
-```env
-VITE_API_URL=
 ```
 
 `.env`-filer committas inte.
@@ -258,18 +266,6 @@ En pull request ska kort beskriva:
 * Hur det har testats
 * Eventuella kvarstående problem
 
-## Testning
-
-Följande flöden ska testas:
-
-* Skapa och redigera produkter
-* Visa produkter
-* Hantera varukorg
-* Skapa order
-* Visa ordrar i admin
-* Logga in och skydda adminvyer
-* Uppdatera orderstatus
-
 ## Dokumentation
 
 Utöver denna readme innehåller projektet (se docs/) följande dokumentation:
@@ -277,8 +273,6 @@ Utöver denna readme innehåller projektet (se docs/) följande dokumentation:
 * Databasdiagram
 * Sitemap
 * Tidplan
-* Stilguide
-* Wireframes
 * Uppgiftsbeskrivning
 
 ## Deployment
@@ -286,18 +280,19 @@ Utöver denna readme innehåller projektet (se docs/) följande dokumentation:
 Applikation:
 
 ```text
-[Länk kommer snart]
+https://sysdev-eshop-deploy.vercel.app/
 ```
 
 API:
 
 ```text
-[Länk kommer snart]
+https://sysdev-eshop-deploy.vercel.app/api/
 ```
 
 ## Administratörskonto
 
 ```text
-E-post: admin@example.com
-Lösenord: admin123
+https://sysdev-eshop-deploy.vercel.app/admin/
+Mail: admin@test.se
+Lösenord: test
 ```
