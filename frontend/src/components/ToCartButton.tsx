@@ -1,22 +1,30 @@
 import { useCart } from '../contexts/CartContext'
-import { ShoppingCartIcon } from '@phosphor-icons/react'
+import { CheckIcon, ShoppingCartIcon } from '@phosphor-icons/react'
 import type { Product } from '../types/productTypes'
 
 
 export default function ToCartButton({ product, quantity }: { product: Product; quantity: number }) {
-  const { addToCart } = useCart()
-
-  const handleAddToCart = () => {
-    addToCart(product, quantity)
-  }
+  const { addToCart, cartActionState } = useCart()
 
   return (
-    <button 
+    <button
       className="to-cart-button"
-      onClick={handleAddToCart}
+      onClick={() => addToCart(product, quantity)}
+      disabled={cartActionState[product.id]?.loading}
     >
-      <ShoppingCartIcon size={18} />
-      <span>Lägg i varukorg</span>
+      {cartActionState[product.id]?.loading ? (
+        <span>Lägger till...</span>
+      ) : cartActionState[product.id]?.added ? (
+        <>
+          <CheckIcon size={18} />
+          <span>Tillagd i varukorg</span>
+        </>
+      ) : (
+        <>
+          <ShoppingCartIcon size={18} />
+          <span>Lägg i varukorg</span>
+        </>
+      )}
     </button>
   )
 }

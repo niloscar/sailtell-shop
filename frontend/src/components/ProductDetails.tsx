@@ -10,14 +10,24 @@ function ProductDetails() {
   const { id } = useParams<{ id: string }>()
   const [product, setProduct] = useState<Product | null>(null)
   const [quantity, setQuantity] = useState<number>(1)
+  const [loading, setLoading] = useState<boolean>(true)
+  const [loadingError, setLoadingError] = useState<string | null>(null)
 
   useEffect(() => {
     const fetchProduct = async () => {
       try {
+        setLoading(true)
         const response = await getProduct(Number(id))
         setProduct(response.data)
       } catch (error) {
         console.error('Kunde inte hämta produkt:', error)
+        setLoadingError(
+          error instanceof Error
+            ? error.message
+            : 'Kunde inte hämta produkt.'
+        )
+      } finally {
+        setLoading(false)
       }
     }
 
@@ -30,9 +40,12 @@ function ProductDetails() {
     ? 'Observera att du vill lägga till fler än vad som finns i lager. En del av din beställning kommer att få ett senare leveransdatum.'
     : ''
 
-  if (product !== null) {
-    return (
-      <div className='product-page'>
+  if (loading) return <p>Laddar produkt...</p>
+  if (loadingError) return <p className="error-message">{loadingError}</p>
+  if (product === null) return <p>Produkten kunde inte hittas.</p>
+
+  return (
+    <div className='product-page'>
 
         {product.img_url && (
           <img
@@ -97,9 +110,6 @@ function ProductDetails() {
         </div>
       </div>
     )
-  } else {
-    return <p>Produkten kunde inte hittas.</p>
-  }
 }
 
 export default ProductDetails

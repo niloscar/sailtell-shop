@@ -11,17 +11,22 @@ import type { Order } from '../../types/orderTypes'
 
 export default function PageAdminStart() {
   const [orders, setOrders] = useState<Order[]>([])
+  const [loading, setLoading] = useState<boolean>(true)
+  const [loadingError, setLoadingError] = useState<string | null>(null)
+
   const navigate = useNavigate()
-
-
 
   useEffect(() => {
     const fetchOrders = async () => {
       try {
+        setLoading(true)
         const response = await getOrders()
         setOrders(response.data)
       } catch (error) {
         console.error('Kunde inte hämta ordrar:', error)
+        setLoadingError('Kunde inte hämta ordrar.')
+      } finally {
+        setLoading(false)
       }
     }
 
@@ -67,7 +72,9 @@ const ordersByStatus = useMemo(() => {
   return groupedOrders
 }, [orders])
 
-  console.log(ordersByStatus);
+if (loading) return <p>Laddar ordrar...</p>
+if (loadingError) return <p className="error-message">{loadingError}</p>
+if (orders.length === 0) return <p>Inga ordrar hittades.</p>
 
 return (
   <>

@@ -41,7 +41,7 @@ export default function Footer() {
             </ul>
           </nav>
         </section>
-        <p className="copyright">&copy; 2026 SailWell AB</p>
+        <p className="copyright">&copy; 2026 SailTell AB</p>
       </div>
     </footer>
   )

@@ -7,23 +7,35 @@ import formatPrice from '../../utilities/formatPrice'
 import { InfinityIcon } from '@phosphor-icons/react'
 
  export default function PageAdminProducts() {
-  const navigate = useNavigate()
   const [products, setProducts] = useState<Product[]>([])
+  const [loading, setLoading] = useState<boolean>(true)
+  const [loadingError, setLoadingError] = useState<string | null>(null)
+
+  const navigate = useNavigate()
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
+        setLoading(true)
         const response = await getProducts()
         setProducts(response.data.products)
       } catch (error) {
-        console.error('Kunde inte hämta produkter:', error)
+        setLoadingError(
+          error instanceof Error
+            ? error.message
+            : 'Kunde inte hämta produkter.'
+        )
+      } finally {
+        setLoading(false)
       }
     }
 
     fetchProducts()
   }, [])
 
-  console.log(products) // Debugging line to check the fetched products
+  if (loading) return <p>Laddar produkter...</p>
+  if (loadingError) return <p className="error-message">{loadingError}</p>
+  if (products.length === 0) return <p>Inga produkter hittades.</p>
 
   return (
     <>
