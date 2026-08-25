@@ -1,27 +1,83 @@
-import { getOrder, getOrderOptions, updateOrder } from '../../api/orderApi'
-import { getCustomer } from '../../api/customerApi'
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
+
+import { getOrder, getOrderOptions, updateOrder } from '../../api/orderApi'
+import { getCustomer } from '../../api/customerApi'
+
 import { formatDate } from '../../utilities/formatDateTime'
 import formatPrice from '../../utilities/formatPrice'
-import type { OrderDetails, OrderOptions } from '../../types/orderTypes'
-import type { Customer } from '../../types/customerTypes'
 import formatPhoneNumber from '../../utilities/formatPhoneNumber'
 
+import type { OrderDetails, OrderOptions } from '../../types/orderTypes'
+import type { Customer } from '../../types/customerTypes'
+
+type LoadingState = {
+  loading: boolean
+  error: string | null
+}
+
+type PageLoadingState = {
+  order: LoadingState
+  customer: LoadingState
+  orderOptions: LoadingState
+}
+
+type LoadKey = keyof PageLoadingState
 
 export default function PageAdminSingleOrder() {
   const { id } = useParams<{ id: string }>()
+
   const [order, setOrder] = useState<OrderDetails | null>(null)
   const [orderOptions, setOrderOptions] = useState<OrderOptions | null>(null)
   const [customer, setCustomer] = useState<Customer | null>(null)
 
+  const [loadingState, setLoadingState] = useState<PageLoadingState>({
+    order: {
+      loading: true,
+      error: null
+    },
+    customer: {
+      loading: false,
+      error: null
+    },
+    orderOptions: {
+      loading: true,
+      error: null
+    }
+  })
+
+  const updateLoadingState = (
+    key: LoadKey,
+    updates: Partial<LoadingState>
+  ) => {
+    setLoadingState((prev) => ({
+      ...prev,
+      [key]: {
+        ...prev[key],
+        ...updates
+      }
+    }))
+  }
+
   useEffect(() => {
     const fetchOrderOptions = async () => {
+      updateLoadingState('orderOptions', {
+        loading: true,
+        error: null
+      })
+
       try {
         const response = await getOrderOptions()
+
         setOrderOptions(response.data)
-      } catch (error) {
-        console.error('Kunde inte hämta orderalternativ:', error)
+      } catch {
+        updateLoadingState('orderOptions', {
+          error: 'Kunde inte hämta orderalternativ.'
+        })
+      } finally {
+        updateLoadingState('orderOptions', {
+          loading: false
+        })
       }
     }
 
@@ -30,11 +86,25 @@ export default function PageAdminSingleOrder() {
 
   useEffect(() => {
     const fetchOrder = async () => {
+      if (!id) return
+
+      updateLoadingState('order', {
+        loading: true,
+        error: null
+      })
+
       try {
         const response = await getOrder(Number(id))
+
         setOrder(response.data)
-      } catch (error) {
-        console.error('Kunde inte hämta order:', error)
+      } catch {
+        updateLoadingState('order', {
+          error: 'Kunde inte hämta order.'
+        })
+      } finally {
+        updateLoadingState('order', {
+          loading: false
+        })
       }
     }
 
@@ -43,30 +113,42 @@ export default function PageAdminSingleOrder() {
 
   useEffect(() => {
     const fetchCustomer = async () => {
-      if (order?.customer_id) {
-        try {
-          const response = await getCustomer(order.customer_id)
-          setCustomer(response.data)
-        } catch (error) {
-          console.error('Kunde inte hämta kund:', error)
-        }
+      if (!order?.customer_id) return
+
+      updateLoadingState('customer', {
+        loading: true,
+        error: null
+      })
+
+      try {
+        const response = await getCustomer(order.customer_id)
+
+        setCustomer(response.data)
+      } catch {
+        updateLoadingState('customer', {
+          error: 'Kunde inte hämta kund.'
+        })
+      } finally {
+        updateLoadingState('customer', {
+          loading: false
+        })
       }
     }
 
     fetchCustomer()
   }, [order?.customer_id])
 
-  const handleStatusChange = async (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const statusId = Number(event.target.value)
-
+  const handleStatusChange = async (
+    event: React.ChangeEvent<HTMLSelectElement>
+  ) => {
     if (!order) return
+
+    const statusId = Number(event.target.value)
 
     try {
       const response = await updateOrder(order.id, {
         status_id: statusId
       })
-
-      console.log('Updated order:', response.data) // Debugging line to check the updated order
 
       setOrder(response.data)
     } catch (error) {
@@ -74,30 +156,32 @@ export default function PageAdminSingleOrder() {
     }
   }
 
-  if (!order || !orderOptions) {
-    return <p>Laddar order...</p>
-  }
+  if (loadingState.order.loading || loadingState.orderOptions.loading) return <p>Laddar order...</p>
+  if (loadingState.order.error) return <p className="error-message">{loadingState.order.error}</p>
+  if (loadingState.orderOptions.error) return <p className="error-message">{loadingState.orderOptions.error}</p>
+  if (!order || !orderOptions) return <p className="error-message">Orderdata saknas.</p>
 
   return (
-    <div className='order-details'>
-      <h1 className="heading-size-1">Order #{order?.id}</h1>
+    <div className="order-details">
+      <h1 className="heading-size-1">Order #{order.id}</h1>
+
       <table>
         <tbody>
           <tr>
             <th>Datum</th>
-            <td>{formatDate(order?.ordered_at)}</td>
+            <td>{formatDate(order.ordered_at)}</td>
           </tr>
           <tr>
             <th>Ordernummer</th>
-            <td>{order?.id}</td>
+            <td>{order.id}</td>
           </tr>
           <tr>
             <th>Kundnummer</th>
-            <td>{order?.customer_id}</td>
+            <td>{order.customer_id}</td>
           </tr>
           <tr>
             <th>Summa</th>
-            <td>{formatPrice(Number(order?.sum))}</td>
+            <td>{formatPrice(Number(order.sum))}</td>
           </tr>
           <tr>
             <th>Status</th>
@@ -106,8 +190,11 @@ export default function PageAdminSingleOrder() {
                 value={order.order_status.id}
                 onChange={handleStatusChange}
               >
-                {orderOptions.statuses.map(status => (
-                  <option key={status.id} value={status.id}>
+                {orderOptions.statuses.map((status) => (
+                  <option
+                    key={status.id}
+                    value={status.id}
+                  >
                     {status.name}
                   </option>
                 ))}
@@ -116,7 +203,9 @@ export default function PageAdminSingleOrder() {
           </tr>
         </tbody>
       </table>
+
       <h2 className="heading-size-2">Produkter</h2>
+
       <table>
         <thead>
           <tr>
@@ -127,7 +216,7 @@ export default function PageAdminSingleOrder() {
           </tr>
         </thead>
         <tbody>
-          {order?.order_items.map((item) => (
+          {order.order_items.map((item) => (
             <tr key={item.id}>
               <td>{item.name}</td>
               <td>{item.brand_name}</td>
@@ -139,7 +228,8 @@ export default function PageAdminSingleOrder() {
       </table>
 
       <h2 className="heading-size-2">Leveransadress</h2>
-      {order?.shipping_address ? (
+
+      {order.shipping_address ? (
         <table>
           <thead>
             <tr>
@@ -163,26 +253,39 @@ export default function PageAdminSingleOrder() {
       )}
 
       <h2 className="heading-size-2">Kunduppgifter</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Kundnummer</th>
-            <th>Förnamn</th>
-            <th>Efternamn</th>
-            <th>Email</th>
-            <th>Telefonnummer</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>{customer?.id}</td>
-            <td>{customer?.fname}</td>
-            <td>{customer?.lname}</td>
-            <td>{customer?.email}</td>
-            <td>{customer?.phone && formatPhoneNumber(customer.phone)}</td>
-          </tr>
-        </tbody>
-      </table>
+
+      {loadingState.customer.loading ? (
+        <p>Laddar kunduppgifter...</p>
+      ) : loadingState.customer.error ? (
+        <p className="error-message">
+          {loadingState.customer.error}
+        </p>
+      ) : customer ? (
+        <table>
+          <thead>
+            <tr>
+              <th>Kundnummer</th>
+              <th>Förnamn</th>
+              <th>Efternamn</th>
+              <th>Email</th>
+              <th>Telefonnummer</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>{customer.id}</td>
+              <td>{customer.fname}</td>
+              <td>{customer.lname}</td>
+              <td>{customer.email}</td>
+              <td>
+                {customer.phone && formatPhoneNumber(customer.phone)}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      ) : (
+        <p>Inga kunduppgifter tillgängliga.</p>
+      )}
 
       <Link to="/admin">Tillbaka till orderlistan</Link>
     </div>

@@ -1,5 +1,4 @@
 /**
- * Server setup for the e-shop application.
  * This file initializes the Express server, sets up middleware, and defines API routes.
  */
 

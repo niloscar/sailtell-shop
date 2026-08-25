@@ -22,14 +22,23 @@ export default function PageCheckout() {
     payment_method: '',
     country: 'Sverige',
   })
+  const [loading, setLoading] = useState<boolean>(true)
+  const [loadingError, setLoadingError] = useState<string | null>(null)
 
   useEffect(() => {
     const fetchOrderOptions = async () => {
       try {
+        setLoading(true)
         const response = await getOrderOptions()
         setOrderOptions(response.data)
       } catch (error) {
-        console.error('Kunde inte hämta orderalternativ:', error)
+        setLoadingError(
+          error instanceof Error
+            ? error.message
+            : 'Kunde inte hämta orderalternativ.'
+        )
+      } finally {
+        setLoading(false)
       }
     }
 
@@ -98,6 +107,10 @@ export default function PageCheckout() {
       </>
     )
   }
+
+  if (loading) return <p>Laddar orderalternativ...</p>
+  if (loadingError) return <p className="error-message">{loadingError}</p>
+  if (!orderOptions) return <p>Orderalternativ kunde inte laddas.</p>
 
   return (
     <>

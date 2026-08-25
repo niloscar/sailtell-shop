@@ -5,22 +5,35 @@ import formatPhoneNumber from "../../utilities/formatPhoneNumber"
 
 export default function PageAdminCustomers() {
   const [customers, setCustomers] = useState<Customer[]>([])
+  const [loading, setLoading] = useState<boolean>(true)
+  const [loadingError, setLoadingError] = useState<string | null>(null)
 
   useEffect(() => {
     const fetchCustomers = async () => {
       try {
+        setLoading(true)
         const response = await getCustomers()
         setCustomers(response.data)
       } catch (error) {
-        console.error('Kunde inte hämta kunder:', error)
+        setLoadingError(
+          error instanceof Error
+            ? error.message
+            : 'Kunde inte hämta kunder.'
+        )
+      } finally {
+        setLoading(false)
       }
     }
 
     fetchCustomers()
   }, [])
 
+  if (loading) return <p>Laddar kunder...</p>
+  if (loadingError) return <p className="error-message">{loadingError}</p>
+  if (customers.length === 0) return <p>Inga kunder hittades.</p>
+
   return (
-    <div>
+    <>
       <h2>Kunder</h2>
       <table>
         <thead>
@@ -42,6 +55,6 @@ export default function PageAdminCustomers() {
           ))}
         </tbody>
       </table>
-    </div>
+    </>
   )
 }

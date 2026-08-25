@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { getProductOptions, createProduct } from '../../api/productApi'
 import type { CreateProduct, ProductOptions } from '../../types/productTypes'
 
 export default function PageAdminAddProduct() {
+  const navigate = useNavigate()
+
   const [product, setProduct] = useState<CreateProduct>({
     name: '',
     brand_name: '',
@@ -14,15 +17,31 @@ export default function PageAdminAddProduct() {
     purchase_type: 'webshop',
     category_ids: []
   })
+
   const [productOptions, setProductOptions] = useState<ProductOptions | null>(null)
+
+  const [loading, setLoading] = useState(true)
+  const [loadingError, setLoadingError] = useState<string | null>(null)
+
+  const [creating, setCreating] = useState(false)
+  const [createError, setCreateError] = useState<string | null>(null)
 
   useEffect(() => {
     const fetchProductOptions = async () => {
       try {
+        setLoading(true)
+        setLoadingError(null)
+
         const response = await getProductOptions()
         setProductOptions(response.data)
       } catch (error) {
-        console.error('Kunde inte hämta produktalternativ:', error)
+        setLoadingError(
+          error instanceof Error
+            ? error.message
+            : 'Kunde inte hämta produktalternativ.'
+        )
+      } finally {
+        setLoading(false)
       }
     }
 
@@ -34,13 +53,13 @@ export default function PageAdminAddProduct() {
   ) => {
     const { name, value } = event.target
 
-    setProduct(currentProduct => {
+    setProduct((currentProduct) => {
       switch (name) {
-      case 'details':
-        return {
-          ...currentProduct,
-          details: value.split('\n')
-        }
+        case 'details':
+          return {
+            ...currentProduct,
+            details: value.split('\n')
+          }
 
         case 'price':
           return {
@@ -66,10 +85,11 @@ export default function PageAdminAddProduct() {
   const handleCategoriesChange = (
     event: React.ChangeEvent<HTMLSelectElement>
   ) => {
-    const categoryIds = Array.from(event.target.selectedOptions)
-      .map(option => Number(option.value))
+    const categoryIds = Array
+      .from(event.target.selectedOptions)
+      .map((option) => Number(option.value))
 
-    setProduct(currentProduct => ({
+    setProduct((currentProduct) => ({
       ...currentProduct,
       category_ids: categoryIds
     }))
@@ -78,28 +98,43 @@ export default function PageAdminAddProduct() {
   const handlePurchaseTypeChange = (
     event: React.ChangeEvent<HTMLSelectElement>
   ) => {
-    setProduct(currentProduct => ({
+    setProduct((currentProduct) => ({
       ...currentProduct,
       purchase_type: event.target.value as CreateProduct['purchase_type']
     }))
   }
 
   const handleSave = async () => {
+    setCreating(true)
+    setCreateError(null)
+
     try {
-      const newProduct = {
+      const newProduct: CreateProduct = {
         ...product,
         details: product.details
-          .map(item => item.trim())
-          .filter(item => item !== '')
+          .map((item) => item.trim())
+          .filter((item) => item !== '')
       }
-      console.log('Skickar produktdata:', newProduct)
-      const response = await createProduct(newProduct)
 
-      console.log('Produkt skapad:', response.data)
+      await createProduct(newProduct)
+
+      navigate('/products')
     } catch (error) {
       console.error('Kunde inte skapa produkten:', error)
+
+      setCreateError(
+        error instanceof Error
+          ? error.message
+          : 'Kunde inte skapa produkten.'
+      )
+    } finally {
+      setCreating(false)
     }
   }
+
+  if (loading) return <p>Laddar produktalternativ...</p>
+  if (loadingError) return <p className="error-message">{loadingError}</p>
+  if (!productOptions) return <p>Produktalternativ kunde inte hittas.</p>
 
   return (
     <div>
@@ -107,27 +142,57 @@ export default function PageAdminAddProduct() {
 
       <div className="input-group">
         <label htmlFor="product-name">Produktnamn</label>
-        <input type="text" id="product-name" name="name" value={product.name} onChange={handleChange} />
+        <input
+          type="text"
+          id="product-name"
+          name="name"
+          value={product.name}
+          onChange={handleChange}
+        />
       </div>
 
       <div className="input-group">
         <label htmlFor="product-brand">Varumärke</label>
-        <input type="text" id="product-brand" name="brand_name" value={product.brand_name} onChange={handleChange} />
+        <input
+          type="text"
+          id="product-brand"
+          name="brand_name"
+          value={product.brand_name}
+          onChange={handleChange}
+        />
       </div>
 
       <div className="input-group">
         <label htmlFor="product-description">Produktbeskrivning</label>
-        <textarea id="product-description" name="description" value={product.description} onChange={handleChange} />
+        <textarea
+          id="product-description"
+          name="description"
+          value={product.description}
+          onChange={handleChange}
+        />
       </div>
 
       <div className="input-group">
-        <label htmlFor="product-details">Detaljer (separera med radbrytning)</label>
-        <textarea id="product-details" name="details" value={product.details.join('\n')} onChange={handleChange} />
+        <label htmlFor="product-details">
+          Detaljer (separera med radbrytning)
+        </label>
+        <textarea
+          id="product-details"
+          name="details"
+          value={product.details.join('\n')}
+          onChange={handleChange}
+        />
       </div>
 
       <div className="input-group">
         <label htmlFor="product-image">Produktbild, URL</label>
-        <input type="text" id="product-image" name="img_url" value={product.img_url} onChange={handleChange} />
+        <input
+          type="text"
+          id="product-image"
+          name="img_url"
+          value={product.img_url}
+          onChange={handleChange}
+        />
       </div>
 
       <div className="input-group">
@@ -160,8 +225,11 @@ export default function PageAdminAddProduct() {
           value={product.category_ids.map(String)}
           onChange={handleCategoriesChange}
         >
-          {productOptions?.categories.map(category => (
-            <option key={category.id} value={category.id}>
+          {productOptions.categories.map((category) => (
+            <option
+              key={category.id}
+              value={category.id}
+            >
               {category.name}
             </option>
           ))}
@@ -175,19 +243,29 @@ export default function PageAdminAddProduct() {
           value={product.purchase_type}
           onChange={handlePurchaseTypeChange}
         >
-          {productOptions?.purchase_types.map(option => (
-            <option key={option} value={option}>
+          {productOptions.purchase_types.map((option) => (
+            <option
+              key={option}
+              value={option}
+            >
               {option}
             </option>
           ))}
         </select>
       </div>
 
+      {createError && (
+        <p className="error-message">{createError}</p>
+      )}
+
       <button
         type="button"
         onClick={handleSave}
+        disabled={creating}
       >
-        Skapa produkt
+        {creating
+          ? 'Skapar produkt...'
+          : 'Skapa produkt'}
       </button>
     </div>
   )

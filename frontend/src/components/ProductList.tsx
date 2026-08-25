@@ -5,7 +5,9 @@ import type { Product } from '../types/productTypes'
 
 function ProductList({ category }: { category?: string, title?: string | false }) {
   const navigate = useNavigate()
-  const [products, setProducts] = useState([])
+  const [products, setProducts] = useState<Product[]>([])
+  const [loading, setLoading] = useState<boolean>(true)
+  const [loadingError, setLoadingError] = useState<string | null>(null)
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -15,11 +17,22 @@ function ProductList({ category }: { category?: string, title?: string | false }
         setProducts(response.data.products)
       } catch (error) {
         console.error('Kunde inte hämta produkter:', error)
+        setLoadingError(
+          error instanceof Error
+            ? error.message
+            : 'Kunde inte hämta produkter.'
+        )
+      } finally {
+        setLoading(false)
       }
     }
 
     fetchProducts()
   }, [category])
+
+  if (loading) return <p>Laddar produkter...</p>
+  if (loadingError) return <p className="error-message">{loadingError}</p>
+  if (products.length === 0) return <p>Inga produkter hittades.</p>
 
   return (
     <>
