@@ -491,6 +491,13 @@ footer.page-footer {
   }
 }
 
+
+.button-group {
+  margin-top: 1rem;
+  display: flex;
+  gap: 1rem;
+}
+
 .to-cart-section {
   margin: 2rem 0;
   display: flex;
@@ -500,12 +507,10 @@ footer.page-footer {
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-}
 
-& .button-group {
-  margin-top: 1rem;
-  display: flex;
-  gap: 1rem;
+  & .button-group {
+    margin-top: 0;
+  }
 }
 
 .to-cart-button {
@@ -539,6 +544,7 @@ footer.page-footer {
     font-size: 1rem;
     cursor: pointer;
     width: 2rem;
+    height: 100%;
     border: none;
     background-color: transparent;
 

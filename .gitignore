@@ -21,3 +21,5 @@ frontend/dist/
 
 # Other
 dev-notes/
+.vercel
+.env*
