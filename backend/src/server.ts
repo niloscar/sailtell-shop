@@ -5,10 +5,9 @@
 /* Import dependencies */
 import express from 'express'
 import expressSession from 'express-session'
-import connectPgSimple from 'connect-pg-simple'
 import dotenv from 'dotenv'
 import path from 'path'
-import { connect, pool } from './database'
+import { connect } from './database'
 
 /* Import route handlers */
 import customerRoutes from './routes/customerRoutes'
@@ -27,29 +26,19 @@ const app = express()
 const host = process.env.HOST || 'localhost'
 const port = process.env.PORT || 3000
 
-/* Initialize PostgreSQL session store */
-const PgSession = connectPgSimple(expressSession)
-
 /* Middleware */
-app.use(express.static('public')) // Serve static files from the "public" folder
+app.use(express.static('public')) // Serve static files from the "public" folder (so that e.g., avatars from users/ are accessible via /api/users/)
 app.use(express.json()) // Allow parsing of JSON in the request body
-app.use(express.urlencoded({ extended: true })) // Allow parsing of URL-encoded data
-
-app.use(
-  expressSession({
-    store: new PgSession({
-      pool,
-      createTableIfMissing: true
-    }),
-    secret: process.env.SECRET_KEY || 'secret-key',
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
-      maxAge: 60 * 60 * 1000 // 1h
-    }
-  })
-) // Enable session support
+app.use(express.urlencoded({ extended: true })) // Allow parsing of URL-encoded data (e.g., from forms)
+app.use(expressSession({
+  secret: process.env.SECRET_KEY || 'secret-key',
+  resave: false,
+  saveUninitialized: false,
+  cookie: { 
+    httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
+    maxAge: 60 * 60 * 1000 // 1h
+  }
+})) // Enable session support
 
 /* API routes */
 app.use('/api/customers', customerRoutes)
@@ -71,6 +60,7 @@ app.use('/api', (req, res) => {
 /* Serve frontend from the "public" folder */
 const publicPath = path.resolve(process.cwd(), 'public')
 app.use(express.static(publicPath))
+
 
 const start = async () => {
   await connect() // Ensure database connection is established before starting the server
