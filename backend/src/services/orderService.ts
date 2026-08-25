@@ -4,8 +4,9 @@
 
 import pool, { withTransaction } from '../database'
 import type { Pool, PoolClient } from 'pg'
-import type { Order, UpdateOrder, CreateShippingAddress, CreateOrderItem, CreateOrder } from '../types/order'
-import { DbClient } from '../types/database'
+import type { Order, UpdateOrder, CreateOrder } from '../types/order'
+
+import { getOrCreateCustomer } from './customerService'
 import { createShippingAddress } from './shippingAddressService'
 import { createOrderItems } from './orderItemService'
 import { createOrderStatus } from './orderStatusService'
@@ -208,37 +209,22 @@ export async function getOrder(id: number, db: Pool | PoolClient = pool) {
 export async function createOrder(order: CreateOrder) {
   return withTransaction(async (client) => {
 
-    // Create the customer
-    const customerResult = await client.query<{ id: number }>(
-      `INSERT INTO customers (
-        fname,
-        lname,
-        email,
-        phone,
-        street,
-        zipcode,
-        city,
-        country
-      )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-      RETURNING id`,
-      [
-        order.customer.fname,
-        order.customer.lname,
-        order.customer.email,
-        order.customer.phone,
-        order.shipping_address.street,
-        order.shipping_address.zipcode,
-        order.shipping_address.city,
-        order.shipping_address.country
-      ]
+    // Get existing customer or create a new one
+    const customer = await getOrCreateCustomer(
+      {
+        fname: order.customer.fname,
+        lname: order.customer.lname,
+        email: order.customer.email,
+        phone: order.customer.phone,
+        street: order.shipping_address.street,
+        zipcode: order.shipping_address.zipcode,
+        city: order.shipping_address.city,
+        country: order.shipping_address.country
+      },
+      client
     )
 
-    if (customerResult.rows.length === 0) {
-      throw new Error('Kunden kunde inte skapas.')
-    }
-
-    const customerId = customerResult.rows[0].id
+    const customerId = customer.id
 
     // Create the order
     const { rows } = await client.query<{ id: number }>(

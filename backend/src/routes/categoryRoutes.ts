@@ -4,13 +4,15 @@
 
 import { Router } from 'express'
 import { getCategoriesHandler, getCategoryHandler, createCategoryHandler, updateCategoryHandler, deleteCategoryHandler } from '../controllers/categoryController'
+import { requireAdmin } from '../middleware/authMiddleware'
 
 const categoryRouter = Router()
 
 categoryRouter.get('/', getCategoriesHandler)
 categoryRouter.get('/:id', getCategoryHandler)
-categoryRouter.post('/', createCategoryHandler)
-categoryRouter.patch('/:id', updateCategoryHandler)
-categoryRouter.delete('/:id', deleteCategoryHandler)
+
+categoryRouter.post('/', requireAdmin, createCategoryHandler)
+categoryRouter.patch('/:id', requireAdmin, updateCategoryHandler)
+categoryRouter.delete('/:id', requireAdmin, deleteCategoryHandler)
 
 export default categoryRouter

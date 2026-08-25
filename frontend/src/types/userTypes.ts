@@ -5,6 +5,8 @@ export interface UserCredentials {
 
 export interface User {
   id?: number
+  fname?: string
+  lname?: string
   passwordHash?: string
   email: string
   role: 'admin' | 'editor' | 'user'
