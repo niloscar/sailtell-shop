@@ -66,10 +66,18 @@ export interface OrderOptions {
 }
 
 export interface CreateOrder {
-  customer_id: number
+  customer: {
+    fname: string
+    lname: string
+    email: string
+    phone?: string
+  }
   payment_method_id: number
   delivery_method_id: number
-  shipping_address?: {
+  ordered_at?: string
+  shipping_address: {
+    fname: string
+    lname: string
     street: string
     city: string
     zipcode: string

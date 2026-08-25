@@ -25,6 +25,7 @@ export async function getOrderOptions() {
           '[]'::jsonb
         )
         FROM payment_methods
+        WHERE payment_methods.is_active = TRUE
       ) AS payment_methods,
 
       (
@@ -204,11 +205,42 @@ export async function getOrder(id: number, db: Pool | PoolClient = pool) {
   return rows[0]
 }
 
-export async function createOrder(
-  order: CreateOrder
-) {
-  // Create the order
+export async function createOrder(order: CreateOrder) {
   return withTransaction(async (client) => {
+
+    // Create the customer
+    const customerResult = await client.query<{ id: number }>(
+      `INSERT INTO customers (
+        fname,
+        lname,
+        email,
+        phone,
+        street,
+        zipcode,
+        city,
+        country
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      RETURNING id`,
+      [
+        order.customer.fname,
+        order.customer.lname,
+        order.customer.email,
+        order.customer.phone,
+        order.shipping_address.street,
+        order.shipping_address.zipcode,
+        order.shipping_address.city,
+        order.shipping_address.country
+      ]
+    )
+
+    if (customerResult.rows.length === 0) {
+      throw new Error('Kunden kunde inte skapas.')
+    }
+
+    const customerId = customerResult.rows[0].id
+
+    // Create the order
     const { rows } = await client.query<{ id: number }>(
       `INSERT INTO orders (
         customer_id,
@@ -219,10 +251,10 @@ export async function createOrder(
       VALUES ($1, $2, $3, $4)
       RETURNING id`,
       [
-        order.customer_id,
+        customerId,
         order.payment_method_id,
         order.delivery_method_id,
-        order.ordered_at
+        order.ordered_at ?? new Date()
       ]
     )
 

@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom'
 import { getProduct } from '../api/productApi'
 import formatPrice from '../utilities/formatPrice'
 import ToCartButton from './ToCartButton'
-import QuantitySelector from './ToCartQuantity'
+import QuantitySelector from './QuantitySelector'
 import type { Product } from '../types/productTypes'
 
 function ProductDetails() {

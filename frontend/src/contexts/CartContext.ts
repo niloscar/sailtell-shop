@@ -4,9 +4,10 @@ import type { CartItem } from '../types/cartTypes'
 
 type CartContextType = {
   cart: Record<number, CartItem>
+  cartCount: number
   addToCart: (product: Product, quantity: number) => void
   removeFromCart: (product: Product) => void
-  cartCount: number
+  resetCart: () => void
 }
 
 export const CartContext = createContext<CartContextType | undefined>(undefined)

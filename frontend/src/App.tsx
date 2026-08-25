@@ -8,12 +8,13 @@ import PageProducts from './pages/public/PageProducts'
 import PageSingleProduct from './pages/public/PageSingleProduct'
 import PageCart from './pages/public/PageCart'
 import PageCheckout from './pages/public/PageCheckout'
+import PageConfirm from './pages/public/PageConfirm'
 import PageAbout from './pages/public/PageAbout'
 
 import PageAdmin from './pages/admin/PageAdminStart'
 import PageAdminOrders from './pages/admin/PageAdminOrders'
 import PageAdminSingleOrder from './pages/admin/PageAdminSingleOrder'
-import PageAdminCustomers from './pages/admin/PageAdminCustomers'
+// import PageAdminCustomers from './pages/admin/PageAdminCustomers'
 import PageAdminProducts from './pages/admin/PageAdminProducts'
 import PageAdminUpdateProduct from './pages/admin/PageAdminUpdateProduct'
 import PageAdminAddProduct from './pages/admin/PageAdminAddProduct'
@@ -32,13 +33,14 @@ function App() {
           <Route path='/product/:id' element={<PageSingleProduct />} />
           <Route path='/cart' element={<PageCart />} />
           <Route path='/checkout' element={<PageCheckout />} />
+          <Route path='/confirmation' element={<PageConfirm />} />
           <Route path='/about' element={<PageAbout />} />
         </Route>
         <Route element={<LayoutAdmin />} >
           <Route path='/admin' element={<PageAdmin />} />
           <Route path='/admin/orders' element={<PageAdminOrders />} />
           <Route path='/admin/order/:id' element={<PageAdminSingleOrder />} />
-          <Route path='/admin/customers' element={<PageAdminCustomers />} />
+          {/* <Route path='/admin/customers' element={<PageAdminCustomers />} /> */}
           <Route path='/admin/products' element={<PageAdminProducts />} />
           <Route path='/admin/product/:id' element={<PageAdminUpdateProduct />} />
           <Route path='/admin/product/add' element={<PageAdminAddProduct />} />
