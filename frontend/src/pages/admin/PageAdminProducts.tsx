@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { getProducts } from '../../api/productApi'
 import categoriesToString from '../../utilities/categoriesToString'
 import formatPrice from '../../utilities/formatPrice'
@@ -37,9 +37,6 @@ import type { Product } from '../../types/productTypes'
   return (
     <>
       <h2>Produkter</h2>
-      <Link to="/admin/product/add" className="add-product">
-        Lägg till produkt
-      </Link>
       <table>
         <thead>
           <tr>
@@ -66,6 +63,12 @@ import type { Product } from '../../types/productTypes'
           ))}
         </tbody>
       </table>
+      <button 
+        onClick={() => navigate('/admin/product/add')} 
+        className="add"
+      >
+        Lägg till produkt
+      </button>
     </>
   )
 }

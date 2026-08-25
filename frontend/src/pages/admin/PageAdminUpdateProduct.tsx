@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
+import { ArrowLeftIcon } from '@phosphor-icons/react'
 
 import {
   getProduct,
@@ -258,7 +259,7 @@ export default function PageAdminUpdateProduct() {
   if (!product) return <p className="error-message">Produkten kunde inte hittas.</p>
 
   return (
-    <div>
+    <div className="page-admin-update-product">
       <h1 className="heading-size-1">Redigera produkt</h1>
 
       {loadingState.productOptions.error && (
@@ -405,32 +406,40 @@ export default function PageAdminUpdateProduct() {
         </p>
       )}
 
-      <button
-        className="delete"
-        type="button"
-        onClick={handleDelete}
-        disabled={loadingState.action.loading}
-      >
-        Radera produkt
-      </button>
+      <div className="button-group">
+        <button
+          className="delete"
+          type="button"
+          onClick={handleDelete}
+          disabled={loadingState.action.loading}
+        >
+          Radera produkt
+        </button>
 
-      <button
-        type="button"
-        onClick={handleReset}
-        disabled={loadingState.action.loading}
-      >
-        Återställ
-      </button>
+        <button
+          type="button"
+          onClick={handleReset}
+          disabled={loadingState.action.loading}
+        >
+          Återställ
+        </button>
 
-      <button
-        type="button"
-        onClick={handleSave}
-        disabled={loadingState.action.loading}
-      >
-        {loadingState.action.loading
-          ? 'Sparar...'
-          : 'Spara ändringar'}
-      </button>
+        <button
+          type="button"
+          onClick={handleSave}
+          disabled={loadingState.action.loading}
+          className="save"
+        >
+          {loadingState.action.loading
+            ? 'Sparar...'
+            : 'Spara ändringar'}
+        </button>
+      </div>
+
+      <Link to="/admin/products" className="link-back">
+        <ArrowLeftIcon size={20} />
+        Tillbaka till produktlistan
+      </Link>
     </div>
   )
 }

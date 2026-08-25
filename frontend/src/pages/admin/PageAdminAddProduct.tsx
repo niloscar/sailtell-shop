@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { getProductOptions, createProduct } from '../../api/productApi'
 import getApiErrorMessage from '../../utilities/apiError'
 import type { CreateProduct, ProductOptions } from '../../types/productTypes'
+import { ArrowLeftIcon } from '@phosphor-icons/react'
 
 export default function PageAdminAddProduct() {
   const navigate = useNavigate()
@@ -128,7 +129,7 @@ export default function PageAdminAddProduct() {
   if (!productOptions) return <p>Produktalternativ kunde inte hittas.</p>
 
   return (
-    <div>
+    <div className="page-admin-add-product">
       <h1 className="heading-size-1">Lägg till produkt</h1>
 
       <div className="input-group">
@@ -249,15 +250,23 @@ export default function PageAdminAddProduct() {
         <p className="error-message">{createError}</p>
       )}
 
-      <button
-        type="button"
-        onClick={handleSave}
-        disabled={creating}
-      >
-        {creating
-          ? 'Skapar produkt...'
-          : 'Skapa produkt'}
-      </button>
+      <div className="button-group">
+        <button
+          type="button"
+          onClick={handleSave}
+          disabled={creating}
+          className="add"
+        >
+          {creating
+            ? 'Skapar produkt...'
+            : 'Skapa produkt'}
+        </button>
+      </div>
+
+      <Link to="/admin/products" className="link-back">
+        <ArrowLeftIcon size={20} />
+        Tillbaka till produktlistan
+      </Link>
     </div>
   )
 }

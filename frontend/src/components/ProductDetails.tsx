@@ -96,7 +96,7 @@ function ProductDetails() {
                 {product.stock && renderStock(product.stock)}
               </div>
               <div className="button-group">
-                <QuantitySelector quantity={quantity} setQuantity={setQuantity} />
+                <QuantitySelector quantity={quantity} onChange={setQuantity} />
                 <ToCartButton product={product} quantity={quantity} />
               </div>
               {stockMessage && <p className="stock-message">{stockMessage}</p>}

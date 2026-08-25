@@ -1,18 +1,29 @@
 import { createContext, useContext } from 'react'
 import type { Product } from '../types/productTypes'
-import type { CartItem } from '../types/cartTypes'
+import type { Cart } from '../types/cartTypes'
+
+type CartActionState = {
+  loading: boolean
+  error: string | null
+  added: boolean
+}
 
 type CartContextType = {
-  cart: Record<number, CartItem>
+  cart: Cart | null
   cartCount: number
-  addToCart: (product: Product, quantity: number) => void
-  removeFromCart: (product: Product) => void
-  resetCart: () => void
-  cartActionState: Record<number, { 
-    loading: boolean
-    error: string | null
-    added: boolean
-  }>
+  addToCart: (
+    product: Product,
+    quantity: number
+  ) => Promise<void>
+  changeQuantity: (
+    productId: number,
+    quantity: number
+  ) => Promise<void>
+  removeFromCart: (
+    product: Product
+  ) => Promise<void>
+  resetCart: () => Promise<void>
+  cartActionState: Record<number, CartActionState>
 }
 
 export const CartContext = createContext<CartContextType | undefined>(undefined)
