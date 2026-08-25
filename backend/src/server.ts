@@ -5,9 +5,10 @@
 /* Import dependencies */
 import express from 'express'
 import expressSession from 'express-session'
+import connectPgSimple from 'connect-pg-simple'
 import dotenv from 'dotenv'
 import path from 'path'
-import { connect } from './database'
+import { connect, pool } from './database'
 
 /* Import route handlers */
 import customerRoutes from './routes/customerRoutes'
@@ -26,17 +27,22 @@ const app = express()
 const host = process.env.HOST || 'localhost'
 const port = process.env.PORT || 3000
 
+const PgSession = connectPgSimple(expressSession)
+
 /* Middleware */
 app.use(express.static('public')) // Serve static files from the "public" folder (so that e.g., avatars from users/ are accessible via /api/users/)
 app.use(express.json()) // Allow parsing of JSON in the request body
 app.use(express.urlencoded({ extended: true })) // Allow parsing of URL-encoded data (e.g., from forms)
 app.use(expressSession({
+  store: new PgSession({
+    pool
+  }),
   secret: process.env.SECRET_KEY || 'secret-key',
   resave: false,
   saveUninitialized: false,
   cookie: { 
-    httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
-    maxAge: 60 * 60 * 1000 // 1h
+    httpOnly: true,
+    maxAge: 60 * 60 * 1000
   }
 })) // Enable session support
 
