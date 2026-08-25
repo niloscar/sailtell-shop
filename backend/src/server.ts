@@ -16,6 +16,7 @@ import orderRoutes from './routes/orderRoutes'
 import usersRouter from './routes/userRoutes'
 import authRouter from './routes/authRoutes'
 import categoryRoutes from './routes/categoryRoutes'
+import cartRoutes from './routes/cartRoutes'
 
 /* Load environment variables from .env file */
 dotenv.config()
@@ -46,6 +47,7 @@ app.use('/api/categories', categoryRoutes)
 app.use('/api/products', productRoutes)
 app.use('/api/orders', orderRoutes)
 app.use('/api/auth', authRouter)
+app.use('/api/carts', cartRoutes)
 
 /* Handle unknown API endpoints */
 app.use('/api', (req, res) => {

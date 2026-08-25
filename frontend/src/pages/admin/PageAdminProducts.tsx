@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { getProducts } from '../../api/productApi'
 import type { Product } from '../../types/productTypes'
 import categoriesToString from '../../utilities/categoriesToString'
@@ -40,9 +40,6 @@ import { InfinityIcon } from '@phosphor-icons/react'
   return (
     <>
       <h2>Produkter</h2>
-      <Link to="/admin/product/add" className="add-product">
-        Lägg till produkt
-      </Link>
       <table>
         <thead>
           <tr>
@@ -69,6 +66,12 @@ import { InfinityIcon } from '@phosphor-icons/react'
           ))}
         </tbody>
       </table>
+      <button 
+        onClick={() => navigate('/admin/product/add')} 
+        className="add"
+      >
+        Lägg till produkt
+      </button>
     </>
   )
 }

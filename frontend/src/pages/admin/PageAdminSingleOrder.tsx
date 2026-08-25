@@ -10,6 +10,7 @@ import formatPhoneNumber from '../../utilities/formatPhoneNumber'
 
 import type { OrderDetails, OrderOptions } from '../../types/orderTypes'
 import type { Customer } from '../../types/customerTypes'
+import { ArrowLeftIcon } from '@phosphor-icons/react'
 
 type LoadingState = {
   loading: boolean
@@ -218,7 +219,9 @@ export default function PageAdminSingleOrder() {
         <tbody>
           {order.order_items.map((item) => (
             <tr key={item.id}>
-              <td>{item.name}</td>
+              <td>
+                <Link to={`/product/${item.product_id}`}>{item.name}</Link>
+              </td>
               <td>{item.brand_name}</td>
               <td>{item.quantity}</td>
               <td>{formatPrice(Number(item.unit_price))}</td>
@@ -287,7 +290,13 @@ export default function PageAdminSingleOrder() {
         <p>Inga kunduppgifter tillgängliga.</p>
       )}
 
-      <Link to="/admin">Tillbaka till orderlistan</Link>
+      <Link 
+        to="/admin"
+        className="link-back"
+      >
+        <ArrowLeftIcon size={20} />
+        Tillbaka till orderlistan
+      </Link>
     </div>
   )
 }

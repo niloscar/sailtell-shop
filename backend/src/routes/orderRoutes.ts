@@ -8,39 +8,11 @@ import { requireAdmin } from '../middleware/authMiddleware'
 
 const orderRouter = Router()
 
-orderRouter.get(
-  '/',
-  requireAdmin,
-  getOrdersHandler
-)
-
-orderRouter.get(
-  '/options',
-  getOrderOptionsHandler
-)
-
-orderRouter.get(
-  '/:id',
-  requireAdmin,
-  getOrderHandler
-)
-
-orderRouter.post(
-  '/',
-  requireAdmin,
-  createOrderHandler
-)
-
-orderRouter.patch(
-  '/:id',
-  requireAdmin,
-  updateOrderHandler
-)
-
-orderRouter.delete(
-  '/:id',
-  requireAdmin,
-  deleteOrderHandler
-)
+orderRouter.get('/', requireAdmin, getOrdersHandler)
+orderRouter.get('/options', getOrderOptionsHandler)
+orderRouter.get('/:id', requireAdmin, getOrderHandler)
+orderRouter.post('/', createOrderHandler)
+orderRouter.patch('/:id', requireAdmin, updateOrderHandler)
+orderRouter.delete('/:id', requireAdmin, deleteOrderHandler)
 
 export default orderRouter
