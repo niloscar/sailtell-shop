@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { getProducts } from '../api/productApi'
 import type { Product } from '../types/productTypes'
 
 function ProductList({ category }: { category?: string, title?: string | false }) {
+  const navigate = useNavigate()
   const [products, setProducts] = useState([])
 
   useEffect(() => {
@@ -26,15 +27,23 @@ function ProductList({ category }: { category?: string, title?: string | false }
         {products.map((product: Product) => (
           <li 
             key={product.id} 
-            className='list-item'
+            className='list-item clickable'
+            onClick={() => navigate(`/product/${product.id}`)}
           >
-            <h2 className="heading-size-2">
-              <Link to={`/product/${product.id}`}>
+            {product.img_url && (
+              <img
+                className='product-image'
+                src={`${product.img_url}`}
+                alt={product.name}
+              />
+            )}
+            <div className='product-info'>
+              <h2 className="heading-size-2">
                 {product.name}
-              </Link>
-            </h2>
-            {/* <p className='brand-name'>{product.brand_name}</p> */}
-            <p>{product.description}</p>
+              </h2>
+              {/* <p className='brand-name'>{product.brand_name}</p> */}
+              <p>{product.description}</p>
+            </div>
           </li>
         ))}
       </ul>
