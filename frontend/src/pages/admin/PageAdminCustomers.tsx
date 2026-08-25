@@ -2,6 +2,7 @@ import type { Customer } from "../../types/customerTypes"
 import { useEffect, useState } from "react"
 import { getCustomers } from "../../api/customerApi"
 import formatPhoneNumber from "../../utilities/formatPhoneNumber"
+import getApiErrorMessage from "../../utilities/apiError"
 
 export default function PageAdminCustomers() {
   const [customers, setCustomers] = useState<Customer[]>([])
@@ -15,11 +16,7 @@ export default function PageAdminCustomers() {
         const response = await getCustomers()
         setCustomers(response.data)
       } catch (error) {
-        setLoadingError(
-          error instanceof Error
-            ? error.message
-            : 'Kunde inte hämta kunder.'
-        )
+        setLoadingError(getApiErrorMessage(error))
       } finally {
         setLoading(false)
       }

@@ -21,22 +21,22 @@ export default function Footer() {
           <nav>
             <ul className="unstyled">
               <li>
-                <Link to="/contact">Kontakta oss</Link>
+                <Link to="#">Kontakta oss</Link>
               </li>
               <li>
-                <Link to="/right-of-withdrawal">Ångerrätt</Link>
+                <Link to="#">Ångerrätt</Link>
               </li>
               <li>
-                <Link to="/shipping">Leveransvillkor</Link>
+                <Link to="#">Leveransvillkor</Link>
               </li>
               <li>
-                <Link to="/returns">Returvillkor</Link>
+                <Link to="#">Returvillkor</Link>
               </li>
               <li>
-                <Link to="/terms">Användarvillkor</Link>
+                <Link to="#">Användarvillkor</Link>
               </li>
               <li>
-                <Link to="/privacy">Integritetspolicy</Link>
+                <Link to="#">Integritetspolicy</Link>
               </li>
             </ul>
           </nav>

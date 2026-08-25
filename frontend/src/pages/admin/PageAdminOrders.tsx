@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { getOrders } from '../../api/orderApi'
 import formatDateTime, { formatDate, formatTime, timeAgo } from '../../utilities/formatDateTime'
 import formatPrice from '../../utilities/formatPrice'
+import getApiErrorMessage from '../../utilities/apiError'
 import type { Order } from '../../types/orderTypes'
 
 export default function PageAdminOrders() {
@@ -19,11 +20,7 @@ export default function PageAdminOrders() {
         const response = await getOrders()
         setOrders(response.data)
       } catch (error) {
-        setLoadingError(
-          error instanceof Error
-            ? error.message
-            : 'Kunde inte hämta ordrar.'
-        )
+        setLoadingError(getApiErrorMessage(error))
       } finally {
         setLoading(false)
       }
