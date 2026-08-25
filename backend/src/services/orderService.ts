@@ -10,6 +10,59 @@ import { createShippingAddress } from './shippingAddressService'
 import { createOrderItems } from './orderItemService'
 import { createOrderStatus } from './orderStatusService'
 
+export async function getOrderOptions() {
+  const { rows } = await pool.query(
+    `SELECT
+      (
+        SELECT COALESCE(
+          JSONB_AGG(
+            JSONB_BUILD_OBJECT(
+              'id', payment_methods.id,
+              'name', payment_methods.name
+            )
+            ORDER BY payment_methods.name
+          ),
+          '[]'::jsonb
+        )
+        FROM payment_methods
+      ) AS payment_methods,
+
+      (
+        SELECT COALESCE(
+          JSONB_AGG(
+            JSONB_BUILD_OBJECT(
+              'id', delivery_methods.id,
+              'name', delivery_methods.name
+            )
+            ORDER BY delivery_methods.name
+          ),
+          '[]'::jsonb
+        )
+        FROM delivery_methods
+      ) AS delivery_methods,
+
+      (
+        SELECT COALESCE(
+          JSONB_AGG(
+            JSONB_BUILD_OBJECT(
+              'id', statuses.id,
+              'name', statuses.name
+            )
+            ORDER BY statuses.id
+          ),
+          '[]'::jsonb
+        )
+        FROM statuses
+      ) AS statuses`
+  )
+
+  if (rows.length === 0) {
+    throw new Error('Inga orderalternativ kunde hittas.')
+  }
+
+  return rows[0]
+}
+
 export async function getOrders() {
   const { rows } = await pool.query<Order>(
     `SELECT
@@ -30,7 +83,8 @@ export async function getOrders() {
 
       JSONB_BUILD_OBJECT(
         'id', current_status.id,
-        'name', current_status.name
+        'name', current_status.name,
+        'set_at', current_status.set_at
       ) AS order_status
 
     FROM orders
@@ -38,7 +92,8 @@ export async function getOrders() {
     LEFT JOIN LATERAL (
       SELECT
         statuses.id,
-        statuses.name
+        statuses.name,
+        order_statuses.set_at
       FROM order_statuses
       JOIN statuses
         ON statuses.id = order_statuses.status_id
@@ -112,7 +167,8 @@ export async function getOrder(id: number, db: Pool | PoolClient = pool) {
 
       JSONB_BUILD_OBJECT(
         'id', current_status.id,
-        'name', current_status.name
+        'name', current_status.name,
+        'set_at', current_status.set_at
       ) AS order_status
 
     FROM orders
@@ -129,7 +185,8 @@ export async function getOrder(id: number, db: Pool | PoolClient = pool) {
     LEFT JOIN LATERAL (
       SELECT
         statuses.id,
-        statuses.name
+        statuses.name,
+        order_statuses.set_at
       FROM order_statuses
       JOIN statuses
         ON statuses.id = order_statuses.status_id

@@ -3,13 +3,14 @@
  */
 
 import { Router } from 'express'
-import { getProductHandler, deleteProductHandler, updateProductHandler, createProductHandler, getAllProductsHandler, getProductsByCategoryHandler } from '../controllers/productController'
+import { getProductHandler, deleteProductHandler, updateProductHandler, createProductHandler, getAllProductsHandler, getProductsByCategoryHandler, getProductOptionsHandler } from '../controllers/productController'
 import priceRouter from './priceRoutes'
 
 const productRouter = Router()
 
 productRouter.get('/', getAllProductsHandler)
 productRouter.get('/category/:categorySlug', getProductsByCategoryHandler)
+productRouter.get('/options', getProductOptionsHandler)
 
 productRouter.use('/:productId', priceRouter)
 

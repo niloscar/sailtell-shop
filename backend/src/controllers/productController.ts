@@ -3,7 +3,7 @@
  */
 
 import { Request, Response } from 'express'
-import { getAllProducts, getProductsByCategorySlug, getProduct, createProduct, updateProduct, deleteProduct } from '../services/productService'
+import { getAllProducts, getProductsByCategorySlug, getProduct, createProduct, updateProduct, deleteProduct, getProductOptions } from '../services/productService'
 
 type ProductParams = {
   id: string
@@ -11,6 +11,11 @@ type ProductParams = {
 
 type CategoryParams = {
   categorySlug: string
+}
+
+export async function getProductOptionsHandler(req: Request, res: Response) {
+  const productOptions = await getProductOptions()
+  res.json(productOptions)
 }
 
 export async function getAllProductsHandler(req: Request, res: Response) {
@@ -26,7 +31,11 @@ export async function getProductsByCategoryHandler(
 
   const products = await getProductsByCategorySlug(categorySlug)
 
-  res.json(products)
+  if (products) {
+    res.json(products)
+  } else {
+    res.status(404).json({ error: 'Inga produkter hittades i den angivna kategorin.' })
+  }
 }
 
 export async function getProductHandler(req: Request<ProductParams>, res: Response) {
@@ -41,16 +50,18 @@ export async function getProductHandler(req: Request<ProductParams>, res: Respon
 }
 
 export async function createProductHandler(req: Request, res: Response) {
-  const product = req.body
-  const createdProduct = await createProduct(product.name, product.description, product.details, product.stock)
-  res.status(201).json(createdProduct)
+  const createdProduct = await createProduct(req.body)
+
+  if (createdProduct) {
+    res.status(201).json(createdProduct)
+  } else {
+    res.status(400).json({ error: 'Produkten kunde inte skapas.' })
+  }
 }
 
 export async function updateProductHandler(req: Request<ProductParams>, res: Response) {
   const productId = parseInt(req.params.id)
-  const updates = req.body
-
-  const updatedProduct = await updateProduct(productId, updates)
+  const updatedProduct = await updateProduct(productId, req.body)
 
   if (updatedProduct) {
     res.json(updatedProduct)

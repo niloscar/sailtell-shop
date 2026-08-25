@@ -28,5 +28,9 @@ export async function getUserHandler(req: Request<UserParams>, res: Response) {
 export async function createUserHandler(req: Request, res: Response) {
   const user = req.body
   const createdUser = await createUser(user.fname, user.lname, user.email, user.password, user.role)
-  res.status(201).json(createdUser)
+  if (createdUser) {
+    res.status(201).json(createdUser)
+  } else {
+    res.status(400).json({ error: 'Användaren kunde inte skapas.' })
+  }
 }

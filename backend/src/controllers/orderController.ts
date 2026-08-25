@@ -3,10 +3,16 @@
  */
 
 import { Request, Response } from 'express'
-import { getOrders, getOrder, createOrder, updateOrder, deleteOrder } from '../services/orderService'
+import { getOrderOptions, getOrders, getOrder, createOrder, deleteOrder } from '../services/orderService'
+import { updateOrderStatus } from '../services/orderStatusService'
 
 type OrderParams = {
   id: string
+}
+
+export async function getOrderOptionsHandler(req: Request, res: Response) {
+  const orderOptions = await getOrderOptions()
+  res.json(orderOptions)
 }
 
 export async function getOrdersHandler(req: Request, res: Response) {
@@ -30,14 +36,21 @@ export async function createOrderHandler(req: Request, res: Response) {
   res.status(201).json(newOrder)
 }
 
-export async function updateOrderHandler(req: Request<OrderParams>, res: Response) {
-  const orderId = parseInt(req.params.id)
-  const order = await updateOrder(orderId, req.body)
+export async function updateOrderHandler(req: Request, res: Response) {
+  try {
+    const orderId = Number(req.params.id)
+    const { status_id } = req.body
 
-  if (order) {
+    if (status_id !== undefined) {
+      await updateOrderStatus(orderId, status_id)
+    }
+
+    const order = await getOrder(orderId)
+
     res.json(order)
-  } else {
-    res.status(404).json({ error: 'Ordern kunde inte hittas.' })
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Kunde inte uppdatera ordern.' })
   }
 }
 
