@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getProductOptions, createProduct } from '../../api/productApi'
+import getApiErrorMessage from '../../utilities/apiError'
 import type { CreateProduct, ProductOptions } from '../../types/productTypes'
 
 export default function PageAdminAddProduct() {
@@ -35,11 +36,7 @@ export default function PageAdminAddProduct() {
         const response = await getProductOptions()
         setProductOptions(response.data)
       } catch (error) {
-        setLoadingError(
-          error instanceof Error
-            ? error.message
-            : 'Kunde inte hämta produktalternativ.'
-        )
+        setLoadingError(getApiErrorMessage(error))
       } finally {
         setLoading(false)
       }
@@ -120,13 +117,7 @@ export default function PageAdminAddProduct() {
 
       navigate('/products')
     } catch (error) {
-      console.error('Kunde inte skapa produkten:', error)
-
-      setCreateError(
-        error instanceof Error
-          ? error.message
-          : 'Kunde inte skapa produkten.'
-      )
+      setCreateError(getApiErrorMessage(error))
     } finally {
       setCreating(false)
     }

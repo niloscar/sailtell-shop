@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { getProducts } from '../../api/productApi'
-import type { Product } from '../../types/productTypes'
 import categoriesToString from '../../utilities/categoriesToString'
 import formatPrice from '../../utilities/formatPrice'
+import getApiErrorMessage from '../../utilities/apiError'
 import { InfinityIcon } from '@phosphor-icons/react'
+import type { Product } from '../../types/productTypes'
 
  export default function PageAdminProducts() {
   const [products, setProducts] = useState<Product[]>([])
@@ -20,11 +21,7 @@ import { InfinityIcon } from '@phosphor-icons/react'
         const response = await getProducts()
         setProducts(response.data.products)
       } catch (error) {
-        setLoadingError(
-          error instanceof Error
-            ? error.message
-            : 'Kunde inte hämta produkter.'
-        )
+        setLoadingError(getApiErrorMessage(error))
       } finally {
         setLoading(false)
       }

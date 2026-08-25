@@ -5,9 +5,9 @@ import { getOrders } from '../../api/orderApi'
 
 import formatDateTime, { formatDate, formatTime, timeAgo } from '../../utilities/formatDateTime'
 import formatPrice from '../../utilities/formatPrice'
+import getApiErrorMessage from '../../utilities/apiError'
 
 import type { Order } from '../../types/orderTypes'
-
 
 export default function PageAdminStart() {
   const [orders, setOrders] = useState<Order[]>([])
@@ -24,7 +24,7 @@ export default function PageAdminStart() {
         setOrders(response.data)
       } catch (error) {
         console.error('Kunde inte hämta ordrar:', error)
-        setLoadingError('Kunde inte hämta ordrar.')
+        setLoadingError(getApiErrorMessage(error))
       } finally {
         setLoading(false)
       }

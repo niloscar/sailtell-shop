@@ -7,6 +7,7 @@ import { getCustomer } from '../../api/customerApi'
 import { formatDate } from '../../utilities/formatDateTime'
 import formatPrice from '../../utilities/formatPrice'
 import formatPhoneNumber from '../../utilities/formatPhoneNumber'
+import getApiErrorMessage from '../../utilities/apiError'
 
 import type { OrderDetails, OrderOptions } from '../../types/orderTypes'
 import type { Customer } from '../../types/customerTypes'
@@ -70,9 +71,9 @@ export default function PageAdminSingleOrder() {
         const response = await getOrderOptions()
 
         setOrderOptions(response.data)
-      } catch {
+      } catch (error) {
         updateLoadingState('orderOptions', {
-          error: 'Kunde inte hämta orderalternativ.'
+          error: getApiErrorMessage(error)
         })
       } finally {
         updateLoadingState('orderOptions', {
@@ -97,9 +98,9 @@ export default function PageAdminSingleOrder() {
         const response = await getOrder(Number(id))
 
         setOrder(response.data)
-      } catch {
+      } catch (error) {
         updateLoadingState('order', {
-          error: 'Kunde inte hämta order.'
+          error: getApiErrorMessage(error)
         })
       } finally {
         updateLoadingState('order', {
@@ -124,9 +125,9 @@ export default function PageAdminSingleOrder() {
         const response = await getCustomer(order.customer_id)
 
         setCustomer(response.data)
-      } catch {
+      } catch (error) {
         updateLoadingState('customer', {
-          error: 'Kunde inte hämta kund.'
+          error: getApiErrorMessage(error)
         })
       } finally {
         updateLoadingState('customer', {

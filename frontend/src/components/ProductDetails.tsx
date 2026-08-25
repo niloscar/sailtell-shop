@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { getProduct } from '../api/productApi'
 import formatPrice from '../utilities/formatPrice'
+import getApiErrorMessage from '../utilities/apiError'
 import ToCartButton from './ToCartButton'
 import QuantitySelector from './QuantitySelector'
 import type { Product } from '../types/productTypes'
@@ -21,11 +22,7 @@ function ProductDetails() {
         setProduct(response.data)
       } catch (error) {
         console.error('Kunde inte hämta produkt:', error)
-        setLoadingError(
-          error instanceof Error
-            ? error.message
-            : 'Kunde inte hämta produkt.'
-        )
+        setLoadingError(getApiErrorMessage(error))
       } finally {
         setLoading(false)
       }

@@ -13,6 +13,7 @@ import type {
   ProductOptions,
   UpdateProduct
 } from '../../types/productTypes'
+import getApiErrorMessage from '../../utilities/apiError'
 
 type LoadingState = {
   loading: boolean
@@ -75,11 +76,7 @@ export default function PageAdminUpdateProduct() {
 
         setProductOptions(response.data)
       } catch (error) {
-        console.error('Kunde inte hämta produktalternativ:', error)
-
-        updateLoadingState('productOptions', {
-          error: 'Kunde inte hämta produktalternativ.'
-        })
+        updateLoadingState('productOptions', { error: getApiErrorMessage(error) })
       } finally {
         updateLoadingState('productOptions', {
           loading: false
@@ -105,15 +102,9 @@ export default function PageAdminUpdateProduct() {
         setProduct(response.data)
         setOriginalProduct(structuredClone(response.data))
       } catch (error) {
-        console.error('Kunde inte hämta produkt:', error)
-
-        updateLoadingState('product', {
-          error: 'Kunde inte hämta produkten.'
-        })
+        updateLoadingState('product', { error: getApiErrorMessage(error) })
       } finally {
-        updateLoadingState('product', {
-          loading: false
-        })
+        updateLoadingState('product', { loading: false })
       }
     }
 
@@ -211,11 +202,7 @@ export default function PageAdminUpdateProduct() {
 
       navigate('/admin/products')
     } catch (error) {
-      console.error('Kunde inte radera produkten:', error)
-
-      updateLoadingState('action', {
-        error: 'Kunde inte radera produkten.'
-      })
+      updateLoadingState('action', { error: getApiErrorMessage(error) })
     } finally {
       updateLoadingState('action', {
         loading: false
@@ -228,9 +215,7 @@ export default function PageAdminUpdateProduct() {
 
     setProduct(structuredClone(originalProduct))
 
-    updateLoadingState('action', {
-      error: null
-    })
+    updateLoadingState('action', { error: null })
   }
 
   const handleSave = async () => {
@@ -262,15 +247,9 @@ export default function PageAdminUpdateProduct() {
       setProduct(response.data)
       setOriginalProduct(structuredClone(response.data))
     } catch (error) {
-      console.error('Kunde inte uppdatera produkten:', error)
-
-      updateLoadingState('action', {
-        error: 'Kunde inte uppdatera produkten.'
-      })
+      updateLoadingState('action', { error: getApiErrorMessage(error) })
     } finally {
-      updateLoadingState('action', {
-        loading: false
-      })
+      updateLoadingState('action', { loading: false })
     }
   }
 
