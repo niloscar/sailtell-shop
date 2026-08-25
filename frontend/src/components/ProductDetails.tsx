@@ -26,7 +26,7 @@ function ProductDetails() {
     }
   }, [id])
 
-  const stockMessage = product && quantity > product.stock
+  const stockMessage = product && product.stock && quantity > product.stock
     ? 'Observera att du vill lägga till fler än vad som finns i lager. En del av din beställning kommer att få ett senare leveransdatum.'
     : ''
 
@@ -45,8 +45,9 @@ function ProductDetails() {
         <div className='product-details'>
 
           <h1 className="heading-size-1">{product.name}</h1>
+          <p className='brand-name'>{product.brand_name}</p>
           <p className='description'>{product.description}</p>
-          <p className='brand-name'>{product.brand}</p>
+          
           <ul className='details'>
             {product.details.map((detail, index) => (
               <li key={index}>{detail}</li>
@@ -82,7 +83,7 @@ function ProductDetails() {
             <section className="to-cart-section">
               <div>
                 <p className='price'>{formatPrice(Number(product.price))}</p>
-                {renderStock(product.stock)}
+                {product.stock && renderStock(product.stock)}
               </div>
               <div className="button-group">
                 <QuantitySelector quantity={quantity} setQuantity={setQuantity} />

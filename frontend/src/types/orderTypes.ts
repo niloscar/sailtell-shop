@@ -8,6 +8,7 @@ export interface Order {
   order_status: {
     id: number
     name: string
+    set_at: string
   }
 }
 
@@ -21,6 +22,7 @@ export interface OrderDetails {
   order_status: {
     id: number
     name: string
+    set_at: string
   }
   delivery_method: {
     id: number
@@ -46,4 +48,41 @@ export interface OrderDetails {
     quantity: number
     unit_price: number
   }[]
+}
+
+export interface OrderOptions {
+  payment_methods: {
+    id: number
+    name: string
+  }[]
+  delivery_methods: {
+    id: number
+    name: string
+  }[]
+  statuses: {
+    id: number
+    name: string
+  }[]
+}
+
+export interface CreateOrder {
+  customer_id: number
+  payment_method_id: number
+  delivery_method_id: number
+  shipping_address?: {
+    street: string
+    city: string
+    zipcode: string
+    country: string
+  }
+  order_items: {
+    product_id: number
+    quantity: number
+  }[]
+}
+
+export interface UpdateOrder {
+  status_id?: number
+  payment_method_id?: number
+  delivery_method_id?: number
 }

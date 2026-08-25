@@ -13,8 +13,8 @@ import { ShoppingCartIcon } from '@phosphor-icons/react'
 
 const navItems = [
   { name: 'Start', path: '/' },
-  { name: 'App', path: '/product/9' },
-  { name: 'Sensors', path: '/products/sensors' },
+  { name: 'SailTell App', path: '/product/9' },
+  { name: 'Compass One', path: '/product/1' },
   { name: 'Accessories', path: '/products/accessories' },
   { name: 'Cart', path: '/cart' }
 ]

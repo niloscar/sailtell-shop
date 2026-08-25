@@ -1,15 +1,32 @@
-import { getOrder } from '../../api/orderApi'
+import { getOrder, getOrderOptions, updateOrder } from '../../api/orderApi'
 import { getCustomer } from '../../api/customerApi'
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import { formatDate } from '../../utilities/formatDateTime'
 import formatPrice from '../../utilities/formatPrice'
-import type { OrderDetails } from '../../types/orderTypes'
+import type { OrderDetails, OrderOptions } from '../../types/orderTypes'
 import type { Customer } from '../../types/customerTypes'
+import formatPhoneNumber from '../../utilities/formatPhoneNumber'
 
-function PageSingleOrder() {
+
+export default function PageAdminSingleOrder() {
   const { id } = useParams<{ id: string }>()
   const [order, setOrder] = useState<OrderDetails | null>(null)
+  const [orderOptions, setOrderOptions] = useState<OrderOptions | null>(null)
   const [customer, setCustomer] = useState<Customer | null>(null)
+
+  useEffect(() => {
+    const fetchOrderOptions = async () => {
+      try {
+        const response = await getOrderOptions()
+        setOrderOptions(response.data)
+      } catch (error) {
+        console.error('Kunde inte hämta orderalternativ:', error)
+      }
+    }
+
+    fetchOrderOptions()
+  }, [])
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -39,16 +56,36 @@ function PageSingleOrder() {
     fetchCustomer()
   }, [order?.customer_id])
 
-  console.log('Fetched order:', order) // Debugging line to check the fetched order
+  const handleStatusChange = async (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const statusId = Number(event.target.value)
+
+    if (!order) return
+
+    try {
+      const response = await updateOrder(order.id, {
+        status_id: statusId
+      })
+
+      console.log('Updated order:', response.data) // Debugging line to check the updated order
+
+      setOrder(response.data)
+    } catch (error) {
+      console.error('Kunde inte uppdatera orderstatus:', error)
+    }
+  }
+
+  if (!order || !orderOptions) {
+    return <p>Laddar order...</p>
+  }
 
   return (
     <div className='order-details'>
-      <h2>Order #{order?.id}</h2>
+      <h1 className="heading-size-1">Order #{order?.id}</h1>
       <table>
         <tbody>
           <tr>
             <th>Datum</th>
-            <td>{order?.ordered_at}</td>
+            <td>{formatDate(order?.ordered_at)}</td>
           </tr>
           <tr>
             <th>Ordernummer</th>
@@ -64,17 +101,27 @@ function PageSingleOrder() {
           </tr>
           <tr>
             <th>Status</th>
-            <td>{order?.order_status?.name || 'Ingen status'}</td>
+            <td>
+              <select
+                value={order.order_status.id}
+                onChange={handleStatusChange}
+              >
+                {orderOptions.statuses.map(status => (
+                  <option key={status.id} value={status.id}>
+                    {status.name}
+                  </option>
+                ))}
+              </select>
+            </td>
           </tr>
         </tbody>
       </table>
-      <h2>Orderdetaljer</h2>
-      <h3>Produkter</h3>
+      <h2 className="heading-size-2">Produkter</h2>
       <table>
         <thead>
           <tr>
             <th>Produkt</th>
-            <th>Tillverkare</th>
+            <th>Varumärke</th>
             <th>Antal</th>
             <th>Pris</th>
           </tr>
@@ -90,28 +137,8 @@ function PageSingleOrder() {
           ))}
         </tbody>
       </table>
-      <h3>Kunduppgifter</h3>
-      <table>
-        <thead>
-          <tr>
-            <th>Kundnummer</th>
-            <th>Förnamn</th>
-            <th>Efternamn</th>
-            <th>Email</th>
-            <th>Telefonnummer</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>{customer?.id}</td>
-            <td>{customer?.fname}</td>
-            <td>{customer?.lname}</td>
-            <td>{customer?.email}</td>
-            <td>{customer?.phone}</td>
-          </tr>
-        </tbody>
-      </table>
-      <h3>Leveransadress</h3>
+
+      <h2 className="heading-size-2">Leveransadress</h2>
       {order?.shipping_address ? (
         <table>
           <thead>
@@ -134,9 +161,30 @@ function PageSingleOrder() {
       ) : (
         <p>Ingen leveransadress tillgänglig</p>
       )}
+
+      <h2 className="heading-size-2">Kunduppgifter</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Kundnummer</th>
+            <th>Förnamn</th>
+            <th>Efternamn</th>
+            <th>Email</th>
+            <th>Telefonnummer</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>{customer?.id}</td>
+            <td>{customer?.fname}</td>
+            <td>{customer?.lname}</td>
+            <td>{customer?.email}</td>
+            <td>{customer?.phone && formatPhoneNumber(customer.phone)}</td>
+          </tr>
+        </tbody>
+      </table>
+
       <Link to="/admin">Tillbaka till orderlistan</Link>
     </div>
   )
 }
-
-export default PageSingleOrder
