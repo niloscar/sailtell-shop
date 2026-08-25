@@ -35,7 +35,9 @@ export default function CartProvider({ children }: { children: ReactNode }) {
     fetchCart()
   }, [])
 
-  const addToCart = async ( product: Product, quantity: number ) => {
+  const addToCart = async (product: Product, quantity: number) => {
+    const previousCart = cart
+
     setCartActionState((prev) => ({
       ...prev,
       [product.id]: {
@@ -46,19 +48,48 @@ export default function CartProvider({ children }: { children: ReactNode }) {
     }))
 
     try {
-      let cartUuid = cart?.cart_uuid
-
-      if (!cartUuid) {
-        const response = await createCart()
-
-        cartUuid = response.data.cart_uuid
+      if (!cart) {
+        const createResponse = await createCart()
+        const cartUuid = createResponse.data.cart_uuid
 
         localStorage.setItem('cart_uuid', cartUuid)
+
+        const response = await addCartItem(cartUuid, { product_id: product.id, quantity })
+
+        setCart(response.data)
+      } else {
+        const cartUuid = cart.cart_uuid
+
+        setCart({
+          ...cart,
+          items: cart.items.some(
+            (item) => item.product_id === product.id
+          )
+            ? cart.items.map((item) =>
+                item.product_id === product.id
+                  ? {
+                      ...item,
+                      quantity: item.quantity + quantity
+                    }
+                  : item
+              )
+            : [
+                ...cart.items,
+                {
+                  id: -product.id,
+                  product_id: product.id,
+                  name: product.name,
+                  brand_name: product.brand_name,
+                  img_url: product.img_url,
+                  quantity,
+                  price: product.price
+                }
+              ]
+        })
+
+        const response = await addCartItem(cartUuid, { product_id: product.id, quantity })
+        setCart(response.data)
       }
-
-      const response = await addCartItem(cartUuid, { product_id: product.id, quantity })
-
-      setCart(response.data)
 
       setCartActionState((prev) => ({
         ...prev,
@@ -79,6 +110,8 @@ export default function CartProvider({ children }: { children: ReactNode }) {
         }))
       }, 1500)
     } catch (error) {
+      setCart(previousCart)
+
       setCartActionState((prev) => ({
         ...prev,
         [product.id]: {
@@ -93,13 +126,22 @@ export default function CartProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  const changeQuantity = async ( productId: number, quantity: number ) => {
+  const changeQuantity = async (productId: number, quantity: number) => {
     if (!cart) return
 
+    const previousCart = cart
+
+    setCart({
+      ...cart, items: cart.items.map((item) => item.product_id === productId
+        ? { ...item, quantity }
+        : item
+      )
+    })
+
     try {
-      const response = await updateCartItem(cart.cart_uuid, productId, { quantity })
-      setCart(response.data)
+      await updateCartItem(cart.cart_uuid, productId, { quantity })
     } catch (error) {
+      setCart(previousCart)
       console.error('Kunde inte uppdatera antalet i varukorgen.', error)
     }
   }
@@ -107,19 +149,26 @@ export default function CartProvider({ children }: { children: ReactNode }) {
   const removeFromCart = async (product: Product) => {
     if (!cart) return
 
+    const previousCart = cart
+
+    setCart({
+      ...cart, items: cart.items
+        .filter((item) => item.product_id !== product.id)
+    })
+
     try {
-      const response = await deleteCartItem(cart.cart_uuid, product.id)
-      setCart(response.data)
+      await deleteCartItem(cart.cart_uuid, product.id)
     } catch (error) {
-      console.error(
-        `${product.name} kunde inte tas bort från varukorgen.`,
-        error
-      )
+      setCart(previousCart)
+      console.error(`${product.name} kunde inte tas bort från varukorgen.`, error)
     }
   }
 
   const resetCart = async () => {
     if (!cart) return
+
+    const previousCart = cart
+    setCart(null)
 
     try {
       await Promise.all(
@@ -132,8 +181,8 @@ export default function CartProvider({ children }: { children: ReactNode }) {
       )
 
       localStorage.removeItem('cart_uuid')
-      setCart(null)
     } catch (error) {
+      setCart(previousCart)
       console.error('Varukorgen kunde inte tömmas.', error)
     }
   }
