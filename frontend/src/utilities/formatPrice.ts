@@ -1,8 +1,10 @@
 export default function formatPrice(price: number): string {
-  return price.toLocaleString(
-    'sv-SE', 
-    { 
-      style: 'currency', 
-      currency: 'SEK' 
-    })
+  const hasDecimals = !Number.isInteger(price)
+
+  return price.toLocaleString('sv-SE', {
+    style: 'currency',
+    currency: 'SEK',
+    minimumFractionDigits: hasDecimals ? 2 : 0,
+    maximumFractionDigits: 2
+  })
 }

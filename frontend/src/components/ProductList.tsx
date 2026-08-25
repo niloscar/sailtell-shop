@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { getProducts } from '../api/productApi'
 import type { Product } from '../types/productTypes'
 
-function ProductList({ category, title }: { category?: string, title?: string }) {
+function ProductList({ category, title }: { category?: string, title?: string | false }) {
   const [products, setProducts] = useState([])
   const [categoryName, setCategoryName] = useState(category || '')
 
@@ -24,15 +24,16 @@ function ProductList({ category, title }: { category?: string, title?: string })
 
   return (
     <>
-      <h1 className="heading-size-1">
-        {title || (category ? (
-          <>
-            <a href={`/products/${category}`}>{categoryName}</a>
-          </>
-        ) : (
-          <a href={`/products`}>All products</a>
-        ))}
-      </h1>
+      {title !== false && (
+        <h1 className="heading-size-1">
+          {typeof title === 'string'
+            ? title
+            : category
+              ? <Link to={`/products/${category}`}>{categoryName}</Link>
+              : <Link to="/products">All products</Link>
+          }
+        </h1>
+      )}
       <ul className='unstyled product-list'>
         {products.map((product: Product) => (
           <li 
@@ -44,7 +45,7 @@ function ProductList({ category, title }: { category?: string, title?: string })
                 {product.name}
               </Link>
             </h2>
-            <p className='brand-name'>{product.brand}</p>
+            {/* <p className='brand-name'>{product.brand_name}</p> */}
             <p>{product.description}</p>
           </li>
         ))}
