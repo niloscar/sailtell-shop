@@ -108,6 +108,21 @@ ul {
     font-size: .875rem;
     margin-bottom: .5rem;
   }
+
+  button {
+    align-self: center;
+    background-color: var(--success);
+    color: #fff;
+    border: none;
+    padding: .25rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 1rem;
+
+    &:hover {
+      opacity: .9;
+    }
+  }
 }
 
 .product-page {
@@ -370,6 +385,11 @@ nav.admin-nav {
     &.active {
       text-decoration: underline;
     }
+  }
+
+  & button {
+    padding: .25rem 1rem;
+    align-self: center;
   }
 
   img.nav-logo {
