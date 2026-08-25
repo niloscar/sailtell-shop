@@ -5,6 +5,7 @@
 import { Router } from 'express'
 import { getProductHandler, deleteProductHandler, updateProductHandler, createProductHandler, getAllProductsHandler, getProductsByCategoryHandler, getProductOptionsHandler } from '../controllers/productController'
 import priceRouter from './priceRoutes'
+import { requireAdmin } from '../middleware/authMiddleware'
 
 const productRouter = Router()
 
@@ -16,8 +17,22 @@ productRouter.use('/:productId', priceRouter)
 
 productRouter.get('/:id', getProductHandler)
 
-productRouter.post('/', createProductHandler)
-productRouter.patch('/:id', updateProductHandler)
-productRouter.delete('/:id', deleteProductHandler)
+productRouter.post(
+  '/',
+  requireAdmin,
+  createProductHandler
+)
+
+productRouter.patch(
+  '/:id',
+  requireAdmin,
+  updateProductHandler
+)
+
+productRouter.delete(
+  '/:id',
+  requireAdmin,
+  deleteProductHandler
+)
 
 export default productRouter

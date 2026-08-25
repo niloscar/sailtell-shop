@@ -4,8 +4,11 @@
 
 import { Router } from 'express'
 import { getCustomersHandler, getCustomerHandler, createCustomerHandler, updateCustomerHandler } from '../controllers/customerController'
+import { requireAdmin } from '../middleware/authMiddleware'
 
 const customerRouter = Router()
+
+customerRouter.use(requireAdmin)
 
 customerRouter.get('/', getCustomersHandler)
 customerRouter.get('/:id', getCustomerHandler)

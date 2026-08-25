@@ -3,7 +3,18 @@ export interface Customer {
   fname: string
   lname: string
   email: string
-  phone?: string
+  phone: string
+}
+
+export interface CreateCustomer {
+  fname: string
+  lname: string
+  email: string
+  phone: string
+  street: string
+  zipcode: string
+  city: string
+  country: string
 }
 
 export interface UpdateCustomer {

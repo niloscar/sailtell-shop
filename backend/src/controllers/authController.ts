@@ -4,6 +4,7 @@
 
 import { Request, Response } from 'express'
 import { loginUser } from '../services/authService'
+import { getUser } from '../services/userService'
 import { clearSession, setSessionUserId, getSessionUserId } from '../services/sessionService'
 
 export async function login(req: Request, res: Response) {
@@ -30,7 +31,16 @@ export async function login(req: Request, res: Response) {
 }
 
 export async function getSession(req: Request, res: Response) {
-  res.json({ "userId": getSessionUserId(req) }) // Return the userId from the session, or null if not logged in.
+  const userId = getSessionUserId(req)
+
+  if (!userId) {
+    res.status(401).json({ error: 'Inte inloggad.' })
+    return
+  }
+
+  const user = await getUser(userId)
+
+  res.json({ user })
 }
 
 export async function logout(req: Request, res: Response) {
