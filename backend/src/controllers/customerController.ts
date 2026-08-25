@@ -11,7 +11,12 @@ type CustomerParams = {
 
 export async function getCustomersHandler(req: Request, res: Response) {
   const customers = await getCustomers()
-  res.json(customers)
+
+  if (customers) {
+    res.json(customers)
+  } else {
+    res.status(404).json({ error: 'Inga kunder hittades.' })
+  }
 }
 
 export async function getCustomerHandler(req: Request<CustomerParams>, res: Response) {
@@ -28,7 +33,12 @@ export async function getCustomerHandler(req: Request<CustomerParams>, res: Resp
 export async function createCustomerHandler(req: Request, res: Response) {
   const newCustomer = req.body
   const createdCustomer = await createCustomer(newCustomer)
-  res.status(201).json(createdCustomer)
+
+  if (createdCustomer) {
+    res.status(201).json(createdCustomer)
+  } else {
+    res.status(400).json({ error: 'Kunden kunde inte skapas.' })
+  }
 }
 
 export async function updateCustomerHandler(req: Request<CustomerParams>, res: Response) {
@@ -36,5 +46,10 @@ export async function updateCustomerHandler(req: Request<CustomerParams>, res: R
   const updatedCustomerData = req.body
 
   const updatedCustomer = await updateCustomer(customerId, updatedCustomerData)
-  res.json(updatedCustomer)
+
+  if (updatedCustomer) {
+    res.json(updatedCustomer)
+  } else {
+    res.status(404).json({ error: 'Kunden kunde inte uppdateras.' })
+  }
 }

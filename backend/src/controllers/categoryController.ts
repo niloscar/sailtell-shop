@@ -11,7 +11,11 @@ type CategoryParams = {
 
 export async function getCategoriesHandler(req: Request, res: Response) {
   const categories = await getCategories()
-  res.json(categories)
+  if (categories) {
+    res.json(categories)
+  } else {
+    res.status(404).json({ error: 'Inga kategorier hittades.' })
+  }
 }
 
 export async function getCategoryHandler(req: Request<CategoryParams>, res: Response) {
@@ -28,7 +32,12 @@ export async function getCategoryHandler(req: Request<CategoryParams>, res: Resp
 export async function createCategoryHandler(req: Request, res: Response) {
   const newCategory = req.body
   const createdCategory = await createCategory(newCategory.name, newCategory.description)
-  res.status(201).json(createdCategory)
+
+  if (createdCategory) {
+    res.status(201).json(createdCategory)
+  } else {
+    res.status(400).json({ error: 'Kategorin kunde inte skapas.' })
+  }
 }
 
 export async function updateCategoryHandler(req: Request<CategoryParams>, res: Response) {
@@ -38,7 +47,11 @@ export async function updateCategoryHandler(req: Request<CategoryParams>, res: R
   if (category) {
     const updatedCategory = { ...category, ...req.body }
     const result = await updateCategory(categoryId, updatedCategory)
-    res.json(result)
+    if (result) {
+      res.json(result)
+    } else {
+      res.status(400).json({ error: 'Kategorin kunde inte uppdateras.' })
+    }
   } else {
     res.status(404).json({ error: 'Kategorin du vill ändra kunde inte hittas.' })
   }

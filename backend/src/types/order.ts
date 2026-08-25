@@ -10,13 +10,28 @@ export interface Order {
   order_status: Status
 }
 
-export interface CreateOrder {
-  customer_id: number
+export type CreateOrder = {
+  customer: {
+    fname: string
+    lname: string
+    email: string
+    phone: string
+  }
   payment_method_id: number
   delivery_method_id: number
-  ordered_at: string
-  shipping_address: CreateShippingAddress
-  order_items: CreateOrderItem[]
+  ordered_at?: string
+  shipping_address: {
+    fname: string
+    lname: string
+    street: string
+    city: string
+    zipcode: string
+    country: string
+  }
+  order_items: {
+    product_id: number
+    quantity: number
+  }[]
 }
 
 export interface UpdateOrder {

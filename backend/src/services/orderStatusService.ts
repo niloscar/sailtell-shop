@@ -33,9 +33,8 @@ export async function createOrderStatus(orderId: number, statusId: number, db: D
 
 export async function updateOrderStatus(orderId: number, statusId: number) {
   const { rows } = await pool.query(
-    `UPDATE order_statuses
-    SET status_id = $2, set_at = NOW()
-    WHERE order_id = $1
+    `INSERT INTO order_statuses (order_id, status_id, set_at)
+    VALUES ($1, $2, NOW())
     RETURNING id, order_id, status_id, set_at`,
     [orderId, statusId]
   )

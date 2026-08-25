@@ -3,8 +3,40 @@
  */
 
 import pool from '../database'
-import type { Product, UpdateProduct } from '../types/product'
+import type { CreateProduct, Product, UpdateProduct } from '../types/product'
 import { getCategoryBySlug } from './categoryService'
+
+export async function getProductOptions() {
+  const { rows } = await pool.query(
+    `SELECT
+      (
+        SELECT COALESCE(
+          JSONB_AGG(DISTINCT purchase_type),
+          '[]'::jsonb
+        )
+        FROM products
+        WHERE purchase_type IS NOT NULL
+      ) AS purchase_types,
+
+      (
+        SELECT COALESCE(
+          JSONB_AGG(
+            JSONB_BUILD_OBJECT(
+              'id', categories.id,
+              'name', categories.name
+            )
+            ORDER BY categories.name
+          ),
+          '[]'::jsonb
+        )
+        FROM categories
+      ) AS categories`
+  )
+
+  if (rows.length === 0) throw new Error('Kunde inte hämta produktalternativ.')
+
+  return rows[0]
+}
 
 async function getProducts({ categoryId }: { categoryId?: number } = {}) {
   const { rows } = await pool.query<Product>(
@@ -150,60 +182,183 @@ export async function getProduct(id: number) {
   return rows[0]
 }
 
-export async function createProduct(name: string, description: string, details: [], stock: number) {
-  const { rows } = await pool.query<Product>(
-    `INSERT INTO products (name, description, details, stock) 
-        VALUES ($1, $2, $3, $4) 
-        RETURNING id, name, description, details, stock`,
-    [name, description, details, stock]
-  )
+export async function createProduct(product: CreateProduct) {
+  const client = await pool.connect()
 
-  return rows[0]
+  try {
+    await client.query('BEGIN')
+
+    const { rows } = await client.query<{ id: number }>(
+      `INSERT INTO products (
+        name,
+        brand_name,
+        description,
+        details,
+        img_url,
+        stock,
+        purchase_type
+      )
+      VALUES ($1, $2, $3, $4::jsonb, $5, $6, $7)
+      RETURNING id`,
+      [
+        product.name,
+        product.brand_name,
+        product.description,
+        JSON.stringify(product.details),
+        product.img_url,
+        product.stock,
+        product.purchase_type
+      ]
+    )
+
+    const productId = rows[0].id
+
+    await client.query(
+      `INSERT INTO prices (
+        product_id,
+        price
+      )
+      VALUES ($1, $2)`,
+      [
+        productId,
+        product.price
+      ]
+    )
+
+    for (const categoryId of product.category_ids) {
+      await client.query(
+        `INSERT INTO product_categories (
+          product_id,
+          category_id
+        )
+        VALUES ($1, $2)`,
+        [
+          productId,
+          categoryId
+        ]
+      )
+    }
+
+    await client.query('COMMIT')
+
+    return getProduct(productId)
+  } catch (error) {
+    await client.query('ROLLBACK')
+    throw error
+  } finally {
+    client.release()
+  }
 }
 
-const columnMap = {
-  name: 'name',
-  brand_name: 'brand_name',
-  description: 'description',
-  details: 'details',
-  img_url: 'img_url',
-  stock: 'stock',
-  purchase_type: 'purchase_type',
-  sort_order: 'sort_order'
-} as const
+const productColumns = [
+  'name',
+  'brand_name',
+  'description',
+  'details',
+  'img_url',
+  'stock',
+  'purchase_type',
+  'sort_order'
+] as const
 
 export async function updateProduct(id: number, updates: UpdateProduct) {
-  const fieldsToUpdate: string[] = []
-  const values: any[] = []
+  const client = await pool.connect()
 
-  for (const [key, value] of Object.entries(updates)) {
-    if (value === undefined) continue
+  try {
+    await client.query('BEGIN')
 
-    const column = columnMap[key as keyof UpdateProduct]
+    const {
+      category_ids,
+      price,
+      ...productUpdates
+    } = updates
 
-    values.push(value)
-    fieldsToUpdate.push(`${column} = $${values.length}`)
+    const fieldsToUpdate: string[] = []
+    const values: unknown[] = []
+
+    for (const [key, value] of Object.entries(productUpdates)) {
+      if (value === undefined) continue
+
+      if (!productColumns.includes(key as typeof productColumns[number])) {
+        continue
+      }
+
+      if (key === 'details') {
+        values.push(JSON.stringify(value))
+        fieldsToUpdate.push(
+          `${key} = $${values.length}::jsonb`
+        )
+      } else {
+        values.push(value)
+        fieldsToUpdate.push(
+          `${key} = $${values.length}`
+        )
+      }
+    }
+
+    if (fieldsToUpdate.length > 0) {
+      values.push(id)
+
+      await client.query(
+        `UPDATE products
+         SET ${fieldsToUpdate.join(', ')}
+         WHERE id = $${values.length}`,
+        values
+      )
+    }
+
+    if (category_ids !== undefined) {
+      await client.query(
+        `DELETE FROM product_categories
+         WHERE product_id = $1`,
+        [id]
+      )
+
+      for (const categoryId of category_ids) {
+        await client.query(
+          `INSERT INTO product_categories (
+            product_id,
+            category_id
+          )
+          VALUES ($1, $2)`,
+          [id, categoryId]
+        )
+      }
+    }
+
+    if (price !== undefined) {
+      const { rows } = await client.query<{ price: number }>(
+        `SELECT price
+         FROM prices
+         WHERE product_id = $1
+         ORDER BY set_at DESC
+         LIMIT 1`,
+        [id]
+      )
+
+      const currentPrice = rows[0]?.price
+
+      if (Number(currentPrice) !== Number(price)) {
+        await client.query(
+          `INSERT INTO prices (
+            product_id,
+            price
+          )
+          VALUES ($1, $2)`,
+          [id, price]
+        )
+      }
+    }
+
+    await client.query('COMMIT')
+
+    return getProduct(id)
+  } catch (error) {
+    await client.query('ROLLBACK')
+    throw error
+  } finally {
+    client.release()
   }
-
-  if (fieldsToUpdate.length === 0) {
-    throw new Error('Inga fält att uppdatera.')
-  }
-
-  values.push(id) // Add the product ID as the last parameter
-
-  const { rows } = await pool.query<Product>(
-    `UPDATE products 
-        SET ${fieldsToUpdate.join(', ')} 
-        WHERE id = $${values.length} 
-        RETURNING id, name, description, img_url,stock, sort_order, created_at, updated_at`,
-    values
-  )
-
-  if (rows.length === 0) {
-    throw new Error('Produkten kunde inte hittas.')
-  }
-
-  return rows[0]
 }
 
 export async function deleteProduct(id: number) {

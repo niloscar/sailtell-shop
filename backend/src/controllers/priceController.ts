@@ -12,7 +12,12 @@ type ProductParams = {
 export async function getPriceHistoryHandler(req: Request<ProductParams>, res: Response) {
   const productId = parseInt(req.params.productId)
   const prices = await getPriceHistory(productId)
-  res.json(prices)
+
+  if (prices) {
+    res.json(prices)
+  } else {
+    res.status(404).json({ error: 'Inga prisuppgifter hittades för den angivna produkten.' })
+  }
 }
 
 export async function getPriceHandler(req: Request<ProductParams>, res: Response) {
@@ -32,5 +37,9 @@ export async function createPriceHandler(req: Request<ProductParams>, res: Respo
 
   const newPrice = await createPrice(productId, price)
 
-  res.status(201).json(newPrice)
+  if (newPrice) {
+    res.status(201).json(newPrice)
+  } else {
+    res.status(400).json({ error: 'Priset kunde inte skapas.' })
+  }
 }

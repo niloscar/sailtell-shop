@@ -12,7 +12,7 @@ const navItems = [
   { name: 'Start', path: '/admin', end: true },
   { name: 'Orders', path: '/admin/orders' },
   { name: 'Products', path: '/admin/products' },
-  { name: 'Customers', path: '/admin/customers' }
+  // { name: 'Customers', path: '/admin/customers' }
 ]
 
 export default function AdminNav() {

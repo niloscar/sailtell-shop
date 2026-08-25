@@ -10,6 +10,60 @@ import { createShippingAddress } from './shippingAddressService'
 import { createOrderItems } from './orderItemService'
 import { createOrderStatus } from './orderStatusService'
 
+export async function getOrderOptions() {
+  const { rows } = await pool.query(
+    `SELECT
+      (
+        SELECT COALESCE(
+          JSONB_AGG(
+            JSONB_BUILD_OBJECT(
+              'id', payment_methods.id,
+              'name', payment_methods.name
+            )
+            ORDER BY payment_methods.name
+          ),
+          '[]'::jsonb
+        )
+        FROM payment_methods
+        WHERE payment_methods.is_active = TRUE
+      ) AS payment_methods,
+
+      (
+        SELECT COALESCE(
+          JSONB_AGG(
+            JSONB_BUILD_OBJECT(
+              'id', delivery_methods.id,
+              'name', delivery_methods.name
+            )
+            ORDER BY delivery_methods.name
+          ),
+          '[]'::jsonb
+        )
+        FROM delivery_methods
+      ) AS delivery_methods,
+
+      (
+        SELECT COALESCE(
+          JSONB_AGG(
+            JSONB_BUILD_OBJECT(
+              'id', statuses.id,
+              'name', statuses.name
+            )
+            ORDER BY statuses.id
+          ),
+          '[]'::jsonb
+        )
+        FROM statuses
+      ) AS statuses`
+  )
+
+  if (rows.length === 0) {
+    throw new Error('Inga orderalternativ kunde hittas.')
+  }
+
+  return rows[0]
+}
+
 export async function getOrders() {
   const { rows } = await pool.query<Order>(
     `SELECT
@@ -30,7 +84,8 @@ export async function getOrders() {
 
       JSONB_BUILD_OBJECT(
         'id', current_status.id,
-        'name', current_status.name
+        'name', current_status.name,
+        'set_at', current_status.set_at
       ) AS order_status
 
     FROM orders
@@ -38,7 +93,8 @@ export async function getOrders() {
     LEFT JOIN LATERAL (
       SELECT
         statuses.id,
-        statuses.name
+        statuses.name,
+        order_statuses.set_at
       FROM order_statuses
       JOIN statuses
         ON statuses.id = order_statuses.status_id
@@ -112,7 +168,8 @@ export async function getOrder(id: number, db: Pool | PoolClient = pool) {
 
       JSONB_BUILD_OBJECT(
         'id', current_status.id,
-        'name', current_status.name
+        'name', current_status.name,
+        'set_at', current_status.set_at
       ) AS order_status
 
     FROM orders
@@ -129,7 +186,8 @@ export async function getOrder(id: number, db: Pool | PoolClient = pool) {
     LEFT JOIN LATERAL (
       SELECT
         statuses.id,
-        statuses.name
+        statuses.name,
+        order_statuses.set_at
       FROM order_statuses
       JOIN statuses
         ON statuses.id = order_statuses.status_id
@@ -147,11 +205,42 @@ export async function getOrder(id: number, db: Pool | PoolClient = pool) {
   return rows[0]
 }
 
-export async function createOrder(
-  order: CreateOrder
-) {
-  // Create the order
+export async function createOrder(order: CreateOrder) {
   return withTransaction(async (client) => {
+
+    // Create the customer
+    const customerResult = await client.query<{ id: number }>(
+      `INSERT INTO customers (
+        fname,
+        lname,
+        email,
+        phone,
+        street,
+        zipcode,
+        city,
+        country
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      RETURNING id`,
+      [
+        order.customer.fname,
+        order.customer.lname,
+        order.customer.email,
+        order.customer.phone,
+        order.shipping_address.street,
+        order.shipping_address.zipcode,
+        order.shipping_address.city,
+        order.shipping_address.country
+      ]
+    )
+
+    if (customerResult.rows.length === 0) {
+      throw new Error('Kunden kunde inte skapas.')
+    }
+
+    const customerId = customerResult.rows[0].id
+
+    // Create the order
     const { rows } = await client.query<{ id: number }>(
       `INSERT INTO orders (
         customer_id,
@@ -162,10 +251,10 @@ export async function createOrder(
       VALUES ($1, $2, $3, $4)
       RETURNING id`,
       [
-        order.customer_id,
+        customerId,
         order.payment_method_id,
         order.delivery_method_id,
-        order.ordered_at
+        order.ordered_at ?? new Date()
       ]
     )
 

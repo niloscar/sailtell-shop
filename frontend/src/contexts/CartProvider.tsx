@@ -7,6 +7,8 @@ import type { CartItem } from '../types/cartTypes'
 export default function CartProvider({ children }: { children: ReactNode }) {
   const [cart, setCart] = useState<Record<number, CartItem>>({})
 
+  const cartCount = Object.values(cart).reduce((total, item) => total + item.quantity, 0)
+
   const addToCart = (product: Product, quantity: number) => {
     setCart((prevCart) => ({
       ...prevCart,
@@ -30,9 +32,12 @@ export default function CartProvider({ children }: { children: ReactNode }) {
     })
   }
 
-  const cartCount = Object.values(cart).reduce((total, item) => total + item.quantity, 0)
+  const resetCart = () => {
+    setCart({})
+    console.log('Varukorgen har tömts.')
+  }
 
-  const value = { cart, addToCart, removeFromCart, cartCount }
+  const value = { cart, cartCount, addToCart, removeFromCart, resetCart }
 
   return (
     <CartContext.Provider value={value}>
