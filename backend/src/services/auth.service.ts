@@ -1,45 +1,24 @@
-/**
- * Authentication service functions for handling user login, session management, and logout.
- *
- * Todo:
- * - Implement password hashing and verification for secure authentication.
- */
+// services/auth.service.ts
 
-import bcrypt from "bcrypt";
-import { User, PublicUser } from "../types/user.types";
-import pool from "../database";
+import bcrypt from 'bcrypt'
+import { findUserByEmail } from '../repositories/user.repository'
+import type { PublicUser } from '../types/user.types'
 
 type LoginResult = {
-  user: PublicUser;
-};
+  user: PublicUser
+}
 
-export async function loginUser(
-  email: string,
-  password: string,
-): Promise<LoginResult> {
-  const { rows } = await pool.query<User>(
-    `SELECT
-      id,
-      fname,
-      lname,
-      email,
-      role,
-      password_hash
-    FROM users
-    WHERE LOWER(email) = LOWER($1)`,
-    [email],
-  );
-
-  const user = rows[0];
+export async function loginUser(email: string, password: string): Promise<LoginResult> {
+  const user = await findUserByEmail(email)
 
   if (!user) {
-    throw new Error("Fel användarnamn eller lösenord");
+    throw new Error('Fel användarnamn eller lösenord')
   }
 
-  const passwordMatches = await bcrypt.compare(password, user.password_hash);
+  const passwordMatches = await bcrypt.compare(password, user.password_hash)
 
   if (!passwordMatches) {
-    throw new Error("Fel användarnamn eller lösenord");
+    throw new Error('Fel användarnamn eller lösenord')
   }
 
   return {
@@ -48,7 +27,7 @@ export async function loginUser(
       fname: user.fname,
       lname: user.lname,
       email: user.email,
-      role: user.role,
-    },
-  };
+      role: user.role
+    }
+  }
 }
