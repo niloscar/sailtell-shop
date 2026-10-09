@@ -40,19 +40,19 @@ function ProductList({ category }: { category?: string, title?: string | false }
             className='list-item clickable'
             onClick={() => navigate(`/product/${product.id}`)}
           >
-            {product.img_url && (
-              <img
-                className='product-image'
-                src={`${product.img_url}`}
-                alt={product.name}
-              />
-            )}
             <div className='product-info'>
-              <h2 className="heading-size-2">
+              <h2 className="heading-size-2 product-title">
                 {product.name}
               </h2>
+              {product.img_url && (
+                <img
+                  className='product-image'
+                  src={`${product.img_url}`}
+                  alt={product.name}
+                />
+              )}
               {/* <p className='brand-name'>{product.brand_name}</p> */}
-              <p>{product.description}</p>
+              <p className='product-description'>{product.description}</p>
             </div>
           </li>
         ))}

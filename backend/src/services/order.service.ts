@@ -2,14 +2,14 @@
  * Order service functions for handling order-related operations such as creating orders, updating order status, and deleting orders.
  */
 
-import pool, { withTransaction } from '../database'
-import type { Pool, PoolClient } from 'pg'
-import type { Order, UpdateOrder, CreateOrder } from '../types/order'
+import pool, { withTransaction } from "../database";
+import type { Pool, PoolClient } from "pg";
+import type { Order, UpdateOrder, CreateOrder } from "../types/order.types";
 
-import { getOrCreateCustomer } from './customerService'
-import { createShippingAddress } from './shippingAddressService'
-import { createOrderItems } from './orderItemService'
-import { createOrderStatus } from './orderStatusService'
+import { getOrCreateCustomer } from "./customer.service";
+import { createShippingAddress } from "./shippingAddress.service";
+import { createOrderItems } from "./orderItem.service";
+import { createOrderStatus } from "./orderStatus.service";
 
 export async function getOrderOptions() {
   const { rows } = await pool.query(
@@ -55,14 +55,14 @@ export async function getOrderOptions() {
           '[]'::jsonb
         )
         FROM statuses
-      ) AS statuses`
-  )
+      ) AS statuses`,
+  );
 
   if (rows.length === 0) {
-    throw new Error('Inga orderalternativ kunde hittas.')
+    throw new Error("Inga orderalternativ kunde hittas.");
   }
 
-  return rows[0]
+  return rows[0];
 }
 
 export async function getOrders() {
@@ -105,12 +105,12 @@ export async function getOrders() {
     ) AS current_status ON true
 
     WHERE orders.deleted_at IS NULL
-    ORDER BY orders.id`
-  )
+    ORDER BY orders.id`,
+  );
 
-  if (rows.length === 0) throw new Error('Inga beställningar kunde hittas.')
+  if (rows.length === 0) throw new Error("Inga beställningar kunde hittas.");
 
-  return rows
+  return rows;
 }
 
 export async function getOrder(id: number, db: Pool | PoolClient = pool) {
@@ -198,17 +198,16 @@ export async function getOrder(id: number, db: Pool | PoolClient = pool) {
     ) AS current_status ON true
 
     WHERE orders.id = $1 AND orders.deleted_at IS NULL`,
-    [id]
-  )
+    [id],
+  );
 
-  if (rows.length === 0) throw new Error('Beställningen kunde inte hittas.')
+  if (rows.length === 0) throw new Error("Beställningen kunde inte hittas.");
 
-  return rows[0]
+  return rows[0];
 }
 
 export async function createOrder(order: CreateOrder) {
   return withTransaction(async (client) => {
-
     // Get existing customer or create a new one
     const customer = await getOrCreateCustomer(
       {
@@ -219,12 +218,12 @@ export async function createOrder(order: CreateOrder) {
         street: order.shipping_address.street,
         zipcode: order.shipping_address.zipcode,
         city: order.shipping_address.city,
-        country: order.shipping_address.country
+        country: order.shipping_address.country,
       },
-      client
-    )
+      client,
+    );
 
-    const customerId = customer.id
+    const customerId = customer.id;
 
     // Create the order
     const { rows } = await client.query<{ id: number }>(
@@ -240,15 +239,15 @@ export async function createOrder(order: CreateOrder) {
         customerId,
         order.payment_method_id,
         order.delivery_method_id,
-        order.ordered_at ?? new Date()
-      ]
-    )
+        order.ordered_at ?? new Date(),
+      ],
+    );
 
     if (rows.length === 0) {
-      throw new Error('Beställningen kunde inte skapas.')
+      throw new Error("Beställningen kunde inte skapas.");
     }
 
-    const orderId = rows[0].id
+    const orderId = rows[0].id;
 
     // Create the shipping address
     await createShippingAddress(
@@ -259,47 +258,43 @@ export async function createOrder(order: CreateOrder) {
       order.shipping_address.city,
       order.shipping_address.zipcode,
       order.shipping_address.country,
-      client
-    )
+      client,
+    );
 
     // Create the order items
-    await createOrderItems(
-      orderId,
-      order.order_items,
-      client
-    )
+    await createOrderItems(orderId, order.order_items, client);
 
     // Set the initial order status to "Mottagen"
-    await createOrderStatus(
-      orderId,
-      1,
-      client
-    )
+    await createOrderStatus(orderId, 1, client);
 
     // Return the complete order details
-    return getOrder(orderId, client)
-  })
+    return getOrder(orderId, client);
+  });
 }
 
 export async function updateOrder(id: number, updates: UpdateOrder) {
-  if (Object.keys(updates).length === 0) throw new Error('Inga uppgifter att uppdatera.')
+  if (Object.keys(updates).length === 0)
+    throw new Error("Inga uppgifter att uppdatera.");
 
-  const setClauses = Object.keys(updates).map((key, index) => `${key} = $${index + 2}`)
+  const setClauses = Object.keys(updates).map(
+    (key, index) => `${key} = $${index + 2}`,
+  );
 
-  const values = Object.values(updates)
+  const values = Object.values(updates);
 
   const { rows } = await pool.query<{ id: number }>(
     `UPDATE orders
-     SET ${setClauses.join(', ')}
+     SET ${setClauses.join(", ")}
      WHERE id = $1
        AND deleted_at IS NULL
      RETURNING id`,
-    [id, ...values]
-  )
+    [id, ...values],
+  );
 
-  if (rows.length === 0) throw new Error('Beställningen du vill uppdatera kunde inte hittas.')
+  if (rows.length === 0)
+    throw new Error("Beställningen du vill uppdatera kunde inte hittas.");
 
-  return getOrder(rows[0].id)
+  return getOrder(rows[0].id);
 }
 
 export async function deleteOrder(id: number) {
@@ -307,8 +302,9 @@ export async function deleteOrder(id: number) {
     `UPDATE orders
     SET deleted_at = NOW()
     WHERE id = $1 AND deleted_at IS NULL`,
-    [id]
-  )
+    [id],
+  );
 
-  if (rowCount === 0) throw new Error('Beställningen du vill ta bort kunde inte hittas.')
+  if (rowCount === 0)
+    throw new Error("Beställningen du vill ta bort kunde inte hittas.");
 }

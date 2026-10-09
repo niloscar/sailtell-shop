@@ -3,7 +3,7 @@
  */
 
 import pool from '../database'
-import type { Category, UpdateCategory } from '../types/category'
+import type { Category, UpdateCategory } from '../types/category.types'
 import slugify from '../utilities/slugify'
 
 export async function getCategories() {

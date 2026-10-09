@@ -75,6 +75,10 @@ ul {
     text-align: left;
   }
 
+  & .product-title {
+    margin: 0;
+  }
+
   & .product-image {
     display: block;
     width: 100%;
@@ -87,6 +91,14 @@ ul {
 
   & .product-info {
     padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  & .product-description {
+    line-height: 1.4;
+    font-size: .875rem;
   }
 }
 

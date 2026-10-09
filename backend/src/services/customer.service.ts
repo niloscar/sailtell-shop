@@ -4,7 +4,7 @@
 
 import pool from '../database'
 import type { Pool, PoolClient } from 'pg'
-import type { Customer, CreateCustomer, UpdateCustomer } from '../types/customer'
+import type { Customer, CreateCustomer, UpdateCustomer } from '../types/customer.types'
 
 export async function getCustomers() {
   const { rows } = await pool.query<Customer>(

@@ -3,7 +3,7 @@
  */
 
 import { Router } from 'express'
-import { login, getSession, logout } from '../controllers/authController'
+import { login, getSession, logout } from '../controllers/auth.controller'
 
 const authRouter = Router()
 

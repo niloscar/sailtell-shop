@@ -3,7 +3,7 @@
  */
 
 import { Request, Response } from 'express'
-import { getPrice, getPriceHistory, createPrice} from '../services/priceService'
+import { getPrice, getPriceHistory, createPrice} from '../services/price.service'
 
 type ProductParams = {
   productId: string

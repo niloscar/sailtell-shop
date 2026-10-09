@@ -2,7 +2,7 @@
  * Controller functions for handling cart-related API endpoints.
  */
 
-import { createCart, getCart, addCartItem, updateCartItem, deleteCartItem } from '../services/cartService'
+import { createCart, getCart, addCartItem, updateCartItem, deleteCartItem } from '../services/cart.service'
 import type { Request, Response } from 'express'
 
 type CartParams = {

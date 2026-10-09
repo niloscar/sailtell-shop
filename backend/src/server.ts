@@ -11,13 +11,13 @@ import path from 'path'
 import { connect, pool } from './database'
 
 /* Import route handlers */
-import customerRoutes from './routes/customerRoutes'
-import productRoutes from './routes/productRoutes'
-import orderRoutes from './routes/orderRoutes'
-import usersRouter from './routes/userRoutes'
-import authRouter from './routes/authRoutes'
-import categoryRoutes from './routes/categoryRoutes'
-import cartRoutes from './routes/cartRoutes'
+import customerRoutes from './routes/customer.routes'
+import productRoutes from './routes/product.routes'
+import orderRoutes from './routes/order.routes'
+import usersRouter from './routes/user.routes'
+import authRouter from './routes/auth.routes'
+import categoryRoutes from './routes/category.routes'
+import cartRoutes from './routes/cart.routes'
 
 /* Load environment variables from .env file */
 dotenv.config()
