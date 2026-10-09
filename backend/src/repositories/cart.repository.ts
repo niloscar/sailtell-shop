@@ -112,7 +112,7 @@ export async function updateCartItemQuantity(
     [quantity, cartUuid, productId]
   )
 
-  return (result.rowCount ?? 0) > 0
+  return result.rows.length > 0
 }
 
 export async function deleteCartItem(
@@ -133,7 +133,7 @@ export async function deleteCartItem(
     [cartUuid, productId]
   )
 
-  return (result.rowCount ?? 0) > 0
+  return result.rows.length > 0
 }
 
 export async function touchCartById(cartId: number) {
