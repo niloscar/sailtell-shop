@@ -2,13 +2,20 @@ import { useCart } from '../contexts/CartContext'
 import { CheckIcon, ShoppingCartIcon } from '@phosphor-icons/react'
 import type { Product } from '../types/productTypes'
 
+import styles from './ToCartButton.module.css'
 
-export default function ToCartButton({ product, quantity }: { product: Product; quantity: number }) {
+export default function ToCartButton({
+  product,
+  quantity
+}: {
+  product: Product
+  quantity: number
+}) {
   const { addToCart, cartActionState } = useCart()
 
   return (
     <button
-      className="to-cart-button"
+      className={styles.toCartButton}
       onClick={() => addToCart(product, quantity)}
       disabled={cartActionState[product.id]?.loading}
     >

@@ -1,0 +1,34 @@
+.quantitySelector {
+  display: flex;
+  align-items: center;
+  background-color: #e5e5e5;
+  overflow: hidden;
+  border-radius: 4px;
+}
+
+.quantityValue {
+  min-width: 2.5rem;
+  text-align: center;
+  display: inline-block;
+}
+
+.quantityUnit {
+  margin-left: 0.25rem;
+}
+
+.quantityDecrementButton,
+.quantityIncrementButton {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 0.5rem;
+  font-size: 1rem;
+  cursor: pointer;
+  width: 2rem;
+  height: 100%;
+  border: none;
+  background-color: transparent;
+
+  &:hover {
+    background-color: #d5d5d5;
+  }
+}

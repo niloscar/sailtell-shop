@@ -7,7 +7,7 @@ import getApiErrorMessage from '../../utilities/apiError'
 import { InfinityIcon } from '@phosphor-icons/react'
 import type { Product } from '../../types/productTypes'
 
- export default function PageAdminProducts() {
+export default function PageAdminProducts() {
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState<boolean>(true)
   const [loadingError, setLoadingError] = useState<string | null>(null)
@@ -31,7 +31,7 @@ import type { Product } from '../../types/productTypes'
   }, [])
 
   if (loading) return <p>Laddar produkter...</p>
-  if (loadingError) return <p className="error-message">{loadingError}</p>
+  if (loadingError) return <p className="errorMessage">{loadingError}</p>
   if (products.length === 0) return <p>Inga produkter hittades.</p>
 
   return (
@@ -49,7 +49,7 @@ import type { Product } from '../../types/productTypes'
         </thead>
         <tbody>
           {products.map((product: Product) => (
-            <tr 
+            <tr
               key={product.id}
               className="clickable-row"
               onClick={() => navigate(`/admin/product/${product.id}`)}
@@ -58,15 +58,14 @@ import type { Product } from '../../types/productTypes'
               <td>{product.name}</td>
               <td>{categoriesToString(product.categories)}</td>
               <td>{formatPrice(Number(product.price))}</td>
-              <td>{product.stock ? `${product.stock} st` : <InfinityIcon />}</td>
+              <td>
+                {product.stock ? `${product.stock} st` : <InfinityIcon />}
+              </td>
             </tr>
           ))}
         </tbody>
       </table>
-      <button 
-        onClick={() => navigate('/admin/product/add')} 
-        className="add"
-      >
+      <button onClick={() => navigate('/admin/product/add')} className="add">
         Lägg till produkt
       </button>
     </>

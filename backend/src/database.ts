@@ -1,6 +1,6 @@
 import dotenv from 'dotenv'
 import { Pool } from 'pg'
-import { DbClient } from './types/database'
+import { DbClient } from './types/database.types'
 
 dotenv.config()
 
@@ -11,8 +11,8 @@ export const pool = new Pool({
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
   ssl: {
-    rejectUnauthorized: false,
-  },
+    rejectUnauthorized: false
+  }
 })
 
 export async function connect() {

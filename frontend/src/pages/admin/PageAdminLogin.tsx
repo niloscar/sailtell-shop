@@ -35,14 +35,11 @@ export default function PageAdminLogin() {
   }
 
   return (
-    <div className="admin-login-page">
-      <h1 className="heading-size-1">Admin login</h1>
+    <div className="loginPage">
+      <h1 className="headingSize1">Admin login</h1>
 
-      <form
-        className="admin-login-form"
-        onSubmit={handleSubmit}
-      >
-        <div className="input-group">
+      <form className="admin-login-form" onSubmit={handleSubmit}>
+        <div className="inputGroup">
           <label htmlFor="email">Mail</label>
           <input
             type="email"
@@ -54,7 +51,7 @@ export default function PageAdminLogin() {
           />
         </div>
 
-        <div className="input-group">
+        <div className="inputGroup">
           <label htmlFor="password">Password</label>
           <input
             type="password"
@@ -66,15 +63,9 @@ export default function PageAdminLogin() {
           />
         </div>
 
-        <button type="submit">
-          Login
-        </button>
+        <button type="submit">Login</button>
 
-        {loginError && (
-          <p className="error-message">
-            {loginError}
-          </p>
-        )}
+        {loginError && <p className="errorMessage">{loginError}</p>}
       </form>
     </div>
   )

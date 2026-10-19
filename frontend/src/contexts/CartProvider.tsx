@@ -1,6 +1,12 @@
 import { useEffect, useState } from 'react'
 import { CartContext } from './CartContext'
-import { createCart, getCart, addCartItem, updateCartItem, deleteCartItem } from '../api/cartApi'
+import {
+  createCart,
+  getCart,
+  addCartItem,
+  updateCartItem,
+  deleteCartItem
+} from '../api/cartApi'
 import type { ReactNode } from 'react'
 import type { Product } from '../types/productTypes'
 import type { Cart } from '../types/cartTypes'
@@ -13,9 +19,12 @@ type CartActionState = {
 
 export default function CartProvider({ children }: { children: ReactNode }) {
   const [cart, setCart] = useState<Cart | null>(null)
-  const [cartActionState, setCartActionState] = useState<Record<number, CartActionState>>({})
+  const [cartActionState, setCartActionState] = useState<
+    Record<number, CartActionState>
+  >({})
 
-  const cartCount = cart?.items.reduce((total, item) => total + item.quantity, 0) ?? 0
+  const cartCount =
+    cart?.items.reduce((total, item) => total + item.quantity, 0) ?? 0
 
   useEffect(() => {
     const fetchCart = async () => {
@@ -54,7 +63,10 @@ export default function CartProvider({ children }: { children: ReactNode }) {
 
         localStorage.setItem('cart_uuid', cartUuid)
 
-        const response = await addCartItem(cartUuid, { product_id: product.id, quantity })
+        const response = await addCartItem(cartUuid, {
+          product_id: product.id,
+          quantity
+        })
 
         setCart(response.data)
       } else {
@@ -62,9 +74,7 @@ export default function CartProvider({ children }: { children: ReactNode }) {
 
         setCart({
           ...cart,
-          items: cart.items.some(
-            (item) => item.product_id === product.id
-          )
+          items: cart.items.some((item) => item.product_id === product.id)
             ? cart.items.map((item) =>
                 item.product_id === product.id
                   ? {
@@ -87,7 +97,10 @@ export default function CartProvider({ children }: { children: ReactNode }) {
               ]
         })
 
-        const response = await addCartItem(cartUuid, { product_id: product.id, quantity })
+        const response = await addCartItem(cartUuid, {
+          product_id: product.id,
+          quantity
+        })
         setCart(response.data)
       }
 
@@ -132,9 +145,9 @@ export default function CartProvider({ children }: { children: ReactNode }) {
     const previousCart = cart
 
     setCart({
-      ...cart, items: cart.items.map((item) => item.product_id === productId
-        ? { ...item, quantity }
-        : item
+      ...cart,
+      items: cart.items.map((item) =>
+        item.product_id === productId ? { ...item, quantity } : item
       )
     })
 
@@ -152,15 +165,18 @@ export default function CartProvider({ children }: { children: ReactNode }) {
     const previousCart = cart
 
     setCart({
-      ...cart, items: cart.items
-        .filter((item) => item.product_id !== product.id)
+      ...cart,
+      items: cart.items.filter((item) => item.product_id !== product.id)
     })
 
     try {
       await deleteCartItem(cart.cart_uuid, product.id)
     } catch (error) {
       setCart(previousCart)
-      console.error(`${product.name} kunde inte tas bort från varukorgen.`, error)
+      console.error(
+        `${product.name} kunde inte tas bort från varukorgen.`,
+        error
+      )
     }
   }
 
@@ -173,10 +189,7 @@ export default function CartProvider({ children }: { children: ReactNode }) {
     try {
       await Promise.all(
         cart.items.map((item) =>
-          deleteCartItem(
-            cart.cart_uuid,
-            item.product_id
-          )
+          deleteCartItem(cart.cart_uuid, item.product_id)
         )
       )
 
@@ -187,11 +200,15 @@ export default function CartProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  const value = { cart, cartCount, addToCart, changeQuantity, removeFromCart, resetCart, cartActionState }
+  const value = {
+    cart,
+    cartCount,
+    addToCart,
+    changeQuantity,
+    removeFromCart,
+    resetCart,
+    cartActionState
+  }
 
-  return (
-    <CartContext.Provider value={value}>
-      {children}
-    </CartContext.Provider>
-  )
+  return <CartContext.Provider value={value}>{children}</CartContext.Provider>
 }

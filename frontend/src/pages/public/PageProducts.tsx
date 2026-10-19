@@ -1,5 +1,5 @@
-import ProductList from "../../components/ProductList"
-import { useParams } from "react-router-dom"
+import ProductList from '../../components/ProductList'
+import { useParams } from 'react-router-dom'
 
 function PageProducts() {
   const { categorySlug } = useParams<{ categorySlug: string }>()

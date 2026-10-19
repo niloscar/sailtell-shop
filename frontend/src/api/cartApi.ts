@@ -1,10 +1,6 @@
 import api from './apiClient'
 
-import type {
-  Cart,
-  AddCartItem,
-  UpdateCartItem
-} from '../types/cartTypes'
+import type { Cart, AddCartItem, UpdateCartItem } from '../types/cartTypes'
 
 export function createCart() {
   return api.post<Cart>('/carts')
@@ -18,7 +14,11 @@ export function addCartItem(cartUuid: string, item: AddCartItem) {
   return api.post<Cart>(`/carts/${cartUuid}/items`, item)
 }
 
-export function updateCartItem(cartUuid: string, productId: number, item: UpdateCartItem) {
+export function updateCartItem(
+  cartUuid: string,
+  productId: number,
+  item: UpdateCartItem
+) {
   return api.patch<Cart>(`/carts/${cartUuid}/items/${productId}`, item)
 }
 

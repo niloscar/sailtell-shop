@@ -11,17 +11,9 @@ type CartActionState = {
 type CartContextType = {
   cart: Cart | null
   cartCount: number
-  addToCart: (
-    product: Product,
-    quantity: number
-  ) => Promise<void>
-  changeQuantity: (
-    productId: number,
-    quantity: number
-  ) => Promise<void>
-  removeFromCart: (
-    product: Product
-  ) => Promise<void>
+  addToCart: (product: Product, quantity: number) => Promise<void>
+  changeQuantity: (productId: number, quantity: number) => Promise<void>
+  removeFromCart: (product: Product) => Promise<void>
   resetCart: () => Promise<void>
   cartActionState: Record<number, CartActionState>
 }

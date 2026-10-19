@@ -4,15 +4,14 @@ import Header from '../components/layout/Header'
 import Footer from '../components/layout/Footer'
 import MainNav from '../components/navigation/MainNav'
 
-
 export default function LayoutPublic() {
   return (
     <>
       <Header />
-      <div className="main-nav-track">
+      <div className="navTrack">
         <CartProvider>
           <MainNav />
-          <main className="page-main">
+          <main className="pageMain">
             <Outlet />
           </main>
         </CartProvider>

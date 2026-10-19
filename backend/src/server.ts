@@ -11,13 +11,13 @@ import path from 'path'
 import { connect, pool } from './database'
 
 /* Import route handlers */
-import customerRoutes from './routes/customerRoutes'
-import productRoutes from './routes/productRoutes'
-import orderRoutes from './routes/orderRoutes'
-import usersRouter from './routes/userRoutes'
-import authRouter from './routes/authRoutes'
-import categoryRoutes from './routes/categoryRoutes'
-import cartRoutes from './routes/cartRoutes'
+import customerRoutes from './routes/customer.routes'
+import productRoutes from './routes/product.routes'
+import orderRoutes from './routes/order.routes'
+import usersRouter from './routes/user.routes'
+import authRouter from './routes/auth.routes'
+import categoryRoutes from './routes/category.routes'
+import cartRoutes from './routes/cart.routes'
 
 /* Load environment variables from .env file */
 dotenv.config()
@@ -33,18 +33,20 @@ const PgSession = connectPgSimple(expressSession)
 app.use(express.static('public')) // Serve static files from the "public" folder (so that e.g., avatars from users/ are accessible via /api/users/)
 app.use(express.json()) // Allow parsing of JSON in the request body
 app.use(express.urlencoded({ extended: true })) // Allow parsing of URL-encoded data (e.g., from forms)
-app.use(expressSession({
-  store: new PgSession({
-    pool
-  }),
-  secret: process.env.SECRET_KEY || 'secret-key',
-  resave: false,
-  saveUninitialized: false,
-  cookie: { 
-    httpOnly: true,
-    maxAge: 60 * 60 * 1000
-  }
-})) // Enable session support
+app.use(
+  expressSession({
+    store: new PgSession({
+      pool
+    }),
+    secret: process.env.SECRET_KEY || 'secret-key',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      httpOnly: true,
+      maxAge: 60 * 60 * 1000
+    }
+  })
+) // Enable session support
 
 /* API routes */
 app.use('/api/customers', customerRoutes)
@@ -59,14 +61,13 @@ app.use('/api/carts', cartRoutes)
 app.use('/api', (req, res) => {
   res.status(404).json({
     error: 'Ogiltig metod och/eller endpoint',
-    message: `${req.method} och ${req.originalUrl} är ingen giltig kombination.`,
+    message: `${req.method} och ${req.originalUrl} är ingen giltig kombination.`
   })
 })
 
 /* Serve frontend from the "public" folder */
 const publicPath = path.resolve(process.cwd(), 'public')
 app.use(express.static(publicPath))
-
 
 const start = async () => {
   await connect() // Ensure database connection is established before starting the server
