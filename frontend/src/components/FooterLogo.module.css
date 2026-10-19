@@ -1,0 +1,19 @@
+.logo {
+  font-size: 2rem;
+  font-weight: 800;
+  text-align: left;
+  height: 4rem;
+
+  @media (max-width: 768px) {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    width: 100%;
+    margin: 1rem 0;
+  }
+}
+
+.logo img {
+    height: 100%;
+    width: auto;
+}

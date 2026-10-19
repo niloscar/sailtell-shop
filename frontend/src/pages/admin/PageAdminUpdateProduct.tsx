@@ -1,20 +1,19 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeftIcon } from '@phosphor-icons/react'
-
+import { useNavigate, useParams } from 'react-router-dom'
 import {
   getProduct,
   getProductOptions,
   updateProduct,
   deleteProduct
 } from '../../api/productApi'
+import getApiErrorMessage from '../../utilities/apiError'
+import BackLink from '../../components/BackLink'
 
 import type {
   Product,
   ProductOptions,
   UpdateProduct
 } from '../../types/productTypes'
-import getApiErrorMessage from '../../utilities/apiError'
 
 type LoadingState = {
   loading: boolean
@@ -35,7 +34,9 @@ export default function PageAdminUpdateProduct() {
 
   const [product, setProduct] = useState<Product | null>(null)
   const [originalProduct, setOriginalProduct] = useState<Product | null>(null)
-  const [productOptions, setProductOptions] = useState<ProductOptions | null>(null)
+  const [productOptions, setProductOptions] = useState<ProductOptions | null>(
+    null
+  )
 
   const [loadingState, setLoadingState] = useState<PageLoadingState>({
     product: {
@@ -52,10 +53,7 @@ export default function PageAdminUpdateProduct() {
     }
   })
 
-  const updateLoadingState = (
-    key: LoadKey,
-    updates: Partial<LoadingState>
-  ) => {
+  const updateLoadingState = (key: LoadKey, updates: Partial<LoadingState>) => {
     setLoadingState((prev) => ({
       ...prev,
       [key]: {
@@ -77,7 +75,9 @@ export default function PageAdminUpdateProduct() {
 
         setProductOptions(response.data)
       } catch (error) {
-        updateLoadingState('productOptions', { error: getApiErrorMessage(error) })
+        updateLoadingState('productOptions', {
+          error: getApiErrorMessage(error)
+        })
       } finally {
         updateLoadingState('productOptions', {
           loading: false
@@ -153,9 +153,9 @@ export default function PageAdminUpdateProduct() {
   ) => {
     if (!productOptions) return
 
-    const selectedIds = Array
-      .from(event.target.selectedOptions)
-      .map((option) => Number(option.value))
+    const selectedIds = Array.from(event.target.selectedOptions).map((option) =>
+      Number(option.value)
+    )
 
     setProduct((currentProduct) => {
       if (!currentProduct) return currentProduct
@@ -240,10 +240,7 @@ export default function PageAdminUpdateProduct() {
         category_ids: product.categories.map((category) => category.id)
       }
 
-      const response = await updateProduct(
-        Number(id),
-        updatedProduct
-      )
+      const response = await updateProduct(Number(id), updatedProduct)
 
       setProduct(response.data)
       setOriginalProduct(structuredClone(response.data))
@@ -255,20 +252,20 @@ export default function PageAdminUpdateProduct() {
   }
 
   if (loadingState.product.loading) return <p>Laddar produkt...</p>
-  if (loadingState.product.error) return <p className="error-message">{loadingState.product.error}</p>
-  if (!product) return <p className="error-message">Produkten kunde inte hittas.</p>
+  if (loadingState.product.error)
+    return <p className="errorMessage">{loadingState.product.error}</p>
+  if (!product)
+    return <p className="errorMessage">Produkten kunde inte hittas.</p>
 
   return (
-    <div className="page-admin-update-product">
-      <h1 className="heading-size-1">Redigera produkt</h1>
+    <div className="updateProduct">
+      <h1 className="headingSize1">Redigera produkt</h1>
 
       {loadingState.productOptions.error && (
-        <p className="error-message">
-          {loadingState.productOptions.error}
-        </p>
+        <p className="errorMessage">{loadingState.productOptions.error}</p>
       )}
 
-      <div className="input-group">
+      <div className="inputGroup">
         <label htmlFor="product-name">Produktnamn</label>
         <input
           type="text"
@@ -279,7 +276,7 @@ export default function PageAdminUpdateProduct() {
         />
       </div>
 
-      <div className="input-group">
+      <div className="inputGroup">
         <label htmlFor="product-brand">Varumärke</label>
         <input
           type="text"
@@ -290,10 +287,8 @@ export default function PageAdminUpdateProduct() {
         />
       </div>
 
-      <div className="input-group">
-        <label htmlFor="product-description">
-          Produktbeskrivning
-        </label>
+      <div className="inputGroup">
+        <label htmlFor="product-description">Produktbeskrivning</label>
         <textarea
           id="product-description"
           name="description"
@@ -302,7 +297,7 @@ export default function PageAdminUpdateProduct() {
         />
       </div>
 
-      <div className="input-group">
+      <div className="inputGroup">
         <label htmlFor="product-details">
           Detaljer (separera med radbrytning)
         </label>
@@ -314,7 +309,7 @@ export default function PageAdminUpdateProduct() {
         />
       </div>
 
-      <div className="input-group">
+      <div className="inputGroup">
         <label htmlFor="product-image">Produktbild, URL</label>
         <input
           type="text"
@@ -325,10 +320,8 @@ export default function PageAdminUpdateProduct() {
         />
       </div>
 
-      <div className="input-group">
-        <label htmlFor="product-price">
-          Pris i kr (inkl. moms)
-        </label>
+      <div className="inputGroup">
+        <label htmlFor="product-price">Pris i kr (inkl. moms)</label>
         <input
           type="number"
           id="product-price"
@@ -338,7 +331,7 @@ export default function PageAdminUpdateProduct() {
         />
       </div>
 
-      <div className="input-group">
+      <div className="inputGroup">
         <label htmlFor="product-stock">Lagersaldo</label>
         <input
           type="number"
@@ -349,7 +342,7 @@ export default function PageAdminUpdateProduct() {
         />
       </div>
 
-      <div className="input-group">
+      <div className="inputGroup">
         <label htmlFor="product-categories">Kategorier</label>
 
         {loadingState.productOptions.loading ? (
@@ -358,16 +351,11 @@ export default function PageAdminUpdateProduct() {
           <select
             id="product-categories"
             multiple
-            value={product.categories.map((category) =>
-              String(category.id)
-            )}
+            value={product.categories.map((category) => String(category.id))}
             onChange={handleCategoriesChange}
           >
             {productOptions?.categories.map((category) => (
-              <option
-                key={category.id}
-                value={category.id}
-              >
+              <option key={category.id} value={category.id}>
                 {category.name}
               </option>
             ))}
@@ -375,10 +363,8 @@ export default function PageAdminUpdateProduct() {
         )}
       </div>
 
-      <div className="input-group">
-        <label htmlFor="product-purchase-type">
-          Försäljningstyp
-        </label>
+      <div className="inputGroup">
+        <label htmlFor="product-purchase-type">Försäljningstyp</label>
 
         {loadingState.productOptions.loading ? (
           <p>Laddar försäljningstyper...</p>
@@ -389,10 +375,7 @@ export default function PageAdminUpdateProduct() {
             onChange={handlePurchaseTypeChange}
           >
             {productOptions?.purchase_types.map((option) => (
-              <option
-                key={option}
-                value={option}
-              >
+              <option key={option} value={option}>
                 {option}
               </option>
             ))}
@@ -401,12 +384,10 @@ export default function PageAdminUpdateProduct() {
       </div>
 
       {loadingState.action.error && (
-        <p className="error-message">
-          {loadingState.action.error}
-        </p>
+        <p className="errorMessage">{loadingState.action.error}</p>
       )}
 
-      <div className="button-group">
+      <div className="buttonGroup">
         <button
           className="delete"
           type="button"
@@ -430,16 +411,11 @@ export default function PageAdminUpdateProduct() {
           disabled={loadingState.action.loading}
           className="save"
         >
-          {loadingState.action.loading
-            ? 'Sparar...'
-            : 'Spara ändringar'}
+          {loadingState.action.loading ? 'Sparar...' : 'Spara ändringar'}
         </button>
       </div>
 
-      <Link to="/admin/products" className="link-back">
-        <ArrowLeftIcon size={20} />
-        Tillbaka till produktlistan
-      </Link>
+      <BackLink to="/admin/products" label="Tillbaka till produktlistan" />
     </div>
   )
 }

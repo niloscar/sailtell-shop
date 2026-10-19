@@ -1,8 +1,8 @@
-import type { Customer } from "../../types/customerTypes"
-import { useEffect, useState } from "react"
-import { getCustomers } from "../../api/customerApi"
-import formatPhoneNumber from "../../utilities/formatPhoneNumber"
-import getApiErrorMessage from "../../utilities/apiError"
+import type { Customer } from '../../types/customerTypes'
+import { useEffect, useState } from 'react'
+import { getCustomers } from '../../api/customerApi'
+import formatPhoneNumber from '../../utilities/formatPhoneNumber'
+import getApiErrorMessage from '../../utilities/apiError'
 
 export default function PageAdminCustomers() {
   const [customers, setCustomers] = useState<Customer[]>([])
@@ -26,7 +26,7 @@ export default function PageAdminCustomers() {
   }, [])
 
   if (loading) return <p>Laddar kunder...</p>
-  if (loadingError) return <p className="error-message">{loadingError}</p>
+  if (loadingError) return <p className="errorMessage">{loadingError}</p>
   if (customers.length === 0) return <p>Inga kunder hittades.</p>
 
   return (
@@ -45,7 +45,9 @@ export default function PageAdminCustomers() {
           {customers.map((customer: Customer) => (
             <tr key={customer.id}>
               <td>{customer.id}</td>
-              <td>{customer.fname} {customer.lname}</td>
+              <td>
+                {customer.fname} {customer.lname}
+              </td>
               <td>{customer.email}</td>
               <td>{customer.phone && formatPhoneNumber(customer.phone)}</td>
             </tr>

@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { getProductOptions, createProduct } from '../../api/productApi'
 import getApiErrorMessage from '../../utilities/apiError'
+import BackLink from '../../components/BackLink'
+
 import type { CreateProduct, ProductOptions } from '../../types/productTypes'
-import { ArrowLeftIcon } from '@phosphor-icons/react'
 
 export default function PageAdminAddProduct() {
   const navigate = useNavigate()
@@ -20,7 +21,9 @@ export default function PageAdminAddProduct() {
     category_ids: []
   })
 
-  const [productOptions, setProductOptions] = useState<ProductOptions | null>(null)
+  const [productOptions, setProductOptions] = useState<ProductOptions | null>(
+    null
+  )
 
   const [loading, setLoading] = useState(true)
   const [loadingError, setLoadingError] = useState<string | null>(null)
@@ -83,9 +86,9 @@ export default function PageAdminAddProduct() {
   const handleCategoriesChange = (
     event: React.ChangeEvent<HTMLSelectElement>
   ) => {
-    const categoryIds = Array
-      .from(event.target.selectedOptions)
-      .map((option) => Number(option.value))
+    const categoryIds = Array.from(event.target.selectedOptions).map((option) =>
+      Number(option.value)
+    )
 
     setProduct((currentProduct) => ({
       ...currentProduct,
@@ -125,14 +128,14 @@ export default function PageAdminAddProduct() {
   }
 
   if (loading) return <p>Laddar produktalternativ...</p>
-  if (loadingError) return <p className="error-message">{loadingError}</p>
+  if (loadingError) return <p className="errorMessage">{loadingError}</p>
   if (!productOptions) return <p>Produktalternativ kunde inte hittas.</p>
 
   return (
-    <div className="page-admin-add-product">
-      <h1 className="heading-size-1">Lägg till produkt</h1>
+    <div className="addProduct">
+      <h1 className="headingSize1">Lägg till produkt</h1>
 
-      <div className="input-group">
+      <div className="inputGroup">
         <label htmlFor="product-name">Produktnamn</label>
         <input
           type="text"
@@ -143,7 +146,7 @@ export default function PageAdminAddProduct() {
         />
       </div>
 
-      <div className="input-group">
+      <div className="inputGroup">
         <label htmlFor="product-brand">Varumärke</label>
         <input
           type="text"
@@ -154,7 +157,7 @@ export default function PageAdminAddProduct() {
         />
       </div>
 
-      <div className="input-group">
+      <div className="inputGroup">
         <label htmlFor="product-description">Produktbeskrivning</label>
         <textarea
           id="product-description"
@@ -164,7 +167,7 @@ export default function PageAdminAddProduct() {
         />
       </div>
 
-      <div className="input-group">
+      <div className="inputGroup">
         <label htmlFor="product-details">
           Detaljer (separera med radbrytning)
         </label>
@@ -176,7 +179,7 @@ export default function PageAdminAddProduct() {
         />
       </div>
 
-      <div className="input-group">
+      <div className="inputGroup">
         <label htmlFor="product-image">Produktbild, URL</label>
         <input
           type="text"
@@ -187,7 +190,7 @@ export default function PageAdminAddProduct() {
         />
       </div>
 
-      <div className="input-group">
+      <div className="inputGroup">
         <label htmlFor="product-price">Pris i kr (inkl. moms)</label>
         <input
           type="number"
@@ -198,7 +201,7 @@ export default function PageAdminAddProduct() {
         />
       </div>
 
-      <div className="input-group">
+      <div className="inputGroup">
         <label htmlFor="product-stock">Lagersaldo</label>
         <input
           type="number"
@@ -209,7 +212,7 @@ export default function PageAdminAddProduct() {
         />
       </div>
 
-      <div className="input-group">
+      <div className="inputGroup">
         <label htmlFor="product-categories">Kategorier</label>
         <select
           id="product-categories"
@@ -218,17 +221,14 @@ export default function PageAdminAddProduct() {
           onChange={handleCategoriesChange}
         >
           {productOptions.categories.map((category) => (
-            <option
-              key={category.id}
-              value={category.id}
-            >
+            <option key={category.id} value={category.id}>
               {category.name}
             </option>
           ))}
         </select>
       </div>
 
-      <div className="input-group">
+      <div className="inputGroup">
         <label htmlFor="product-purchase-type">Försäljningstyp</label>
         <select
           id="product-purchase-type"
@@ -236,37 +236,27 @@ export default function PageAdminAddProduct() {
           onChange={handlePurchaseTypeChange}
         >
           {productOptions.purchase_types.map((option) => (
-            <option
-              key={option}
-              value={option}
-            >
+            <option key={option} value={option}>
               {option}
             </option>
           ))}
         </select>
       </div>
 
-      {createError && (
-        <p className="error-message">{createError}</p>
-      )}
+      {createError && <p className="errorMessage">{createError}</p>}
 
-      <div className="button-group">
+      <div className="buttonGroup">
         <button
           type="button"
           onClick={handleSave}
           disabled={creating}
           className="add"
         >
-          {creating
-            ? 'Skapar produkt...'
-            : 'Skapa produkt'}
+          {creating ? 'Skapar produkt...' : 'Skapa produkt'}
         </button>
       </div>
 
-      <Link to="/admin/products" className="link-back">
-        <ArrowLeftIcon size={20} />
-        Tillbaka till produktlistan
-      </Link>
+      <BackLink to="/admin/products" label="Tillbaka till produktlistan" />
     </div>
   )
 }

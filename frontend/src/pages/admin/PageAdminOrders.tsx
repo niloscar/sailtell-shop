@@ -1,7 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getOrders } from '../../api/orderApi'
-import formatDateTime, { formatDate, formatTime, timeAgo } from '../../utilities/formatDateTime'
+import formatDateTime, {
+  formatDate,
+  formatTime,
+  timeAgo
+} from '../../utilities/formatDateTime'
 import formatPrice from '../../utilities/formatPrice'
 import getApiErrorMessage from '../../utilities/apiError'
 import type { Order } from '../../types/orderTypes'
@@ -60,7 +64,7 @@ export default function PageAdminOrders() {
   }, [orders])
 
   if (loading) return <p>Laddar ordrar...</p>
-  if (loadingError) return <p className="error-message">{loadingError}</p>
+  if (loadingError) return <p className="errorMessage">{loadingError}</p>
   if (orders.length === 0) return <p>Inga ordrar hittades.</p>
 
   return (
@@ -70,7 +74,7 @@ export default function PageAdminOrders() {
           <tbody key={status}>
             <tr>
               <th colSpan={4}>
-                <h3 className="heading-size-3">{status}</h3>
+                <h3 className="headingSize3">{status}</h3>
               </th>
             </tr>
 

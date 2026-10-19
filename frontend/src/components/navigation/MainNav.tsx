@@ -11,6 +11,8 @@ import { NavLink } from 'react-router-dom'
 import { useCart } from '../../contexts/CartContext'
 import { ShoppingCartIcon } from '@phosphor-icons/react'
 
+import styles from './MainNav.module.css'
+
 const navItems = [
   { name: 'Start', path: '/' },
   { name: 'SailTell App', path: '/product/9' },
@@ -23,13 +25,13 @@ export default function MainNav() {
   const { cartCount } = useCart()
 
   return (
-    <nav className="main-nav">
+    <nav className={styles.mainNav}>
       <ul>
         {navItems.map((item) => (
           <li key={item.name}>
             <NavLink
               to={item.path}
-              className={({ isActive }) => isActive ? 'active' : ''}
+              className={({ isActive }) => isActive ? styles.active : ''}
             >
               {item.name !== 'Cart' && item.name}
               {item.name === 'Cart' && (

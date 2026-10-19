@@ -1,5 +1,7 @@
 import { MinusIcon, PlusIcon } from '@phosphor-icons/react'
 
+import styles from './QuantitySelector.module.css'
+
 type QuantitySelectorProps = {
   quantity: number
   onChange: (quantity: number) => void
@@ -10,20 +12,20 @@ export default function QuantitySelector({ quantity, onChange }: QuantitySelecto
   const decrement = () => onChange(Math.max(1, quantity - 1))
 
   return (
-    <div className="to-cart-quantity">
+    <div className={styles.quantitySelector}>
       <button 
-        className="quantity-decrement-button"
+        className={styles.quantityDecrementButton}
         onClick={decrement}
       >
         <MinusIcon size={18} />
       </button>
 
-      <span className="quantity-value">
+      <span className={styles.quantityValue}>
         {quantity} st
       </span>
 
       <button 
-        className="quantity-increment-button"
+        className={styles.quantityIncrementButton}
         onClick={increment}
       >
         <PlusIcon size={18} />

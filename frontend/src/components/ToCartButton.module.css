@@ -1,0 +1,17 @@
+
+.toCartButton {
+  display: flex;
+  align-items: center;
+  gap: .25rem;
+  padding: .5rem 1rem;
+  font-size: 1rem;
+  cursor: pointer;
+  border: none;
+  border-radius: 4px;
+  background-color: var(--success);
+  color: #fff;
+
+  &:hover {
+    opacity: .9;
+  }
+}

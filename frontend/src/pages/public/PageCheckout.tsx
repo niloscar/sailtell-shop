@@ -26,7 +26,10 @@ export default function PageCheckout() {
   const [loadingError, setLoadingError] = useState<string | null>(null)
   const cartItems = cart?.items ?? []
 
-  const totalPrice = cartItems.reduce((total, item) => total + item.price * item.quantity, 0)
+  const totalPrice = cartItems.reduce(
+    (total, item) => total + item.price * item.quantity,
+    0
+  )
   const totalVat = totalPrice * 0.2
 
   useEffect(() => {
@@ -48,7 +51,9 @@ export default function PageCheckout() {
     fetchOrderOptions()
   }, [])
 
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (
+    event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = event.target
 
     setOrderDetails((prevDetails) => ({
@@ -96,22 +101,22 @@ export default function PageCheckout() {
   if (cartCount === 0) {
     return (
       <>
-        <h1 className="heading-size-1">Kassa</h1>
+        <h1 className="headingSize1">Kassa</h1>
         <p>Din varukorg är tom.</p>
       </>
     )
   }
 
   if (loading) return <p>Laddar orderalternativ...</p>
-  if (loadingError) return <p className="error-message">{loadingError}</p>
+  if (loadingError) return <p className="errorMessage">{loadingError}</p>
   if (!orderOptions) return <p>Orderalternativ kunde inte laddas.</p>
 
   return (
     <>
-      <h1 className="heading-size-1">Kassa</h1>
+      <h1 className="headingSize1">Kassa</h1>
 
       <section className="checkout-summary">
-        <h2 className="heading-size-2">Sammanställning</h2>
+        <h2 className="headingSize2">Sammanställning</h2>
 
         <table>
           <thead>
@@ -148,13 +153,10 @@ export default function PageCheckout() {
       </section>
 
       <section className="customer-credentials">
-        <form
-          className="checkout-form"
-          onSubmit={handleSubmit}
-        >
-          <div className="form-group">
-            <h2 className="heading-size-3">Kunduppgifter</h2>
-            <div className="input-group">
+        <form className="checkout-form" onSubmit={handleSubmit}>
+          <div className="formGroup">
+            <h2 className="headingSize3">Kunduppgifter</h2>
+            <div className="inputGroup">
               <label htmlFor="email">E-post</label>
               <input
                 type="email"
@@ -166,7 +168,7 @@ export default function PageCheckout() {
               />
             </div>
 
-            <div className="input-group">
+            <div className="inputGroup">
               <label htmlFor="fname">Förnamn</label>
               <input
                 type="text"
@@ -178,7 +180,7 @@ export default function PageCheckout() {
               />
             </div>
 
-            <div className="input-group">
+            <div className="inputGroup">
               <label htmlFor="lname">Efternamn</label>
               <input
                 type="text"
@@ -190,7 +192,7 @@ export default function PageCheckout() {
               />
             </div>
 
-            <div className="input-group">
+            <div className="inputGroup">
               <label htmlFor="phone">Mobiltelefon</label>
               <input
                 type="text"
@@ -202,9 +204,9 @@ export default function PageCheckout() {
               />
             </div>
           </div>
-          <div className="form-group">
-            <h3 className="heading-size-3">Leveransadress</h3>
-            <div className="input-group">
+          <div className="formGroup">
+            <h3 className="headingSize3">Leveransadress</h3>
+            <div className="inputGroup">
               <label htmlFor="street">Gatuadress</label>
               <input
                 type="text"
@@ -216,7 +218,7 @@ export default function PageCheckout() {
               />
             </div>
 
-            <div className="input-group">
+            <div className="inputGroup">
               <label htmlFor="zipcode">Postnummer</label>
               <input
                 type="text"
@@ -228,7 +230,7 @@ export default function PageCheckout() {
               />
             </div>
 
-            <div className="input-group">
+            <div className="inputGroup">
               <label htmlFor="city">Stad</label>
               <input
                 type="text"
@@ -240,7 +242,7 @@ export default function PageCheckout() {
               />
             </div>
 
-            <div className="input-group">
+            <div className="inputGroup">
               <label htmlFor="country">Land</label>
               <input
                 type="text"
@@ -253,10 +255,10 @@ export default function PageCheckout() {
             </div>
           </div>
 
-          <div className="form-group">
-            <h3 className="heading-size-3">Betalning</h3>
+          <div className="formGroup">
+            <h3 className="headingSize3">Betalning</h3>
 
-            <div className="input-group">
+            <div className="inputGroup">
               <label htmlFor="payment_method">Betalningsmetod</label>
               <select
                 id="payment_method"
@@ -265,12 +267,11 @@ export default function PageCheckout() {
                 value={orderDetails.payment_method}
                 onChange={handleChange}
               >
-                <option value="" disabled>Välj betalningsmetod</option>
+                <option value="" disabled>
+                  Välj betalningsmetod
+                </option>
                 {orderOptions.payment_methods.map((method) => (
-                  <option
-                    key={method.id}
-                    value={method.id}
-                  >
+                  <option key={method.id} value={method.id}>
                     {method.name}
                   </option>
                 ))}
@@ -279,7 +280,7 @@ export default function PageCheckout() {
 
             {orderDetails.payment_method === '1' && (
               <>
-                <div className="input-group">
+                <div className="inputGroup">
                   <label htmlFor="card_number">Kortnummer</label>
                   <input
                     type="text"
@@ -289,7 +290,7 @@ export default function PageCheckout() {
                   />
                 </div>
 
-                <div className="input-group">
+                <div className="inputGroup">
                   <label htmlFor="card_expiration">Giltighetstid (MM/ÅÅ)</label>
                   <input
                     type="text"
@@ -299,41 +300,28 @@ export default function PageCheckout() {
                   />
                 </div>
 
-                <div className="input-group">
+                <div className="inputGroup">
                   <label htmlFor="card_cvc">CVC</label>
-                  <input
-                    type="text"
-                    id="card_cvc"
-                    name="card_cvc"
-                    required
-                  />
+                  <input type="text" id="card_cvc" name="card_cvc" required />
                 </div>
               </>
             )}
 
             {orderDetails.payment_method === '3' && (
-              <div className="input-group">
+              <div className="inputGroup">
                 <label htmlFor="ssn">Personnummer</label>
-                <input
-                  type="text"
-                  id="ssn"
-                  name="ssn"
-                  required
-                />
+                <input type="text" id="ssn" name="ssn" required />
               </div>
             )}
           </div>
 
           <div className="row">
-            <p className="terms-and-conditions">
+            <p className="terms">
               Genom att slutföra köpet godkänner du våra{' '}
               <Link to="#">villkor</Link>.
             </p>
 
-            <button
-              type="submit"
-              className="checkout-button"
-            >
+            <button type="submit" className="checkout-button">
               Slutför köp
             </button>
           </div>

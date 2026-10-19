@@ -8,10 +8,10 @@ import { formatDate } from '../../utilities/formatDateTime'
 import formatPrice from '../../utilities/formatPrice'
 import formatPhoneNumber from '../../utilities/formatPhoneNumber'
 import getApiErrorMessage from '../../utilities/apiError'
+import BackLink from '../../components/BackLink'
 
 import type { OrderDetails, OrderOptions } from '../../types/orderTypes'
 import type { Customer } from '../../types/customerTypes'
-import { ArrowLeftIcon } from '@phosphor-icons/react'
 
 type LoadingState = {
   loading: boolean
@@ -48,10 +48,7 @@ export default function PageAdminSingleOrder() {
     }
   })
 
-  const updateLoadingState = (
-    key: LoadKey,
-    updates: Partial<LoadingState>
-  ) => {
+  const updateLoadingState = (key: LoadKey, updates: Partial<LoadingState>) => {
     setLoadingState((prev) => ({
       ...prev,
       [key]: {
@@ -158,14 +155,18 @@ export default function PageAdminSingleOrder() {
     }
   }
 
-  if (loadingState.order.loading || loadingState.orderOptions.loading) return <p>Laddar order...</p>
-  if (loadingState.order.error) return <p className="error-message">{loadingState.order.error}</p>
-  if (loadingState.orderOptions.error) return <p className="error-message">{loadingState.orderOptions.error}</p>
-  if (!order || !orderOptions) return <p className="error-message">Orderdata saknas.</p>
+  if (loadingState.order.loading || loadingState.orderOptions.loading)
+    return <p>Laddar order...</p>
+  if (loadingState.order.error)
+    return <p className="errorMessage">{loadingState.order.error}</p>
+  if (loadingState.orderOptions.error)
+    return <p className="errorMessage">{loadingState.orderOptions.error}</p>
+  if (!order || !orderOptions)
+    return <p className="errorMessage">Orderdata saknas.</p>
 
   return (
     <div className="order-details">
-      <h1 className="heading-size-1">Order #{order.id}</h1>
+      <h1 className="headingSize1">Order #{order.id}</h1>
 
       <table>
         <tbody>
@@ -193,10 +194,7 @@ export default function PageAdminSingleOrder() {
                 onChange={handleStatusChange}
               >
                 {orderOptions.statuses.map((status) => (
-                  <option
-                    key={status.id}
-                    value={status.id}
-                  >
+                  <option key={status.id} value={status.id}>
                     {status.name}
                   </option>
                 ))}
@@ -206,7 +204,7 @@ export default function PageAdminSingleOrder() {
         </tbody>
       </table>
 
-      <h2 className="heading-size-2">Produkter</h2>
+      <h2 className="headingSize2">Produkter</h2>
 
       <table>
         <thead>
@@ -231,7 +229,7 @@ export default function PageAdminSingleOrder() {
         </tbody>
       </table>
 
-      <h2 className="heading-size-2">Leveransadress</h2>
+      <h2 className="headingSize2">Leveransadress</h2>
 
       {order.shipping_address ? (
         <table>
@@ -256,14 +254,12 @@ export default function PageAdminSingleOrder() {
         <p>Ingen leveransadress tillgänglig</p>
       )}
 
-      <h2 className="heading-size-2">Kunduppgifter</h2>
+      <h2 className="headingSize2">Kunduppgifter</h2>
 
       {loadingState.customer.loading ? (
         <p>Laddar kunduppgifter...</p>
       ) : loadingState.customer.error ? (
-        <p className="error-message">
-          {loadingState.customer.error}
-        </p>
+        <p className="errorMessage">{loadingState.customer.error}</p>
       ) : customer ? (
         <table>
           <thead>
@@ -281,9 +277,7 @@ export default function PageAdminSingleOrder() {
               <td>{customer.fname}</td>
               <td>{customer.lname}</td>
               <td>{customer.email}</td>
-              <td>
-                {customer.phone && formatPhoneNumber(customer.phone)}
-              </td>
+              <td>{customer.phone && formatPhoneNumber(customer.phone)}</td>
             </tr>
           </tbody>
         </table>
@@ -291,13 +285,7 @@ export default function PageAdminSingleOrder() {
         <p>Inga kunduppgifter tillgängliga.</p>
       )}
 
-      <Link 
-        to="/admin/orders"
-        className="link-back"
-      >
-        <ArrowLeftIcon size={20} />
-        Tillbaka till orderlistan
-      </Link>
+      <BackLink to="/admin/orders" label="Tillbaka till orderlistan" />
     </div>
   )
 }

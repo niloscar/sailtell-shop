@@ -1,12 +1,14 @@
 import { Link } from "react-router-dom";
 import FooterLogo from "../FooterLogo";
 
+import styles from "./Footer.module.css";
+
 export default function Footer() {
   return (
-    <footer className="page-footer">
-      <div className="container">
+    <footer className={styles.pageFooter}>
+      <div className={styles.container}>
         <FooterLogo />
-        <section className="information">
+        <section className={styles.information}>
           <h2>Information</h2>
           <nav>
             <ul className="unstyled">
@@ -16,7 +18,7 @@ export default function Footer() {
             </ul>
           </nav>
         </section>
-        <section className="customer-service">
+        <section className={styles.customerService}>
           <h2>Kundservice</h2>
           <nav>
             <ul className="unstyled">
@@ -41,7 +43,7 @@ export default function Footer() {
             </ul>
           </nav>
         </section>
-        <p className="copyright">&copy; 2026 SailTell AB</p>
+        <p className={styles.copyright}>&copy; 2026 SailTell AB</p>
       </div>
     </footer>
   )

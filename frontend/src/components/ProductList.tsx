@@ -4,7 +4,14 @@ import { getProducts } from '../api/productApi'
 import getApiErrorMessage from '../utilities/apiError'
 import type { Product } from '../types/productTypes'
 
-function ProductList({ category }: { category?: string, title?: string | false }) {
+import styles from './ProductList.module.css'
+
+function ProductList({
+  category
+}: {
+  category?: string
+  title?: string | false
+}) {
   const navigate = useNavigate()
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState<boolean>(true)
@@ -28,31 +35,28 @@ function ProductList({ category }: { category?: string, title?: string | false }
   }, [category])
 
   if (loading) return <p>Laddar produkter...</p>
-  if (loadingError) return <p className="error-message">{loadingError}</p>
+  if (loadingError) return <p className="errorMessage">{loadingError}</p>
   if (products.length === 0) return <p>Inga produkter hittades.</p>
 
   return (
     <>
-      <ul className='unstyled product-list'>
+      <ul className={`unstyled ${styles.productList}`}>
         {products.map((product: Product) => (
-          <li 
-            key={product.id} 
-            className='list-item clickable'
+          <li
+            key={product.id}
+            className={`clickable ${styles.listItem}`}
             onClick={() => navigate(`/product/${product.id}`)}
           >
-            <div className='product-info'>
-              <h2 className="heading-size-2 product-title">
-                {product.name}
-              </h2>
-              {product.img_url && (
-                <img
-                  className='product-image'
-                  src={`${product.img_url}`}
-                  alt={product.name}
-                />
-              )}
-              {/* <p className='brand-name'>{product.brand_name}</p> */}
-              <p className='product-description'>{product.description}</p>
+            {product.img_url && (
+              <img
+                className={styles.image}
+                src={`${product.img_url}`}
+                alt={product.name}
+              />
+            )}
+            <div className={styles.info}>
+              <h2 className="headingSize2 product-title">{product.name}</h2>
+              <p className={styles.description}>{product.description}</p>
             </div>
           </li>
         ))}

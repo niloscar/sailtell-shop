@@ -1,0 +1,43 @@
+.pageHeader {
+  background-color: var(--bg);
+  padding: var(--page-padding);
+  text-align: center;
+  min-height: 500px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-image: url('../../assets/img/hobie16.png');
+  background-size: cover;
+  background-position: center;
+}
+
+.pageHeader h1.logo {
+  margin: 0;
+  line-height: 1;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+}
+
+.pageHeader h1.logo img {
+  width: 100%;
+  max-width: 800px;
+  height: auto;
+}
+
+.pageHeader h1.logo span {
+  display: block;
+  font-weight: 800;
+  font-size: 10rem;
+  opacity: .95;
+}
+
+.pageHeader h1.logo small {
+  display: block;
+  font-size: .5em;
+  opacity: .75;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: .8em;
+  margin-right: -.8em;
+}

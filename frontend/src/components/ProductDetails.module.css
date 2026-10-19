@@ -1,0 +1,109 @@
+.product {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 1rem;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+  }
+}
+
+.image {
+  width: 100%;
+  height: auto;
+  max-width: var(--product-image-width);
+  max-height: var(--product-image-width);
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05),
+    0 4px 8px rgba(0, 0, 0, 0.05);
+
+  @media (max-width: 1024px) {
+    max-width: 100%;
+    max-height: 100%;
+  }
+}
+
+.content {
+  flex: 1;
+  min-width: 0;
+}
+
+.stock {
+  font-size: .875rem;
+}
+
+.stockAvailable {
+  color: var(--success);
+}
+
+.stockOut {
+  color: var(--alert);
+}
+
+.stockLow {
+  color: var(--warning);
+}
+
+.brand {
+  opacity: .6;
+}
+
+.externalPurchase{
+  margin: 2rem 0;
+  display: flex;
+  gap: 1rem;
+  background-color: #f5f5f5;
+  border-radius: 4px;
+  padding: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+
+  & .downloadBadges {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  & a {
+    display: inline-block;
+    width: auto;
+    height: 3rem;
+
+    & img {
+      width: auto;
+      height: 100%;
+    }
+  }
+}
+
+.purchase {
+  margin: 2rem 0;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  background-color: #f5f5f5;
+  border-radius: 4px;
+  padding: 1rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+
+  & .purchaseControls {
+    margin-top: 0;
+    display: flex;
+    gap: 1rem;
+  }
+
+  & .stockNotice {
+    font-size: .875rem;
+    opacity: .75;
+    grid-column: 1 / -1;
+    text-wrap: pretty;
+  }
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
