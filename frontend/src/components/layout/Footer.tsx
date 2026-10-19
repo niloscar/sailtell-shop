@@ -13,7 +13,12 @@ export default function Footer() {
           <nav>
             <ul className="unstyled">
               <li>
-                <Link to="/about">Om oss</Link>
+                <Link to="/about">Om SailTell</Link>
+              </li>
+              <li>
+                <a href="https://oscarnilsson.dev?ref=assignment" target="_blank" rel="noopener">
+                  Portfolio
+                </a>
               </li>
             </ul>
           </nav>
