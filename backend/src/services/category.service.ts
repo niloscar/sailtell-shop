@@ -1,82 +1,58 @@
-/**
- * Category service functions for handling category-related operations.
- */
-
-import pool from '../database'
-import type { Category, UpdateCategory } from '../types/category.types'
+import * as categoryRepository from '../repositories/category.repository'
 import slugify from '../utilities/slugify'
 
+import type { UpdateCategory } from '../types/category.types'
+
 export async function getCategories() {
-    const { rows } = await pool.query<Category>(
-      `SELECT id, name, description 
-      FROM categories
-      WHERE deleted_at IS NULL`
-    )
-
-    if (rows.length === 0) throw new Error('Inga kategorier kunde hittas.')
-
-    return rows
+  return await categoryRepository.findCategories()
 }
 
 export async function getCategory(id: number) {
-    const { rows } = await pool.query<Category>(
-      `SELECT id, name, description 
-      FROM categories 
-      WHERE id = $1 AND deleted_at IS NULL`,
-      [id]
-    )
+  const category = await categoryRepository.findCategoryById(id)
 
-    if (rows.length === 0) throw new Error('Kategorin kunde inte hittas.')
+  if (!category) {
+    throw new Error('Kategorin kunde inte hittas.')
+  }
 
-    return rows[0]
+  return category
 }
 
 export async function getCategoryBySlug(slug: string) {
-  const { rows } = await pool.query<Category>(
-    `SELECT id, name
-     FROM categories`
-  )
+  const category = await categoryRepository.findCategoryBySlug(slug)
 
-  return rows.find(category => slugify(category.name) === slug)
+  if (!category) {
+    throw new Error('Kategorin kunde inte hittas.')
+  }
+
+  return category
 }
 
 export async function createCategory(name: string, description: string) {
-    const { rows } = await pool.query<Category>(
-        `INSERT INTO categories (name, description) 
-        VALUES ($1, $2) 
-        RETURNING id, name, description`,
-        [name, description]
-    )
+  const category = await categoryRepository.createCategory(name, description)
 
-    if (rows.length === 0) throw new Error('Kategorin kunde inte skapas.')
+  if (!category) {
+    throw new Error('Kategorin kunde inte skapas.')
+  }
 
-    return rows[0]
+  return category
 }
 
 export async function updateCategory(id: number, updatedCategory: UpdateCategory) {
-    const { rows } = await pool.query<Category>(
-        `UPDATE categories 
-        SET name = $1, description = $2 
-        WHERE id = $3 
-        RETURNING id, name, description`,
-        [updatedCategory.name, updatedCategory.description, id]
-    )
+  const category = await categoryRepository.updateCategory(id, updatedCategory)
 
-    if (rows.length === 0) throw new Error('Kategorin kunde inte uppdateras.')
+  if (!category) {
+    throw new Error('Kategorin kunde inte uppdateras.')
+  }
 
-    return rows[0]
+  return category
 }
 
 export async function deleteCategory(id: number) {
-    const { rows } = await pool.query(
-        `UPDATE categories 
-        SET deleted_at = now()
-        WHERE id = $1 
-        RETURNING id`,
-        [id]
-    )
+  const category = await categoryRepository.deleteCategory(id)
 
-    if (rows.length === 0) throw new Error('Kategorin kunde inte tas bort.')
+  if (!category) {
+    throw new Error('Kategorin kunde inte tas bort.')
+  }
 
-    return rows[0]
-} 
+  return category
+}
