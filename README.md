@@ -1,298 +1,114 @@
-# E-handel – Inlämningsuppgift 1, Systemutveckling (FSU25D)
+# E-handel – Inlämningsuppgift 1, Integration med tredjepartssystem (FSU25D)
 
 [Uppgiftsbeskrivning](docs/assignment-description.md)
 
 _Oscar Nilsson_  
-_oscar@ondproduktion.se_  
+_oscar.nilsson@medieinstitutet.se_  
 [_GitHub_](https://github.com/niloscar)
 
-## SailTell shop
+## Integrera shoppen med omvärlden
 
-En enklare e-handelsapplikation där kunder kan visa produkter, lägga dem i en varukorg och skapa en order. Administratörer kan hantera produkter och se inkomna ordrar.
+Projektet bygger vidare på en befintlig e-handelsapplikation och fokuserar på integration med externa tjänster och dataformat.
 
-## Innehåll
+Under uppgiften utökas shoppen stegvis med produktimport, sökfunktionalitet, betalning, molnlagring och frakt.
 
-* [Tidplan](#tidplan)
-* [Funktioner](#funktioner)
+Integrationerna implementeras i fem labbar:
 
-  * [Kund](#kund)
-  * [Administratör](#administratör)
-* [Tech stack](#tech-stack)
+1. Import av produktdata
+2. Sök-API
+3. Betalning
+4. Produktbilder i molnlagring
+5. Frakt
 
-  * [Frontend](#frontend)
-  * [Backend](#backend)
-  * [Databas](#databas)
-  * [Verktyg](#verktyg)
-* [Projektstruktur](#projektstruktur)
-* [Installation](#installation)
-* [Miljövariabler](#miljövariabler)
-* [Databas](#databas-1)
-* [Kodstil](#kodstil)
-* [Git och commits](#git-och-commits)
-* [Brancher och pull requests](#brancher-och-pull-requests)
-* [Testning](#testning)
-* [Dokumentation](#dokumentation)
-* [Deployment](#deployment)
-* [Administratörskonto](#administratörskonto)
+## Integrationer
 
+### Labb 1 – Import av produktdata
 
-## Tidplan
+Import av produktdata från externa leverantörer i CSV- och XML-format.
 
-**Deadline** 2026-08-25 23:59 (CEST)  
-**Tidsbudget** 124 timmar
+Den externa datan valideras innan den används och produkter skapas eller uppdateras i databasen.
 
-[Se den detaljerade tidplanen här](https://docs.google.com/spreadsheets/d/1kti9O242bkX7J6k_bEON9HNTtaCuefqLBKRLH9RBc4g/edit?usp=sharing)
+### Labb 2 – Sök-API
 
-## Funktioner
+Sökfunktion för produkter med stöd för:
 
-### Kund
+- fritextsökning
+- filtrering
+- sortering
+- paginering
 
-* Visa produkter
-* Lägga produkter i varukorgen (sparas i databasen)
-* Ändra antal och ta bort produkter från varukorgen
-* Genomföra simulerad betalning
-* Skapa en order
+Sökparametrar valideras i backend innan de används.
 
-### Administratör
+### Labb 3 – Betalning
 
-* Logga in som administratör
-* Lägga till och redigera produkter
-* Visa ordrar och beställda produkter
-* Uppdatera orderstatus
+Integration med extern betaltjänst.
+
+### Labb 4 – Produktbilder i molnlagring
+
+Produktbilder lagras och hämtas via extern molnlagring.
+
+### Labb 5 – Frakt
+
+Integration med extern frakttjänst för beräkning av fraktpris och val av ombud.
+
+## Integrationsarkitektur
+
+React-klienten kommunicerar endast med applikationens eget API i Express. Kommunikation med externa tjänster sker från backend.
+
+Varje extern tjänst kapslas in i en separat adapter som ansvarar för tjänstens:
+
+- URL:er och API-anrop
+- autentisering
+- dataformat
+- felkoder
+- översättning till applikationens interna datamodell
+
+Extern data valideras innan den används eller sparas.
+
+Anrop till externa tjänster ska också ha timeout och felhantering så att ett fel hos en tredjepartstjänst inte gör att hela applikationen kraschar.
 
 ## Tech stack
 
 ### Frontend
 
-* Vite
-* React
-* TypeScript
+- React
+- TypeScript
+- Vite
 
 ### Backend
 
-* Node.js
-* Express
-* TypeScript
+- Node.js
+- Express
+- TypeScript
 
 ### Databas
 
-* MySQL
+- PostgreSQL
 
-### Verktyg
+### Verktyg och bibliotek
 
-* npm
-* Git (och GitHub)
-* ESLint
+- npm
+- Git och GitHub
+- ESLint
+- Prettier
+- Zod
 
 ## Projektstruktur
 
 ```text
 .
 ├── backend
-│   ├── package-lock.json
-│   ├── package.json
-│   ├── public
-│   │   └── index.html
-│   ├── src
-│   │   └── server.ts
-│   └── tsconfig.json
-├── docs
-│   └── assignment-description.md
+│   └── src
+│       ├── controllers
+│       ├── integrations
+│       ├── middleware
+│       ├── repositories
+│       ├── routes
+│       ├── services
+│       ├── types
+│       └── utilities
 ├── frontend
-│   ├── eslint.config.js
-│   ├── index.html
-│   ├── package-lock.json
-│   ├── package.json
-│   ├── public
-│   │   └── favicon.svg
-│   ├── src
-│   │   ├── App.css
-│   │   ├── App.tsx
-│   │   ├── assets
-│   │   ├── index.css
-│   │   └── main.tsx
-│   ├── tsconfig.app.json
-│   ├── tsconfig.json
-│   ├── tsconfig.node.json
-│   └── vite.config.ts
+│   └── src
+├── docs
+├── package.json
 └── README.md
-```
-
-Mappen `docs` innehåller uppgiftsbeskrivning, databasdiagram, sitemap och tidplan.
-
-## Installation
-
-Klona projektet:
-
-```bash
-git clone https://github.com/Medieinstitutet/fsu25d-systemutveckling-uppgift-1-min-egna-e-handel-niloscar.git
-cd fsu25d-systemutveckling-uppgift-1-min-egna-e-handel-niloscar
-```
-
-Installera backend:
-
-```bash
-cd backend
-npm install
-```
-
-Installera frontend:
-
-```bash
-cd ../frontend
-npm install
-```
-
-Starta backend och frontend i varsin terminal.
-
-Backend:
-
-```bash
-cd backend
-npm run dev
-```
-
-Frontend:
-
-```bash
-cd frontend
-npm run dev
-```
-
-## Miljövariabler
-
-Exempel på variabler i backend:
-
-```env
-PORT=
-DB_HOST=
-DB_PORT=
-DB_NAME=
-DB_USER=
-DB_PASSWORD=
-SECRET_KEY=
-```
-
-`.env`-filer committas inte.
-
-## Databas
-
-Projektet använder följande huvudsakliga tabeller:
-
-* `products`
-* `orders`
-* `order_items`
-* `users`
-* `carts`
-* `cart_items`
-
-Databasdiagrammet finns i `docs`.
-
-## Kodstil
-
-* TypeScript används i frontend och backend.
-* All kod använder fyra mellanslags indentering.
-* Enkla citattecken används där det är möjligt.
-* Semikolon används inte där det inte är nödvändigt.
-* `camelCase` används för variabler och funktioner.
-* `PascalCase` används för React-komponenter och typer.
-* `kebab-case` används för övriga filnamn.
-* `snake_case` används i databasen.
-
-Exempel:
-
-```ts
-const orderTotal = 500;
-
-function calculateOrderTotal() {
-    // ...
-}
-```
-
-```tsx
-export function ProductCard() {
-  return <Article />;
-}
-```
-
-## Git och commits
-
-Arbetet ska ha en tydlig och löpande git-historik.
-
-* Minst en commit per arbetsdag
-* Små commits med tydliga beskrivningar
-* Inga lösenord eller `.env`-filer i Git
-
-Commit-format:
-
-```text
-type: kort beskrivning
-```
-
-Exempel:
-
-```text
-feat: add product list
-feat: add shopping cart
-fix: correct order total
-docs: update readme
-```
-
-Typer:
-
-* `feat`
-* `fix`
-* `docs`
-* `refactor`
-* `test`
-* `chore`
-
-## Brancher och pull requests
-
-Större funktioner utvecklas i separata brancher.
-
-Exempel:
-
-```text
-feature/product-api
-feature/shopping-cart
-feature/admin-login
-fix/order-total
-```
-
-En pull request ska kort beskriva:
-
-* Vad som har ändrats
-* Hur det har testats
-* Eventuella kvarstående problem
-
-## Dokumentation
-
-Utöver denna readme innehåller projektet (se docs/) följande dokumentation:
-
-* Databasdiagram
-* Sitemap
-* Tidplan
-* Uppgiftsbeskrivning
-
-## Deployment
-
-Applikation:
-
-```text
-https://sysdev-eshop-deploy.vercel.app/
-```
-
-API:
-
-```text
-https://sysdev-eshop-deploy.vercel.app/api/
-```
-
-## Administratörskonto
-
-```text
-https://sysdev-eshop-deploy.vercel.app/admin/
-Mail: admin@test.se
-Lösenord: test
-```
