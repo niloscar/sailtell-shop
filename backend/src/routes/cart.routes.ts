@@ -3,7 +3,13 @@
  */
 
 import { Router } from 'express'
-import { createCartHandler, getCartHandler, addCartItemHandler, updateCartItemHandler, deleteCartItemHandler } from '../controllers/cart.controller'
+import {
+  createCartHandler,
+  getCartHandler,
+  addCartItemHandler,
+  updateCartItemHandler,
+  deleteCartItemHandler
+} from '../controllers/cart.controller'
 
 const router = Router()
 

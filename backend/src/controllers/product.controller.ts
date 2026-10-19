@@ -3,7 +3,15 @@
  */
 
 import { Request, Response } from 'express'
-import { getAllProducts, getProductsByCategorySlug, getProduct, createProduct, updateProduct, deleteProduct, getProductOptions } from '../services/product.service'
+import {
+  getAllProducts,
+  getProductsByCategorySlug,
+  getProduct,
+  createProduct,
+  updateProduct,
+  deleteProduct,
+  getProductOptions
+} from '../services/product.service'
 
 type ProductParams = {
   id: string
@@ -34,11 +42,16 @@ export async function getProductsByCategoryHandler(
   if (products) {
     res.json(products)
   } else {
-    res.status(404).json({ error: 'Inga produkter hittades i den angivna kategorin.' })
+    res
+      .status(404)
+      .json({ error: 'Inga produkter hittades i den angivna kategorin.' })
   }
 }
 
-export async function getProductHandler(req: Request<ProductParams>, res: Response) {
+export async function getProductHandler(
+  req: Request<ProductParams>,
+  res: Response
+) {
   const productId = parseInt(req.params.id)
   const product = await getProduct(productId)
 
@@ -59,18 +72,26 @@ export async function createProductHandler(req: Request, res: Response) {
   }
 }
 
-export async function updateProductHandler(req: Request<ProductParams>, res: Response) {
+export async function updateProductHandler(
+  req: Request<ProductParams>,
+  res: Response
+) {
   const productId = parseInt(req.params.id)
   const updatedProduct = await updateProduct(productId, req.body)
 
   if (updatedProduct) {
     res.json(updatedProduct)
   } else {
-    res.status(404).json({ error: 'Produkten du vill ändra kunde inte hittas.' })
+    res
+      .status(404)
+      .json({ error: 'Produkten du vill ändra kunde inte hittas.' })
   }
 }
 
-export async function deleteProductHandler(req: Request<ProductParams>, res: Response) {
+export async function deleteProductHandler(
+  req: Request<ProductParams>,
+  res: Response
+) {
   const productId = parseInt(req.params.id)
   await deleteProduct(productId)
   res.status(204).send()

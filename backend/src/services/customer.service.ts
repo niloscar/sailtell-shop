@@ -4,7 +4,11 @@
 
 import pool from '../database'
 import type { Pool, PoolClient } from 'pg'
-import type { Customer, CreateCustomer, UpdateCustomer } from '../types/customer.types'
+import type {
+  Customer,
+  CreateCustomer,
+  UpdateCustomer
+} from '../types/customer.types'
 
 export async function getCustomers() {
   const { rows } = await pool.query<Customer>(
@@ -61,12 +65,7 @@ export async function createCustomer(customerData: CreateCustomer) {
       lname,
       email,
       phone`,
-    [
-      fname,
-      lname,
-      email,
-      phone
-    ]
+    [fname, lname, email, phone]
   )
 
   if (rows.length === 0) {
@@ -80,16 +79,8 @@ export async function getOrCreateCustomer(
   customerData: CreateCustomer,
   db: Pool | PoolClient = pool
 ) {
-  const {
-    fname,
-    lname,
-    email,
-    phone,
-    street,
-    zipcode,
-    city,
-    country
-  } = customerData
+  const { fname, lname, email, phone, street, zipcode, city, country } =
+    customerData
 
   const { rows } = await db.query<Customer>(
     `INSERT INTO customers (
@@ -110,16 +101,7 @@ export async function getOrCreateCustomer(
       lname,
       email,
       phone`,
-    [
-      fname,
-      lname,
-      email,
-      phone,
-      street,
-      zipcode,
-      city,
-      country
-    ]
+    [fname, lname, email, phone, street, zipcode, city, country]
   )
 
   if (rows.length > 0) {
@@ -145,16 +127,8 @@ export async function getOrCreateCustomer(
   return existingCustomerResult.rows[0]
 }
 
-export async function updateCustomer(
-  id: number,
-  customerData: UpdateCustomer
-) {
-  const {
-    fname,
-    lname,
-    email,
-    phone
-  } = customerData
+export async function updateCustomer(id: number, customerData: UpdateCustomer) {
+  const { fname, lname, email, phone } = customerData
 
   const { rows } = await pool.query<Customer>(
     `UPDATE customers
@@ -170,13 +144,7 @@ export async function updateCustomer(
        lname,
        email,
        phone`,
-    [
-      fname,
-      lname,
-      email,
-      phone,
-      id
-    ]
+    [fname, lname, email, phone, id]
   )
 
   if (rows.length === 0) {

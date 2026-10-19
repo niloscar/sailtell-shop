@@ -4,7 +4,13 @@ import type { Product } from '../types/productTypes'
 
 import styles from './ToCartButton.module.css'
 
-export default function ToCartButton({ product, quantity }: { product: Product; quantity: number }) {
+export default function ToCartButton({
+  product,
+  quantity
+}: {
+  product: Product
+  quantity: number
+}) {
   const { addToCart, cartActionState } = useCart()
 
   return (

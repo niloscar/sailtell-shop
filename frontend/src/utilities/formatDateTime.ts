@@ -6,7 +6,7 @@ export default function formatDateTime(dateTimeString: string): string {
     day: '2-digit',
     hour: '2-digit',
     minute: '2-digit',
-    second: '2-digit',
+    second: '2-digit'
   })
 }
 
@@ -24,7 +24,7 @@ export function formatTime(dateTimeString: string): string {
   return date.toLocaleString('sv-SE', {
     hour: '2-digit',
     minute: '2-digit',
-    second: '2-digit',
+    second: '2-digit'
   })
 }
 

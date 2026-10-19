@@ -56,14 +56,8 @@ export async function updateCartItem(
   return getCart(cartUuid)
 }
 
-export async function deleteCartItem(
-  cartUuid: string,
-  productId: number
-) {
-  const deleted = await cartRepository.deleteCartItem(
-    cartUuid,
-    productId
-  )
+export async function deleteCartItem(cartUuid: string, productId: number) {
+  const deleted = await cartRepository.deleteCartItem(cartUuid, productId)
 
   if (!deleted) {
     return null

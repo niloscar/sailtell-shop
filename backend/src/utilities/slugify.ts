@@ -1,9 +1,9 @@
 export default function slugify(text: string): string {
   const specialCharactersMap: { [key: string]: string } = {
-    'é': 'e',
-    'å': 'a',
-    'ä': 'a',
-    'ö': 'o',
+    é: 'e',
+    å: 'a',
+    ä: 'a',
+    ö: 'o'
   }
 
   return text
@@ -14,5 +14,4 @@ export default function slugify(text: string): string {
     .replace(/\s+/g, '-') // Replace spaces with -
     .replace(/--+/g, '-') // Replace multiple - with single -
     .replace(/[^\w-]+/g, '') // Remove all non-word chars
-    
 }

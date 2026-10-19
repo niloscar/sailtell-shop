@@ -115,10 +115,7 @@ export async function updateCartItemQuantity(
   return result.rows.length > 0
 }
 
-export async function deleteCartItem(
-  cartUuid: string,
-  productId: number
-) {
+export async function deleteCartItem(cartUuid: string, productId: number) {
   const result = await pool.query(
     `DELETE FROM cart_items
 

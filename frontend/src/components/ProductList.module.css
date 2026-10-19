@@ -6,15 +6,16 @@
 }
 
 .listItem {
-  flex: 0 1 calc(33.333% - (var(--content-gap)*2/3));
+  flex: 0 1 calc(33.333% - (var(--content-gap) * 2 / 3));
   border-radius: 4px;
   overflow: hidden;
   background-color: #fff;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05),
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.05),
     0 4px 8px rgba(0, 0, 0, 0.05);
 
   @media (max-width: 1024px) {
-    flex: 0 1 calc(50% - (var(--content-gap))/2);
+    flex: 0 1 calc(50% - (var(--content-gap)) / 2);
   }
 
   box-sizing: border-box;
@@ -41,5 +42,5 @@
 
 & .description {
   line-height: 1.4;
-  font-size: .875rem;
+  font-size: 0.875rem;
 }

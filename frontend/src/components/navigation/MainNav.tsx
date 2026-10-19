@@ -1,8 +1,7 @@
-
 /**
  * Main navigation component for the application.
- * 
- * Todo: 
+ *
+ * Todo:
  * - Get navigation items from backend instead of hardcoding.
  * - Get cart count from backend instead of using context.
  */
@@ -31,7 +30,7 @@ export default function MainNav() {
           <li key={item.name}>
             <NavLink
               to={item.path}
-              className={({ isActive }) => isActive ? styles.active : ''}
+              className={({ isActive }) => (isActive ? styles.active : '')}
             >
               {item.name !== 'Cart' && item.name}
               {item.name === 'Cart' && (

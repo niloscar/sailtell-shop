@@ -1,7 +1,7 @@
-import { Link } from "react-router-dom";
-import FooterLogo from "../FooterLogo";
+import { Link } from 'react-router-dom'
+import FooterLogo from '../FooterLogo'
 
-import styles from "./Footer.module.css";
+import styles from './Footer.module.css'
 
 export default function Footer() {
   return (

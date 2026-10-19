@@ -2,9 +2,13 @@
  * Product service functions for handling product-related operations such as new products, updates and deletes.
  */
 
-import pool from "../database";
-import type { CreateProduct, Product, UpdateProduct } from "../types/product.types";
-import { getCategoryBySlug } from "./category.service";
+import pool from '../database'
+import type {
+  CreateProduct,
+  Product,
+  UpdateProduct
+} from '../types/product.types'
+import { getCategoryBySlug } from './category.service'
 
 export async function getProductOptions() {
   const { rows } = await pool.query(
@@ -30,12 +34,12 @@ export async function getProductOptions() {
           '[]'::jsonb
         )
         FROM categories
-      ) AS categories`,
-  );
+      ) AS categories`
+  )
 
-  if (rows.length === 0) throw new Error("Kunde inte hämta produktalternativ.");
+  if (rows.length === 0) throw new Error('Kunde inte hämta produktalternativ.')
 
-  return rows[0];
+  return rows[0]
 }
 
 async function getProducts({ categoryId }: { categoryId?: number } = {}) {
@@ -93,32 +97,32 @@ async function getProducts({ categoryId }: { categoryId?: number } = {}) {
     ORDER BY 
       products.sort_order ASC, 
       products.id ASC`,
-    [categoryId ?? null],
-  );
+    [categoryId ?? null]
+  )
 
-  return rows;
+  return rows
 }
 
 export async function getAllProducts() {
-  const products = await getProducts();
+  const products = await getProducts()
 
   return {
     products,
-    category: null,
-  };
+    category: null
+  }
 }
 
 export async function getProductsByCategorySlug(categorySlug: string) {
-  const category = await getCategoryBySlug(categorySlug);
+  const category = await getCategoryBySlug(categorySlug)
 
-  if (!category) throw new Error("Kategorin kunde inte hittas.");
+  if (!category) throw new Error('Kategorin kunde inte hittas.')
 
-  const products = await getProducts({ categoryId: category.id });
+  const products = await getProducts({ categoryId: category.id })
 
   return {
     products,
-    category,
-  };
+    category
+  }
 }
 
 export async function getProduct(id: number) {
@@ -172,21 +176,21 @@ export async function getProduct(id: number) {
     WHERE products.id = $1
       AND products.deleted_at IS NULL
     ORDER BY products.id, prices.set_at DESC`,
-    [id],
-  );
+    [id]
+  )
 
   if (rows.length === 0) {
-    throw new Error("Produkten kunde inte hittas.");
+    throw new Error('Produkten kunde inte hittas.')
   }
 
-  return rows[0];
+  return rows[0]
 }
 
 export async function createProduct(product: CreateProduct) {
-  const client = await pool.connect();
+  const client = await pool.connect()
 
   try {
-    await client.query("BEGIN");
+    await client.query('BEGIN')
 
     const { rows } = await client.query<{ id: number }>(
       `INSERT INTO products (
@@ -207,11 +211,11 @@ export async function createProduct(product: CreateProduct) {
         JSON.stringify(product.details),
         product.img_url,
         product.stock,
-        product.purchase_type,
-      ],
-    );
+        product.purchase_type
+      ]
+    )
 
-    const productId = rows[0].id;
+    const productId = rows[0].id
 
     await client.query(
       `INSERT INTO prices (
@@ -219,8 +223,8 @@ export async function createProduct(product: CreateProduct) {
         price
       )
       VALUES ($1, $2)`,
-      [productId, product.price],
-    );
+      [productId, product.price]
+    )
 
     for (const categoryId of product.category_ids) {
       await client.query(
@@ -229,76 +233,76 @@ export async function createProduct(product: CreateProduct) {
           category_id
         )
         VALUES ($1, $2)`,
-        [productId, categoryId],
-      );
+        [productId, categoryId]
+      )
     }
 
-    await client.query("COMMIT");
+    await client.query('COMMIT')
 
-    return getProduct(productId);
+    return getProduct(productId)
   } catch (error) {
-    await client.query("ROLLBACK");
-    throw error;
+    await client.query('ROLLBACK')
+    throw error
   } finally {
-    client.release();
+    client.release()
   }
 }
 
 const productColumns = [
-  "name",
-  "brand_name",
-  "description",
-  "details",
-  "img_url",
-  "stock",
-  "purchase_type",
-  "sort_order",
-] as const;
+  'name',
+  'brand_name',
+  'description',
+  'details',
+  'img_url',
+  'stock',
+  'purchase_type',
+  'sort_order'
+] as const
 
 export async function updateProduct(id: number, updates: UpdateProduct) {
-  const client = await pool.connect();
+  const client = await pool.connect()
 
   try {
-    await client.query("BEGIN");
+    await client.query('BEGIN')
 
-    const { category_ids, price, ...productUpdates } = updates;
+    const { category_ids, price, ...productUpdates } = updates
 
-    const fieldsToUpdate: string[] = [];
-    const values: unknown[] = [];
+    const fieldsToUpdate: string[] = []
+    const values: unknown[] = []
 
     for (const [key, value] of Object.entries(productUpdates)) {
-      if (value === undefined) continue;
+      if (value === undefined) continue
 
       if (!productColumns.includes(key as (typeof productColumns)[number])) {
-        continue;
+        continue
       }
 
-      if (key === "details") {
-        values.push(JSON.stringify(value));
-        fieldsToUpdate.push(`${key} = $${values.length}::jsonb`);
+      if (key === 'details') {
+        values.push(JSON.stringify(value))
+        fieldsToUpdate.push(`${key} = $${values.length}::jsonb`)
       } else {
-        values.push(value);
-        fieldsToUpdate.push(`${key} = $${values.length}`);
+        values.push(value)
+        fieldsToUpdate.push(`${key} = $${values.length}`)
       }
     }
 
     if (fieldsToUpdate.length > 0) {
-      values.push(id);
+      values.push(id)
 
       await client.query(
         `UPDATE products
-         SET ${fieldsToUpdate.join(", ")}
+         SET ${fieldsToUpdate.join(', ')}
          WHERE id = $${values.length}`,
-        values,
-      );
+        values
+      )
     }
 
     if (category_ids !== undefined) {
       await client.query(
         `DELETE FROM product_categories
          WHERE product_id = $1`,
-        [id],
-      );
+        [id]
+      )
 
       for (const categoryId of category_ids) {
         await client.query(
@@ -307,8 +311,8 @@ export async function updateProduct(id: number, updates: UpdateProduct) {
             category_id
           )
           VALUES ($1, $2)`,
-          [id, categoryId],
-        );
+          [id, categoryId]
+        )
       }
     }
 
@@ -319,10 +323,10 @@ export async function updateProduct(id: number, updates: UpdateProduct) {
          WHERE product_id = $1
          ORDER BY set_at DESC
          LIMIT 1`,
-        [id],
-      );
+        [id]
+      )
 
-      const currentPrice = rows[0]?.price;
+      const currentPrice = rows[0]?.price
 
       if (Number(currentPrice) !== Number(price)) {
         await client.query(
@@ -331,19 +335,19 @@ export async function updateProduct(id: number, updates: UpdateProduct) {
             price
           )
           VALUES ($1, $2)`,
-          [id, price],
-        );
+          [id, price]
+        )
       }
     }
 
-    await client.query("COMMIT");
+    await client.query('COMMIT')
 
-    return getProduct(id);
+    return getProduct(id)
   } catch (error) {
-    await client.query("ROLLBACK");
-    throw error;
+    await client.query('ROLLBACK')
+    throw error
   } finally {
-    client.release();
+    client.release()
   }
 }
 
@@ -352,10 +356,10 @@ export async function deleteProduct(id: number) {
     `UPDATE products
     SET deleted_at = NOW()
       WHERE id = $1`,
-    [id],
-  );
+    [id]
+  )
 
   if (rowCount === 0) {
-    throw new Error("Produkten kunde inte hittas.");
+    throw new Error('Produkten kunde inte hittas.')
   }
 }

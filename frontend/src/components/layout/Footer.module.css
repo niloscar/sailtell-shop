@@ -1,5 +1,5 @@
 .pageFooter {
-  padding: var(--page-padding) var(--page-padding) .5rem;
+  padding: var(--page-padding) var(--page-padding) 0.5rem;
   text-align: center;
   display: flex;
   justify-content: center;
@@ -7,7 +7,7 @@
   color: #f5f5f5;
 }
 
-.pageFooter>.container {
+.pageFooter > .container {
   width: 100%;
   max-width: var(--page-width);
   display: flex;
@@ -45,6 +45,6 @@
 .pageFooter .copyright {
   width: 100%;
   margin: 0;
-  font-size: .75rem;
-  opacity: .5;
+  font-size: 0.75rem;
+  opacity: 0.5;
 }

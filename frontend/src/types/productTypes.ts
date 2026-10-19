@@ -6,9 +6,9 @@ export interface Product {
   categories: Category[]
   details: string[]
   img_url: string
-  stock: number | null,
-  purchase_type: PurchaseType,
-  product_distribution_links: ProductDistributionLink[],
+  stock: number | null
+  purchase_type: PurchaseType
+  product_distribution_links: ProductDistributionLink[]
   price: number
 }
 

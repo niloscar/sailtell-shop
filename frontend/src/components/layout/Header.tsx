@@ -6,10 +6,7 @@ export default function Header() {
   return (
     <header className={styles.pageHeader}>
       <h1 className={styles.logo}>
-        <img
-          src={logo} 
-          alt="SailTell – Your boat at a glance" 
-        />
+        <img src={logo} alt="SailTell – Your boat at a glance" />
       </h1>
     </header>
   )

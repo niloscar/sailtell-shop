@@ -1,8 +1,8 @@
-import dotenv from "dotenv";
-import { Pool } from "pg";
-import { DbClient } from "./types/database.types";
+import dotenv from 'dotenv'
+import { Pool } from 'pg'
+import { DbClient } from './types/database.types'
 
-dotenv.config();
+dotenv.config()
 
 export const pool = new Pool({
   host: process.env.DB_HOST,
@@ -11,35 +11,35 @@ export const pool = new Pool({
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
   ssl: {
-    rejectUnauthorized: false,
-  },
-});
+    rejectUnauthorized: false
+  }
+})
 
 export async function connect() {
-  const client = await pool.connect();
-  console.log("Connected to the database");
-  client.release();
+  const client = await pool.connect()
+  console.log('Connected to the database')
+  client.release()
 }
 
 export async function withTransaction<T>(
-  callback: (client: DbClient) => Promise<T>,
+  callback: (client: DbClient) => Promise<T>
 ): Promise<T> {
-  const client = await pool.connect();
+  const client = await pool.connect()
 
   try {
-    await client.query("BEGIN");
+    await client.query('BEGIN')
 
-    const result = await callback(client);
+    const result = await callback(client)
 
-    await client.query("COMMIT");
+    await client.query('COMMIT')
 
-    return result;
+    return result
   } catch (error) {
-    await client.query("ROLLBACK");
-    throw error;
+    await client.query('ROLLBACK')
+    throw error
   } finally {
-    client.release();
+    client.release()
   }
 }
 
-export default pool;
+export default pool

@@ -56,7 +56,10 @@ export async function createCategory(name: string, description: string) {
   return rows[0] ?? null
 }
 
-export async function updateCategory(id: number, updatedCategory: UpdateCategory) {
+export async function updateCategory(
+  id: number,
+  updatedCategory: UpdateCategory
+) {
   const { rows } = await pool.query<Category>(
     `UPDATE categories
     SET name = $1,

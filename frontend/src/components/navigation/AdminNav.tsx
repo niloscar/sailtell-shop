@@ -1,8 +1,7 @@
-
 /**
  * Admin navigation component for the application.
- * 
- * Todo: 
+ *
+ * Todo:
  * - Get navigation items from backend instead of hardcoding.
  */
 
@@ -14,7 +13,7 @@ import styles from './AdminNav.module.css'
 const navItems = [
   { name: 'Start', path: '/admin', end: true },
   { name: 'Orders', path: '/admin/orders' },
-  { name: 'Products', path: '/admin/products' },
+  { name: 'Products', path: '/admin/products' }
 ]
 
 export default function AdminNav() {
@@ -28,7 +27,7 @@ export default function AdminNav() {
             <NavLink
               to={item.path}
               end={item.end}
-              className={({ isActive }) => isActive ? styles.active : ''}
+              className={({ isActive }) => (isActive ? styles.active : '')}
             >
               {item.name}
             </NavLink>

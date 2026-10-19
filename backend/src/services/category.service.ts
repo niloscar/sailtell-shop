@@ -37,7 +37,10 @@ export async function createCategory(name: string, description: string) {
   return category
 }
 
-export async function updateCategory(id: number, updatedCategory: UpdateCategory) {
+export async function updateCategory(
+  id: number,
+  updatedCategory: UpdateCategory
+) {
   const category = await categoryRepository.updateCategory(id, updatedCategory)
 
   if (!category) {

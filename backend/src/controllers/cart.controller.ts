@@ -2,7 +2,13 @@
  * Controller functions for handling cart-related API endpoints.
  */
 
-import { createCart, getCart, addCartItem, updateCartItem, deleteCartItem } from '../services/cart.service'
+import {
+  createCart,
+  getCart,
+  addCartItem,
+  updateCartItem,
+  deleteCartItem
+} from '../services/cart.service'
 import type { Request, Response } from 'express'
 
 type CartParams = {
@@ -31,8 +37,10 @@ export async function getCartHandler(req: Request<CartParams>, res: Response) {
   res.json(cart)
 }
 
-
-export async function addCartItemHandler(req: Request<CartItemParams>, res: Response) {
+export async function addCartItemHandler(
+  req: Request<CartItemParams>,
+  res: Response
+) {
   const { cartUuid } = req.params
   const { product_id, quantity } = req.body
 
@@ -41,11 +49,7 @@ export async function addCartItemHandler(req: Request<CartItemParams>, res: Resp
     return
   }
 
-  const cart = await addCartItem(
-    cartUuid,
-    product_id,
-    quantity
-  )
+  const cart = await addCartItem(cartUuid, product_id, quantity)
 
   if (!cart) {
     res.status(404).json({ message: 'Varukorgen kunde inte hittas.' })
@@ -55,8 +59,10 @@ export async function addCartItemHandler(req: Request<CartItemParams>, res: Resp
   res.status(201).json(cart)
 }
 
-
-export async function updateCartItemHandler(req: Request<CartItemParams>, res: Response) {
+export async function updateCartItemHandler(
+  req: Request<CartItemParams>,
+  res: Response
+) {
   const { cartUuid, productId } = req.params
   const { quantity } = req.body
 
@@ -65,30 +71,29 @@ export async function updateCartItemHandler(req: Request<CartItemParams>, res: R
     return
   }
 
-  const cart = await updateCartItem(
-    cartUuid,
-    Number(productId),
-    quantity
-  )
+  const cart = await updateCartItem(cartUuid, Number(productId), quantity)
 
   if (!cart) {
-    res.status(404).json({ message: 'Varukorgen eller produkten kunde inte hittas.' })
+    res
+      .status(404)
+      .json({ message: 'Varukorgen eller produkten kunde inte hittas.' })
     return
   }
 
   res.json(cart)
 }
 
-
-export async function deleteCartItemHandler(req: Request<CartItemParams>, res: Response) {
+export async function deleteCartItemHandler(
+  req: Request<CartItemParams>,
+  res: Response
+) {
   const { cartUuid, productId } = req.params
-  const cart = await deleteCartItem(
-    cartUuid,
-    Number(productId)
-  )
+  const cart = await deleteCartItem(cartUuid, Number(productId))
 
   if (!cart) {
-    res.status(404).json({ message: 'Varukorgen eller produkten kunde inte hittas.' })
+    res
+      .status(404)
+      .json({ message: 'Varukorgen eller produkten kunde inte hittas.' })
     return
   }
 

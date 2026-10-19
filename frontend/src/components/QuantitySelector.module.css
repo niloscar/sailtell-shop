@@ -13,14 +13,14 @@
 }
 
 .quantityUnit {
-  margin-left: .25rem;
+  margin-left: 0.25rem;
 }
 
 .quantityDecrementButton,
 .quantityIncrementButton {
   display: flex;
   align-items: center;
-  padding: .5rem .5rem;
+  padding: 0.5rem 0.5rem;
   font-size: 1rem;
   cursor: pointer;
   width: 2rem;

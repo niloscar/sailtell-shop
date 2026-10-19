@@ -15,7 +15,8 @@
   max-width: var(--product-image-width);
   max-height: var(--product-image-width);
   border-radius: 4px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05),
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.05),
     0 4px 8px rgba(0, 0, 0, 0.05);
 
   @media (max-width: 1024px) {
@@ -30,7 +31,7 @@
 }
 
 .stock {
-  font-size: .875rem;
+  font-size: 0.875rem;
 }
 
 .stockAvailable {
@@ -46,10 +47,10 @@
 }
 
 .brand {
-  opacity: .6;
+  opacity: 0.6;
 }
 
-.externalPurchase{
+.externalPurchase {
   margin: 2rem 0;
   display: flex;
   gap: 1rem;
@@ -97,8 +98,8 @@
   }
 
   & .stockNotice {
-    font-size: .875rem;
-    opacity: .75;
+    font-size: 0.875rem;
+    opacity: 0.75;
     grid-column: 1 / -1;
     text-wrap: pretty;
   }

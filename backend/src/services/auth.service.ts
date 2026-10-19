@@ -8,7 +8,10 @@ type LoginResult = {
   user: PublicUser
 }
 
-export async function loginUser(email: string, password: string): Promise<LoginResult> {
+export async function loginUser(
+  email: string,
+  password: string
+): Promise<LoginResult> {
   const user = await findUserByEmail(email)
 
   if (!user) {
