@@ -4,19 +4,19 @@
 
 import { Request, Response } from 'express'
 import {
-  getCategories,
-  getCategory,
+  findCategories,
+  findCategoryById,
   createCategory,
   updateCategory,
   deleteCategory
-} from '../services/category.service'
+} from '../repositories/category.repository'
 
 type CategoryParams = {
   id: string
 }
 
 export async function getCategoriesHandler(req: Request, res: Response) {
-  const categories = await getCategories()
+  const categories = await findCategories()
   if (categories) {
     res.json(categories)
   } else {
@@ -29,7 +29,7 @@ export async function getCategoryHandler(
   res: Response
 ) {
   const categoryId = parseInt(req.params.id)
-  const category = await getCategory(categoryId)
+  const category = await findCategoryById(categoryId)
 
   if (category) {
     res.json(category)
@@ -57,7 +57,7 @@ export async function updateCategoryHandler(
   res: Response
 ) {
   const categoryId = parseInt(req.params.id)
-  const category = await getCategory(categoryId)
+  const category = await findCategoryById(categoryId)
 
   if (category) {
     const updatedCategory = { ...category, ...req.body }
@@ -79,7 +79,7 @@ export async function deleteCategoryHandler(
   res: Response
 ) {
   const categoryId = parseInt(req.params.id)
-  const category = await getCategory(categoryId)
+  const category = await findCategoryById(categoryId)
 
   if (category) {
     await deleteCategory(categoryId)

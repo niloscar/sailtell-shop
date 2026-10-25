@@ -3,6 +3,7 @@
  */
 
 import { Router } from 'express'
+import { requireAdmin } from '../middleware/auth.middleware'
 import {
   getCategoriesHandler,
   getCategoryHandler,
@@ -10,7 +11,6 @@ import {
   updateCategoryHandler,
   deleteCategoryHandler
 } from '../controllers/category.controller'
-import { requireAdmin } from '../middleware/auth.middleware'
 
 const categoryRouter = Router()
 

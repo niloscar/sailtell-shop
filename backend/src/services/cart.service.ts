@@ -1,17 +1,17 @@
-import * as cartRepository from '../repositories/cart.repository'
+import * as repository from '../repositories/cart.repository'
 
 export async function createCart() {
-  return cartRepository.createCart()
+  return repository.createCart()
 }
 
 export async function getCart(cartUuid: string) {
-  const cart = await cartRepository.findCartByUuid(cartUuid)
+  const cart = await repository.findCartByUuid(cartUuid)
 
   if (!cart) {
     return null
   }
 
-  const items = await cartRepository.getCartItems(cart.id)
+  const items = await repository.getCartItems(cart.id)
 
   return {
     ...cart,
@@ -24,14 +24,14 @@ export async function addCartItem(
   productId: number,
   quantity: number
 ) {
-  const cartId = await cartRepository.findCartIdByUuid(cartUuid)
+  const cartId = await repository.findCartIdByUuid(cartUuid)
 
   if (!cartId) {
     return null
   }
 
-  await cartRepository.upsertCartItem(cartId, productId, quantity)
-  await cartRepository.touchCartById(cartId)
+  await repository.upsertCartItem(cartId, productId, quantity)
+  await repository.touchCartById(cartId)
 
   return getCart(cartUuid)
 }
@@ -41,7 +41,7 @@ export async function updateCartItem(
   productId: number,
   quantity: number
 ) {
-  const updated = await cartRepository.updateCartItemQuantity(
+  const updated = await repository.updateCartItemQuantity(
     cartUuid,
     productId,
     quantity
@@ -51,19 +51,19 @@ export async function updateCartItem(
     return null
   }
 
-  await cartRepository.touchCartByUuid(cartUuid)
+  await repository.touchCartByUuid(cartUuid)
 
   return getCart(cartUuid)
 }
 
 export async function deleteCartItem(cartUuid: string, productId: number) {
-  const deleted = await cartRepository.deleteCartItem(cartUuid, productId)
+  const deleted = await repository.deleteCartItem(cartUuid, productId)
 
   if (!deleted) {
     return null
   }
 
-  await cartRepository.touchCartByUuid(cartUuid)
+  await repository.touchCartByUuid(cartUuid)
 
   return getCart(cartUuid)
 }

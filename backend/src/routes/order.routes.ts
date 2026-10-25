@@ -3,6 +3,7 @@
  */
 
 import { Router } from 'express'
+import { requireAdmin } from '../middleware/auth.middleware'
 import {
   getOrderOptionsHandler,
   getOrdersHandler,
@@ -11,7 +12,6 @@ import {
   updateOrderHandler,
   deleteOrderHandler
 } from '../controllers/order.controller'
-import { requireAdmin } from '../middleware/auth.middleware'
 
 const orderRouter = Router()
 
