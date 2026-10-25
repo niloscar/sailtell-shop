@@ -3,12 +3,12 @@
  */
 
 import { Router } from 'express'
+import { requireAdmin } from '../middleware/auth.middleware'
 import {
   createUserHandler,
   getUserHandler,
   getUsersHandler
 } from '../controllers/user.controller'
-import { requireAdmin } from '../middleware/auth.middleware'
 
 const userRouter = Router()
 

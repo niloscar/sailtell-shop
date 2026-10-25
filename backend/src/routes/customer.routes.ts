@@ -3,13 +3,13 @@
  */
 
 import { Router } from 'express'
+import { requireAdmin } from '../middleware/auth.middleware'
 import {
   getCustomersHandler,
   getCustomerHandler,
   createCustomerHandler,
   updateCustomerHandler
 } from '../controllers/customer.controller'
-import { requireAdmin } from '../middleware/auth.middleware'
 
 const customerRouter = Router()
 
