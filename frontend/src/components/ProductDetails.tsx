@@ -6,7 +6,7 @@ import getApiErrorMessage from '../utilities/apiError'
 import ToCartButton from './ToCartButton'
 import QuantitySelector from './QuantitySelector'
 
-import type { Product } from '../types/productTypes'
+import type { Product } from '@shop/shared'
 
 import styles from './ProductDetails.module.css'
 

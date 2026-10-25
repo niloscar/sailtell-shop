@@ -9,11 +9,7 @@ import {
 import getApiErrorMessage from '../../utilities/apiError'
 import BackLink from '../../components/BackLink'
 
-import type {
-  Product,
-  ProductOptions,
-  UpdateProduct
-} from '../../types/productTypes'
+import type { Product, ProductOptions, UpdateProduct } from '@shop/shared'
 
 type LoadingState = {
   loading: boolean

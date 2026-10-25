@@ -9,6 +9,7 @@ import {
   updateProductHandler,
   createProductHandler,
   getAllProductsHandler,
+  getAllSupplierProductsHandler,
   getProductsByCategoryHandler,
   getProductOptionsHandler
 } from '../controllers/product.controller'
@@ -18,6 +19,7 @@ import { requireAdmin } from '../middleware/auth.middleware'
 const productRouter = Router()
 
 productRouter.get('/', getAllProductsHandler)
+productRouter.get('/supplier', getAllSupplierProductsHandler)
 productRouter.get('/category/:categorySlug', getProductsByCategoryHandler)
 productRouter.get('/options', getProductOptionsHandler)
 

@@ -5,7 +5,7 @@ import categoriesToString from '../../utilities/categoriesToString'
 import formatPrice from '../../utilities/formatPrice'
 import getApiErrorMessage from '../../utilities/apiError'
 import { InfinityIcon } from '@phosphor-icons/react'
-import type { Product } from '../../types/productTypes'
+import type { Product } from '@shop/shared'
 
 export default function PageAdminProducts() {
   const [products, setProducts] = useState<Product[]>([])
