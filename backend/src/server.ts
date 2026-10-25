@@ -11,13 +11,14 @@ import path from 'path'
 import { connect, pool } from './database'
 
 /* Import route handlers */
-import customerRoutes from './routes/customer.routes'
-import productRoutes from './routes/product.routes'
-import orderRoutes from './routes/order.routes'
-import usersRouter from './routes/user.routes'
 import authRouter from './routes/auth.routes'
-import categoryRoutes from './routes/category.routes'
 import cartRoutes from './routes/cart.routes'
+import categoryRoutes from './routes/category.routes'
+import customerRoutes from './routes/customer.routes'
+import orderRoutes from './routes/order.routes'
+// import priceRoutes from './routes/price.routes'
+import productRoutes from './routes/product.routes'
+import usersRouter from './routes/user.routes'
 
 /* Load environment variables from .env file */
 dotenv.config()
@@ -49,13 +50,14 @@ app.use(
 ) // Enable session support
 
 /* API routes */
-app.use('/api/customers', customerRoutes)
-app.use('/api/users', usersRouter)
-app.use('/api/categories', categoryRoutes)
-app.use('/api/products', productRoutes)
-app.use('/api/orders', orderRoutes)
 app.use('/api/auth', authRouter)
 app.use('/api/carts', cartRoutes)
+app.use('/api/categories', categoryRoutes)
+app.use('/api/customers', customerRoutes)
+app.use('/api/orders', orderRoutes)
+// app.use('/api/price', priceRoutes)
+app.use('/api/products', productRoutes)
+app.use('/api/users', usersRouter)
 
 /* Handle unknown API endpoints */
 app.use('/api', (req, res) => {

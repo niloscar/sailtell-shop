@@ -11,7 +11,7 @@ import {
   updateProduct,
   deleteProduct,
   getProductOptions
-} from '../services/product.service'
+} from '../repositories/product.repository'
 
 import { getSupplierProducts } from '../integrations/supplier.adapter'
 

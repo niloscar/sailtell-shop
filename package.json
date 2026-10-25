@@ -2,14 +2,17 @@
   "private": true,
   "workspaces": [
     "backend",
-    "frontend"
+    "frontend",
+    "shared"
   ],
   "scripts": {
     "format": "prettier . --write",
     "format:check": "prettier . --check",
     "dev": "concurrently -n backend,frontend -p \"[{name}]\" \"npm run dev -w backend\" \"npm run dev -w frontend\"",
     "dev:server": "npm run dev -w backend",
-    "dev:client": "npm run dev -w frontend"
+    "dev:client": "npm run dev -w frontend",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "build": "npm run build --workspaces --if-present"
   },
   "devDependencies": {
     "concurrently": "^10.0.6",
