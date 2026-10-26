@@ -18,6 +18,7 @@ import customerRoutes from './routes/customer.routes'
 import orderRoutes from './routes/order.routes'
 // import priceRoutes from './routes/price.routes'
 import productRoutes from './routes/product.routes'
+import supplierRouter from './routes/supplier.routes'
 import usersRouter from './routes/user.routes'
 
 /* Load environment variables from .env file */
@@ -57,6 +58,7 @@ app.use('/api/customers', customerRoutes)
 app.use('/api/orders', orderRoutes)
 // app.use('/api/price', priceRoutes)
 app.use('/api/products', productRoutes)
+app.use('/api/supplier', supplierRouter)
 app.use('/api/users', usersRouter)
 
 /* Handle unknown API endpoints */

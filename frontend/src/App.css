@@ -395,7 +395,6 @@ button.delete {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  padding: var(--page-padding);
 
   & .inputGroup {
     width: 100%;

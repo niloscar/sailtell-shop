@@ -243,11 +243,13 @@ export async function createOrder(order: CreateOrder) {
       ]
     )
 
-    if (rows.length === 0) {
+    const createdOrder = rows[0]
+
+    if (!createdOrder) {
       throw new Error('Beställningen kunde inte skapas.')
     }
 
-    const orderId = rows[0].id
+    const orderId = createdOrder.id
 
     // Create the shipping address
     await createShippingAddress(
@@ -291,10 +293,13 @@ export async function updateOrder(id: number, updates: UpdateOrder) {
     [id, ...values]
   )
 
-  if (rows.length === 0)
-    throw new Error('Beställningen du vill uppdatera kunde inte hittas.')
+  const updatedOrder = rows[0]
 
-  return getOrder(rows[0].id)
+  if (!updatedOrder) {
+    throw new Error('Beställningen du vill uppdatera kunde inte hittas.')
+  }
+
+  return getOrder(updatedOrder.id)
 }
 
 export async function deleteOrder(id: number) {

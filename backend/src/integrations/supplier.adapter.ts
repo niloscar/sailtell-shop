@@ -1,100 +1,155 @@
-import { z } from 'zod'
-import fetchJson from '../lib/fetchJson'
-import { Product } from '@shop/shared'
+import { parse } from 'csv-parse/sync'
+import { XMLParser, XMLValidator } from 'fast-xml-parser'
+
+export type CatalogFormat = 'csv' | 'xml'
+
+export interface ProductCandidate {
+  sku: string | undefined
+  ean: string
+  name: string
+  price: number
+  stock: number | null
+  variants: string[]
+}
+
+interface CsvRow {
+  artNr?: string
+  ean?: string
+  benamning?: string
+  pris?: string
+  lagersaldo?: string
+  varianter?: string
+}
+
+interface XmlProduct {
+  '@_artNr'?: string
+  ean?: string
+  benamning?: string
+  pris?: {
+    '#text'?: string
+    '@_valuta'?: string
+  } | string
+  lagersaldo?: string
+  varianter?: {
+    variant: string[]
+  }
+}
 
 const BASE_URL = process.env.SUPPLIER_API_URL
 const API_KEY = process.env.SUPPLIER_API_KEY || ''
 const TIMEOUT_MS = Number(process.env.SUPPLIER_API_TIMEOUT_MS) || 5000
-const CACHE_SECONDS = Number(process.env.SUPPLIER_CACHE_SECONDS) || 0
 const BRANSCH = process.env.SUPPLIER_BRANSCH || 'sport'
-const PAGE_SIZE = 20
 
-const SupplierProduct = z.object({
-  artNr: z.string(),
-  benamning: z.string(),
-  kategori: z.string(),
-  prisOre: z.int().nonnegative(),
-  lagersaldo: z.int().nullable(),
-  varianter: z.string(),
-  uppdaterad: z.iso.datetime(),
-})
+export async function getSupplierCatalog(format: CatalogFormat): Promise<ProductCandidate[]> {
+  if (!BASE_URL || !API_KEY) {
+    throw new Error('Leverantörens API är inte konfigurerat.')
+  }
 
-type SupplierProduct = z.infer<typeof SupplierProduct>
+  if (format !== 'csv' && format !== 'xml') {
+    throw new Error('Ogiltigt katalogformat.')
+  }
 
-const SupplierResponse = z.object({
-  data: z.array(z.unknown())
-})
+  const url = `${BASE_URL}/export/products.${format}?bransch=${encodeURIComponent(BRANSCH)}`
 
-function supplierProductToProduct(product: SupplierProduct): Product {
-  return {
-    id: product.artNr,
-    name: product.benamning,
-    brand_name: 'Leverantörsvarumärke',
-    description: product.benamning,
-    details: [],
-    img_url: '',
-    categories: [{ id: null, name: product.kategori }],
-    price: product.prisOre * 0.01,
-    stock: product.lagersaldo,
-    purchase_type: 'webshop',
-    product_distribution_links: [],
-    // variants: product.varianter,
-    // updatedAt: product.uppdaterad,
+  try {
+    const response = await fetch(url, {
+      headers: { 'X-Api-Key': API_KEY },
+      signal: AbortSignal.timeout(TIMEOUT_MS)
+    })
+
+    if (!response.ok) {
+      throw new Error(`Leverantören svarade med HTTP ${response.status}.`)
+    }
+
+    const buffer = Buffer.from(await response.arrayBuffer())
+
+    return format === 'csv'
+      ? parseCsvCatalog(buffer)
+      : parseXmlCatalog(buffer)
+  } catch (error) {
+    throw new Error('Kunde inte hämta eller tolka leverantörskatalogen.', {
+      cause: error
+    })
   }
 }
 
-async function fetchSupplierProducts() {
-  const url = `${BASE_URL}/products?bransch=${BRANSCH}&pageSize=${PAGE_SIZE}`
-  const data = await fetchJson(url, {
-    headers: { 'X-API-Key': API_KEY },
-    timeoutMs: TIMEOUT_MS
+function parseCsvCatalog(buffer: Buffer): ProductCandidate[] {
+  const encoding = 'windows-1252'
+  const text = new TextDecoder(encoding).decode(buffer)
+
+  const rows = parse<CsvRow>(text, {
+    columns: true,
+    delimiter: ';',
+    skip_empty_lines: true,
+    trim: true
   })
 
-  const parsed = SupplierResponse.safeParse(data)
+  return rows.map((row) => ({
+    sku: row.artNr,
+    ean: row.ean ?? '',
+    name: row.benamning ?? '',
+    price: parseDecimal(row.pris),
+    stock: parseStock(row.lagersaldo),
+    variants: row.varianter
+      ? row.varianter.split('|').map((variant) => variant.trim())
+      : []
+  }))
+}
 
-  // Whole response has the wrong formmat
-  if (!parsed.success) throw new Error(`The supplier responded with an unexpected format: ${z.prettifyError(parsed.error)}`)
+function parseXmlCatalog(buffer: Buffer): ProductCandidate[] {
+  const encoding = 'utf-8'
+  const text = new TextDecoder(encoding, {
+    fatal: true
+  }).decode(buffer)
 
-  // One product has the wrong format
-  const products: Product[] = []
-  let skippedCount = 0
+  const validation = XMLValidator.validate(text)
 
-  for (const raw of parsed.data.data) {
-    const result = SupplierProduct.safeParse(raw)
+  if (validation !== true) {
+    throw new Error('Leverantören skickade ogiltig XML.')
+  }
 
-    if (result.success) {
-      products.push(supplierProductToProduct(result.data))
-    } else {
-      skippedCount++
-      console.warn(`Skipping product due to unexpected format: ${z.prettifyError(result.error)}`)
+  const parser = new XMLParser({
+    ignoreAttributes: false,
+    parseTagValue: false,
+    parseAttributeValue: false,
+    isArray: (name) => name === 'produkt' || name === 'variant'
+  })
+
+  const document = parser.parse(text) as {
+    katalog?: {
+      produkt?: XmlProduct[]
     }
   }
 
-  return { products, skippedCount }
+  if (!Array.isArray(document?.katalog?.produkt)) {
+    throw new Error('Leverantörens XML saknar en giltig produktlista.')
+  }
+
+  return document.katalog.produkt.map((product) => ({
+    sku: product['@_artNr'],
+    ean: product.ean ?? '',
+    name: product.benamning ?? '',
+    price: parseDecimal(
+      typeof product.pris === 'object'
+        ? product.pris?.['#text']
+        : product.pris
+    ),
+    stock: parseStock(product.lagersaldo),
+    variants: product.varianter?.variant ?? []
+  }))
 }
 
-type Catalog = {
-  products: Product[]
-  skippedCount: number
-  fetchedAt: string
+
+function parseDecimal(value: unknown): number {
+  const text = String(value ?? '')
+    .replace(/\s/g, '')
+    .replace(',', '.')
+
+  return text === '' ? NaN : Number(text)
 }
 
-let cache: { value: Catalog, expiresAt: number } | null = null
+function parseStock(value: unknown): number | null {
+  const text = String(value ?? '').trim()
 
-export async function getSupplierProducts(): Promise<Catalog & { fromCache: boolean }> {
-  if (cache && cache.expiresAt > Date.now()) {
-    return { ...cache.value, fromCache: true }
-  }
-
-  const value: Catalog = {
-    ...(await fetchSupplierProducts()),
-    fetchedAt: new Date().toISOString()
-  }
-
-  cache = {
-    value,
-    expiresAt: Date.now() + CACHE_SECONDS * 1000
-  }
-
-  return { ...value, fromCache: false }
+  return text === '' ? null : Number(text)
 }

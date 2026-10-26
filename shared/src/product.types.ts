@@ -1,5 +1,7 @@
 export interface ProductSummary {
-  id: number | string
+  id: number
+  sku: string | null
+  ean: string | null
   name: string
   brand_name: string
   description: string
@@ -51,7 +53,7 @@ export interface ProductDistributionLink {
 }
 
 export interface Category {
-  id: number | null
+  id: number
   name: string
 }
 

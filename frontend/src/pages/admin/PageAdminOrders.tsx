@@ -69,6 +69,8 @@ export default function PageAdminOrders() {
 
   return (
     <div className="page-orders">
+      <h1 className="headingSize1">Ordrar</h1>
+
       <table>
         {Object.entries(ordersByStatus).map(([status, orders]) => (
           <tbody key={status}>

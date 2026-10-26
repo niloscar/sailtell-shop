@@ -3,13 +3,15 @@
  */
 
 import pool from '../database'
+import { findCategoryBySlug } from './category.repository'
+
 import type {
   CreateProduct,
   Product,
   ProductSummary,
   UpdateProduct
 } from '@shop/shared'
-import { findCategoryBySlug } from './category.repository'
+import type { SupplierImportProduct } from '../services/supplier.service'
 
 export async function getProductOptions() {
   const { rows } = await pool.query(
@@ -47,6 +49,7 @@ async function getProducts({ categoryId }: { categoryId?: number } = {}) {
   const { rows } = await pool.query<ProductSummary>(
     `SELECT
       products.id,
+      products.sku,
       products.name,
       products.brand_name,
       products.description,
@@ -369,5 +372,109 @@ export async function deleteProduct(id: number) {
 
   if (rowCount === 0) {
     throw new Error('Produkten kunde inte hittas.')
+  }
+}
+
+export async function upsertSupplierProduct(product: SupplierImportProduct): Promise<'created' | 'updated'> {
+  const client = await pool.connect()
+
+  try {
+    await client.query('BEGIN')
+
+    const { rows: existingRows } = await client.query<{ id: number }>(
+      `SELECT id
+       FROM products
+       WHERE sku = $1
+       FOR UPDATE`,
+      [product.sku]
+    )
+
+    const existingProduct = existingRows[0]
+    let productId: number
+
+    if (existingProduct) {
+      productId = existingProduct.id
+
+      await client.query(
+        `UPDATE products
+         SET
+           ean = $2,
+           name = $3,
+           stock = $4,
+           variants = $5::jsonb,
+           updated_at = NOW()
+         WHERE id = $1`,
+        [
+          productId,
+          product.ean,
+          product.name,
+          product.stock,
+          JSON.stringify(product.variants)
+        ]
+      )
+    } else {
+      const { rows } = await client.query<{ id: number }>(
+        `INSERT INTO products (
+          sku,
+          ean,
+          name,
+          stock,
+          variants,
+          source
+        )
+        VALUES ($1, $2, $3, $4, $5::jsonb, 'supplier')
+        ON CONFLICT (sku) DO UPDATE SET
+          ean = EXCLUDED.ean,
+          name = EXCLUDED.name,
+          stock = EXCLUDED.stock,
+          variants = EXCLUDED.variants,
+          updated_at = NOW()
+        RETURNING id`,
+        [
+          product.sku,
+          product.ean,
+          product.name,
+          product.stock,
+          JSON.stringify(product.variants)
+        ]
+      )
+
+      const savedProduct = rows[0]
+
+      if (!savedProduct) {
+        throw new Error(`Kunde inte spara produkten ${product.sku}.`)
+      }
+
+      productId = savedProduct.id
+    }
+
+    const { rows: priceRows } = await client.query<{ price: string }>(
+      `SELECT price
+       FROM prices
+       WHERE product_id = $1
+       ORDER BY set_at DESC, id DESC
+       LIMIT 1`,
+      [productId]
+    )
+
+    if (
+      !priceRows[0] ||
+      Number(priceRows[0].price) !== product.price
+    ) {
+      await client.query(
+        `INSERT INTO prices (product_id, price)
+         VALUES ($1, $2)`,
+        [productId, product.price]
+      )
+    }
+
+    await client.query('COMMIT')
+
+    return existingProduct ? 'updated' : 'created'
+  } catch (error) {
+    await client.query('ROLLBACK')
+    throw error
+  } finally {
+    client.release()
   }
 }

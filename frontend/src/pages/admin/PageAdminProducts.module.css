@@ -1,0 +1,15 @@
+.importSection {
+   margin: 0  auto 1rem 0;
+   padding: 1rem;
+   border: 1px solid #ccc;
+   border-radius: 4px;
+   background-color: #f9f9f9;
+
+   @media (max-width: 768px) {
+     margin-right: 0;
+   }
+ }
+
+ .importSection button {
+   margin-right: 0.5rem;
+ }

@@ -13,8 +13,6 @@ import {
   getProductOptions
 } from '../repositories/product.repository'
 
-import { getSupplierProducts } from '../integrations/supplier.adapter'
-
 type ProductParams = {
   id: string
 }
@@ -31,13 +29,6 @@ export async function getProductOptionsHandler(req: Request, res: Response) {
 export async function getAllProductsHandler(req: Request, res: Response) {
   const { products, category: categoryData } = await getAllProducts()
   res.json({ products, category: categoryData })
-}
-
-export async function getAllSupplierProductsHandler(req: Request, res: Response) {
-  const { products, skippedCount, fetchedAt, fromCache } =
-    await getSupplierProducts()
-
-  res.json({ products, skippedCount, fetchedAt, fromCache })
 }
 
 export async function getProductsByCategoryHandler(
