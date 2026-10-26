@@ -3,15 +3,14 @@
 npm-debug.log*
 
 # Dependencies
-node_modules
+node_modules/
 
 # Build output
+dist/
 backend/public/
-frontend/dist/
 
 # Environment
-.env
-.env.local
+.env*
 !.env.example
 
 # Editor and OS
@@ -21,5 +20,4 @@ frontend/dist/
 
 # Other
 dev-notes/
-.vercel
-.env*
+.vercel/

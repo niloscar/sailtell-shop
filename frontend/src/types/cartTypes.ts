@@ -2,8 +2,8 @@ export interface CartItem {
   id: number
   product_id: number
   name: string
-  brand_name: string
-  img_url: string
+  brand_name: string | null
+  img_url: string | null
   quantity: number
   price: number
 }
