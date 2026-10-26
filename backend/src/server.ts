@@ -26,7 +26,6 @@ dotenv.config()
 
 /* Initialize Express app */
 const app = express()
-const host = process.env.HOST || 'localhost'
 const port = process.env.PORT || 3000
 
 const PgSession = connectPgSimple(expressSession)
@@ -78,7 +77,7 @@ const start = async () => {
 
   /* Start the server */
   app.listen(port, () => {
-    console.log(`Server is running on http://${host}:${port}`)
+    console.log(`Server is running on port ${port}`)
   })
 }
 
