@@ -3,14 +3,14 @@ export interface ProductSummary {
   sku: string | null
   ean: string | null
   name: string
-  brand_name: string
-  description: string
-  details: string[]
-  img_url: string
+  brand_name: string | null
+  description: string | null
+  details: string[] | null
+  img_url: string | null
   stock: number | null
   price: number
   categories: Category[]
-  sort_order: number
+  sort_order: number | null
 }
 
 export interface Product extends Omit<ProductSummary, 'sort_order'> {

@@ -226,10 +226,10 @@ export default function PageAdminUpdateProduct() {
     try {
       const updatedProduct: UpdateProduct = {
         name: product.name,
-        brand_name: product.brand_name,
-        description: product.description,
-        details: product.details,
-        img_url: product.img_url,
+        brand_name: product.brand_name ?? '',
+        description: product.description ?? '',
+        details: product.details ?? [],
+        img_url: product.img_url ?? '',
         stock: product.stock,
         price: product.price,
         purchase_type: product.purchase_type,
@@ -278,7 +278,7 @@ export default function PageAdminUpdateProduct() {
           type="text"
           id="product-brand"
           name="brand_name"
-          value={product.brand_name}
+          value={product.brand_name ?? ''}
           onChange={handleChange}
         />
       </div>
@@ -288,7 +288,7 @@ export default function PageAdminUpdateProduct() {
         <textarea
           id="product-description"
           name="description"
-          value={product.description}
+          value={product.description ?? ''}
           onChange={handleChange}
         />
       </div>
@@ -300,7 +300,7 @@ export default function PageAdminUpdateProduct() {
         <textarea
           id="product-details"
           name="details"
-          value={product.details?.join('\n')}
+          value={product.details?.join('\n') ?? ''}
           onChange={handleChange}
         />
       </div>
@@ -311,7 +311,7 @@ export default function PageAdminUpdateProduct() {
           type="text"
           id="product-image"
           name="img_url"
-          value={product.img_url}
+          value={product.img_url ?? ''}
           onChange={handleChange}
         />
       </div>
