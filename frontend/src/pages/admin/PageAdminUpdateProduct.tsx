@@ -300,7 +300,7 @@ export default function PageAdminUpdateProduct() {
         <textarea
           id="product-details"
           name="details"
-          value={product.details.join('\n')}
+          value={product.details?.join('\n')}
           onChange={handleChange}
         />
       </div>

@@ -69,7 +69,7 @@ export default function PageAdminProducts() {
       <h1 className="headingSize1">Produkter</h1>
 
       <section className={styles.importSection}>
-        <h2 className="headingSize3">Importera produkter</h2>
+        <h2 className="headingSize4">Importera produkter från leverantör</h2>
 
         <div className="buttonGroup">
           <button
@@ -93,16 +93,32 @@ export default function PageAdminProducts() {
 
         {importReport && (
           <div role="status">
-            <h4>Importen är klar</h4>
-            <p>Nya produkter: {importReport.created}</p>
-            <p>Uppdaterade produkter: {importReport.updated}</p>
-            <p>Överhoppade produkter: {importReport.skippedCount}</p>
+            <p className={styles.importStatusDone}>Importen är klar</p>
+            <ul className={styles.importReport}>
+              <li>
+                <span>Nya produkter</span>
+                <span>{importReport.created}</span>
+              </li>
+              <li>
+                <span>Uppdaterade produkter</span>
+                <span>{importReport.updated}</span>
+              </li>
+              <li>
+                <span>Överhoppade produkter</span>
+                <span>{importReport.skippedCount}</span>
+              </li>
+            </ul>
 
             {importReport.skipped.length > 0 && (
-              <ul>
+              <ul className={styles.skippedList}>
+                <li className={styles.skippedListHeader}>
+                  <span>Art.nr</span>
+                  <span>Fel</span>
+                </li>
                 {importReport.skipped.map((product, index) => (
                   <li key={`${product.sku ?? 'unknown'}-${index}`}>
-                    {product.sku ?? 'Okänt artikelnummer'}: {product.reason}
+                    <span>{product.sku ?? 'Okänt artikelnummer'}</span>
+                    <span>{product.reason}</span>
                   </li>
                 ))}
               </ul>
@@ -121,7 +137,7 @@ export default function PageAdminProducts() {
         <table>
           <thead>
             <tr>
-              <th>Artikelnr</th>
+              <th>Art.nr</th>
               <th>Namn</th>
               <th>Kategori</th>
               <th>Pris</th>

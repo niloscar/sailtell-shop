@@ -93,6 +93,8 @@ table {
   width: 100%;
   border-collapse: collapse;
   margin-bottom: 1em;
+  font-size: var(--font-small);
+  line-height: 1.42;
 
   & td,
   & th {
