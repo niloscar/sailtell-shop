@@ -4,7 +4,7 @@ import { getProductOptions, createProduct } from '../../api/productApi'
 import getApiErrorMessage from '../../utilities/apiError'
 import BackLink from '../../components/BackLink'
 
-import type { CreateProduct, ProductOptions } from '../../types/productTypes'
+import type { CreateProduct, ProductOptions } from '@shop/shared'
 
 export default function PageAdminAddProduct() {
   const navigate = useNavigate()

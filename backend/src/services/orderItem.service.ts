@@ -20,8 +20,9 @@ export async function createOrderItems(
        LIMIT 1`,
       [item.product_id]
     )
+    const currentPrice = priceRows[0]
 
-    if (priceRows.length === 0) {
+    if (!currentPrice) {
       throw new Error(`Pris saknas för produkt ${item.product_id}.`)
     }
 
@@ -33,7 +34,7 @@ export async function createOrderItems(
         unit_price
       )
       VALUES ($1, $2, $3, $4)`,
-      [orderId, item.product_id, item.quantity, priceRows[0].price]
+      [orderId, item.product_id, item.quantity, currentPrice.price]
     )
   }
 }

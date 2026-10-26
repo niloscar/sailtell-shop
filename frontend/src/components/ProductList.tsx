@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getProducts } from '../api/productApi'
 import getApiErrorMessage from '../utilities/apiError'
-import type { Product } from '../types/productTypes'
+import type { Product } from '@shop/shared'
 
 import styles from './ProductList.module.css'
 

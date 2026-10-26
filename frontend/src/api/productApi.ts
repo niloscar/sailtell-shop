@@ -1,5 +1,5 @@
 import api from './apiClient'
-import type { CreateProduct, UpdateProduct } from '../types/productTypes'
+import type { CreateProduct, UpdateProduct } from '@shop/shared'
 
 export function getProductOptions() {
   return api.get('/products/options')

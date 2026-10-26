@@ -31,7 +31,7 @@ export default function PageAdminCustomers() {
 
   return (
     <>
-      <h2>Kunder</h2>
+      <h1 className="headingSize1">Kunder</h1>
       <table>
         <thead>
           <tr>

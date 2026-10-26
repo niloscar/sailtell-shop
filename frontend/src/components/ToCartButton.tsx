@@ -1,6 +1,6 @@
 import { useCart } from '../contexts/CartContext'
 import { CheckIcon, ShoppingCartIcon } from '@phosphor-icons/react'
-import type { Product } from '../types/productTypes'
+import type { Product } from '@shop/shared'
 
 import styles from './ToCartButton.module.css'
 

@@ -8,7 +8,7 @@ import {
   deleteCartItem
 } from '../api/cartApi'
 import type { ReactNode } from 'react'
-import type { Product } from '../types/productTypes'
+import type { Product } from '@shop/shared'
 import type { Cart } from '../types/cartTypes'
 
 type CartActionState = {

@@ -8,6 +8,8 @@
   --bg: #f9fafb;
 
   font: 18px/145% var(--sans);
+  --font-small: .8rem;
+
   letter-spacing: 0.18px;
   color: var(--text);
   background: var(--bg);

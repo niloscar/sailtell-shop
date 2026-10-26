@@ -6,7 +6,7 @@ import getApiErrorMessage from '../utilities/apiError'
 import ToCartButton from './ToCartButton'
 import QuantitySelector from './QuantitySelector'
 
-import type { Product } from '../types/productTypes'
+import type { Product } from '@shop/shared'
 
 import styles from './ProductDetails.module.css'
 
@@ -20,7 +20,6 @@ function ProductDetails() {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        setLoading(true)
         const response = await getProduct(Number(id))
         setProduct(response.data)
       } catch (error) {
@@ -37,7 +36,7 @@ function ProductDetails() {
   }, [id])
 
   const stockMessage =
-    product && product.stock && quantity > product.stock
+    product && product.stock !== null && quantity > product.stock
       ? 'Observera att du vill lägga till fler än vad som finns i lager. En del av din beställning kommer att få ett senare leveransdatum.'
       : ''
 
@@ -57,14 +56,21 @@ function ProductDetails() {
 
       <div className={styles.content}>
         <h1 className={`headingSize1 ${styles.title}`}>{product.name}</h1>
-        <p className={styles.brand}>{product.brand_name}</p>
-        <p className={styles.description}>{product.description}</p>
+        {product.brand_name && (
+          <p className={styles.brand}>{product.brand_name}</p>
+        )}
 
-        <ul className={styles.detailList}>
-          {product.details.map((detail, index) => (
-            <li key={index}>{detail}</li>
-          ))}
-        </ul>
+        {product.description && (
+          <p className={styles.description}>{product.description}</p>
+        )}
+
+        {product.details && product.details.length > 0 && (
+          <ul className={styles.detailList}>
+            {product.details.map((detail, index) => (
+              <li key={index}>{detail}</li>
+            ))}
+          </ul>
+        )}
 
         {product.purchase_type === 'external' ? (
           <section className={styles.externalPurchase}>
@@ -97,7 +103,7 @@ function ProductDetails() {
                 {formatPrice(Number(product.price))}
               </p>
 
-              {product.stock && renderStock(product.stock)}
+              {product.stock !== null && renderStock(product.stock)}
             </div>
 
             <div className={styles.purchaseControls}>

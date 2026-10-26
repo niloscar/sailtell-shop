@@ -41,11 +41,13 @@ export async function getCustomer(id: number) {
     [id]
   )
 
-  if (rows.length === 0) {
+  const customer = rows[0]
+
+  if (!customer) {
     throw new Error('Kunden kunde inte hittas.')
   }
 
-  return rows[0]
+  return customer
 }
 
 export async function createCustomer(customerData: CreateCustomer) {
@@ -68,11 +70,13 @@ export async function createCustomer(customerData: CreateCustomer) {
     [fname, lname, email, phone]
   )
 
-  if (rows.length === 0) {
+  const customer = rows[0]
+
+  if (!customer) {
     throw new Error('Kunden kunde inte skapas.')
   }
 
-  return rows[0]
+  return customer
 }
 
 export async function getOrCreateCustomer(
@@ -104,8 +108,10 @@ export async function getOrCreateCustomer(
     [fname, lname, email, phone, street, zipcode, city, country]
   )
 
-  if (rows.length > 0) {
-    return rows[0]
+  const createdCustomer = rows[0]
+
+  if (createdCustomer) {
+    return createdCustomer
   }
 
   const existingCustomerResult = await db.query<Customer>(
@@ -120,11 +126,13 @@ export async function getOrCreateCustomer(
     [email]
   )
 
-  if (existingCustomerResult.rows.length === 0) {
+  const existingCustomer = existingCustomerResult.rows[0]
+
+  if (!existingCustomer) {
     throw new Error('Kunden kunde inte skapas eller hittas.')
   }
 
-  return existingCustomerResult.rows[0]
+  return existingCustomer
 }
 
 export async function updateCustomer(id: number, customerData: UpdateCustomer) {
@@ -147,9 +155,11 @@ export async function updateCustomer(id: number, customerData: UpdateCustomer) {
     [fname, lname, email, phone, id]
   )
 
-  if (rows.length === 0) {
+  const customer = rows[0]
+
+  if (!customer) {
     throw new Error('Kunden kunde inte uppdateras.')
   }
 
-  return rows[0]
+  return customer
 }
