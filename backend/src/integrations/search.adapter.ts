@@ -48,7 +48,7 @@ export async function removeIndexedProduct(sku: string) {
 }
 
 export async function searchProducts(query: string, page: number, pageSize: number) {
-  return searchClient.searchSingleIndex<Product>({
+  const result = await searchClient.searchSingleIndex<Product>({
     indexName: INDEX_NAME,
     searchParams: {
       query,
@@ -56,4 +56,18 @@ export async function searchProducts(query: string, page: number, pageSize: numb
       hitsPerPage: pageSize
     }
   })
+
+  return {
+    products: result.hits.map(({ objectID, name, brand_name, description, details, categories }) => ({
+      sku: objectID,
+      name,
+      brand_name,
+      description,
+      details,
+      categories
+    })),
+    total: result.nbHits,
+    page,
+    totalPages: result.nbPages
+  }
 }

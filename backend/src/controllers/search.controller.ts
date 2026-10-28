@@ -2,8 +2,10 @@
  * Controller for handling search-related requests.
  */
 
-import type { Request, Response, NextFunction } from 'express'
 import { indexAllProducts, search } from '../services/search.service'
+import { z } from 'zod'
+
+import type { Request, Response, NextFunction } from 'express'
 
 export async function indexProductsHandler(_req: Request, res: Response, next: NextFunction) {
   try {
@@ -17,14 +19,38 @@ export async function indexProductsHandler(_req: Request, res: Response, next: N
 
 export async function searchProductsHandler(req: Request, res: Response, next: NextFunction) {
   try {
-    const query = String(req.query.q ?? '')
-    const page = Number(req.query.page ?? 1)
-    const pageSize = Number(req.query.pageSize ?? 20)
+    const parsed = searchQuerySchema.safeParse(req.query)
 
-    const result = await search(query, page, pageSize)
+    if (!parsed.success) {
+      res.status(400).json({
+        message: 'Ogiltiga sökparametrar'
+      })
+      return
+    }
+
+    const { q, page, pageSize } = parsed.data
+
+    const result = await search(q, page, pageSize)
 
     res.json(result)
   } catch (error) {
     next(error)
   }
 }
+
+const searchQuerySchema = z.object({
+  q: z
+    .string()
+    .default(''),
+  page: z.coerce
+    .number()
+    .int()
+    .min(1)
+    .default(1),
+  pageSize: z.coerce
+    .number()
+    .int()
+    .min(1)
+    .max(100)
+    .default(20)
+})
