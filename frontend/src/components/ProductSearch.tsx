@@ -15,14 +15,23 @@ export default function ProductSearch() {
   const [error, setError] = useState<string | null>(null)
   const [hasSearched, setHasSearched] = useState(false)
 
-  const handleSearch = async () => {
+  const [page, setPage] = useState(1)
+  const [total, setTotal] = useState(0)
+  const [totalPages, setTotalPages] = useState(0)
+  const [searchedQuery, setSearchedQuery] = useState('')
+
+  const handleSearch = async (searchQuery: string, searchPage = 1) => {
     setLoading(true)
     setError(null)
 
     try {
-      const response = await searchProducts(query)
+      const response = await searchProducts(searchQuery, searchPage)
 
       setProducts(response.data.products)
+      setPage(response.data.page)
+      setTotal(response.data.total)
+      setTotalPages(response.data.totalPages)
+      setSearchedQuery(searchQuery)
       setHasSearched(true)
     } catch (error) {
       setError(getApiErrorMessage(error))
@@ -36,7 +45,7 @@ export default function ProductSearch() {
       <form
         onSubmit={(event) => {
           event.preventDefault()
-          void handleSearch()
+          void handleSearch(query)
         }}
       >
         <input
@@ -58,8 +67,10 @@ export default function ProductSearch() {
 
       {error && <p className="errorMessage">{error}</p>}
 
-      {hasSearched && !loading && !error && (
-        products.length === 0 ? (
+      {hasSearched &&
+        !loading &&
+        !error &&
+        (products.length === 0 ? (
           <p>Inga produkter hittades.</p>
         ) : (
           <ul className={`unstyled ${listStyles.productList}`}>
@@ -67,7 +78,36 @@ export default function ProductSearch() {
               <ProductListItem key={product.id} product={product} />
             ))}
           </ul>
-        )
+        ))}
+
+      {hasSearched && !loading && !error && (
+        <>
+          <p>{total} produkter hittades.</p>
+
+          {totalPages > 1 && (
+            <div className={styles.pagination}>
+              <button
+                type="button"
+                disabled={page <= 1}
+                onClick={() => void handleSearch(searchedQuery, page - 1)}
+              >
+                Föregående
+              </button>
+
+              <span>
+                Sida {page} av {totalPages}
+              </span>
+
+              <button
+                type="button"
+                disabled={page >= totalPages}
+                onClick={() => void handleSearch(searchedQuery, page + 1)}
+              >
+                Nästa
+              </button>
+            </div>
+          )}
+        </>
       )}
     </div>
   )

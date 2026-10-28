@@ -8,7 +8,7 @@ interface SearchResponse {
   totalPages: number
 }
 
-export function searchProducts(query: string, page=1, pageSize=10) {
+export function searchProducts(query: string, page=1, pageSize=3) {
   return api.get<SearchResponse>('/search', {
     params: {
       q: query,
