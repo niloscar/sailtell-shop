@@ -1,12 +1,18 @@
+import { useState } from 'react'
 import ProductList from '../../components/ProductList'
 import { useParams } from 'react-router-dom'
 
 function PageProducts() {
   const { categorySlug } = useParams<{ categorySlug: string }>()
+  const [categoryName, setCategoryName] = useState<string | null>(null)
 
   return (
     <>
-      <ProductList category={categorySlug} />
+      <h1 className="headingSize1">
+        {categorySlug ? categoryName ?? 'Produkter' : 'Alla produkter'}
+      </h1>
+
+      <ProductList category={categorySlug} onCategoryLoad={setCategoryName} />
     </>
   )
 }

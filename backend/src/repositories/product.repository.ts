@@ -45,7 +45,7 @@ export async function getProductOptions() {
   return rows[0]
 }
 
-async function getProducts({ categoryId }: { categoryId?: number } = {}) {
+async function getProducts({ categoryId, skus }: { categoryId?: number; skus?: string[] } = {}) {
   const { rows } = await pool.query<ProductSummary>(
     `SELECT
       products.id,
@@ -85,16 +85,20 @@ async function getProducts({ categoryId }: { categoryId?: number } = {}) {
       ON categories.id = product_categories.category_id
 
     WHERE products.deleted_at IS NULL
-      AND (
-        $1::int IS NULL
-        OR EXISTS (
-          SELECT 1
-          FROM product_categories pc
-          WHERE pc.product_id = products.id
-            AND pc.category_id = $1
-        )
+    AND (
+      $1::int IS NULL
+      OR EXISTS (
+        SELECT 1
+        FROM product_categories pc
+        WHERE pc.product_id = products.id
+          AND pc.category_id = $1
       )
-
+    )
+    AND (
+      $2::text[] IS NULL
+      OR products.sku = ANY($2::text[])
+    )
+      
     GROUP BY
       products.id,
       latest_price.price
@@ -102,7 +106,7 @@ async function getProducts({ categoryId }: { categoryId?: number } = {}) {
     ORDER BY 
       products.sort_order ASC, 
       products.id ASC`,
-    [categoryId ?? null]
+    [categoryId ?? null, skus ?? null]
   )
 
   return rows
@@ -115,6 +119,12 @@ export async function getAllProducts() {
     products,
     category: null
   }
+}
+
+export async function getProductsBySkus(skus: string[]) {
+  if (skus.length === 0) return []
+
+  return getProducts({ skus })
 }
 
 export async function getProductsByCategorySlug(categorySlug: string) {

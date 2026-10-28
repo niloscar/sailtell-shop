@@ -1,18 +1,13 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { getProducts } from '../api/productApi'
+import ProductListItem from './ProductListItem'
 import getApiErrorMessage from '../utilities/apiError'
+
 import type { Product } from '@shop/shared'
 
 import styles from './ProductList.module.css'
 
-function ProductList({
-  category
-}: {
-  category?: string
-  title?: string | false
-}) {
-  const navigate = useNavigate()
+function ProductList({ category, onCategoryLoad }: { category?: string; onCategoryLoad: (name: string) => void }) {
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState<boolean>(true)
   const [loadingError, setLoadingError] = useState<string | null>(null)
@@ -20,9 +15,10 @@ function ProductList({
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await getProducts({ category: category })
+        const response = await getProducts({ category })
 
         setProducts(response.data.products)
+        onCategoryLoad?.(response.data.category?.name ?? null)
       } catch (error) {
         console.error('Kunde inte hämta produkter:', error)
         setLoadingError(getApiErrorMessage(error))
@@ -32,7 +28,9 @@ function ProductList({
     }
 
     fetchProducts()
-  }, [category])
+  }, [category, onCategoryLoad])
+
+console.log('ProductList render', { category, products, loading, loadingError })
 
   if (loading) return <p>Laddar produkter...</p>
   if (loadingError) return <p className="errorMessage">{loadingError}</p>
@@ -42,23 +40,7 @@ function ProductList({
     <>
       <ul className={`unstyled ${styles.productList}`}>
         {products.map((product: Product) => (
-          <li
-            key={product.id}
-            className={`clickable ${styles.listItem}`}
-            onClick={() => navigate(`/product/${product.id}`)}
-          >
-            {product.img_url && (
-              <img
-                className={styles.image}
-                src={`${product.img_url}`}
-                alt={product.name}
-              />
-            )}
-            <div className={styles.info}>
-              <h2 className="headingSize2 product-title">{product.name}</h2>
-              <p className={styles.description}>{product.description}</p>
-            </div>
-          </li>
+          <ProductListItem key={product.id} product={product} />
         ))}
       </ul>
     </>

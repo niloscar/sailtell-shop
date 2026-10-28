@@ -8,16 +8,47 @@
 
 import { NavLink } from 'react-router-dom'
 import { useCart } from '../../contexts/CartContext'
-import { ShoppingCartIcon } from '@phosphor-icons/react'
+import { ShoppingCartIcon, MagnifyingGlassIcon } from '@phosphor-icons/react'
 
 import styles from './MainNav.module.css'
 
-const navItems = [
-  { name: 'Start', path: '/' },
-  { name: 'SailTell App', path: '/product/9' },
-  { name: 'Compass One', path: '/product/1' },
-  { name: 'Accessories', path: '/products/accessories' },
-  { name: 'Cart', path: '/cart' }
+const NAV_ITEMS = [
+  { 
+    slug: 'start', 
+    title: 'Start', 
+    path: '/', 
+    icon: null 
+  },
+  {
+    slug: 'sailtell-app',
+    title: 'SailTell App',
+    path: '/product/9',
+    icon: null
+  },
+  { 
+    slug: 'compass-one', 
+    title: 'Compass One', 
+    path: '/product/1', 
+    icon: null 
+  },
+  {
+    slug: 'accessories',
+    title: 'Tillbehör',
+    path: '/products/accessories',
+    icon: null
+  },
+  {
+    slug: 'search',
+    title: 'Sök',
+    path: '/products/search',
+    icon: MagnifyingGlassIcon
+  },
+  { 
+    slug: 'cart', 
+    title: 'Varukorg', 
+    path: '/cart', 
+    icon: ShoppingCartIcon 
+  }
 ]
 
 export default function MainNav() {
@@ -26,22 +57,24 @@ export default function MainNav() {
   return (
     <nav className={styles.mainNav}>
       <ul>
-        {navItems.map((item) => (
-          <li key={item.name}>
-            <NavLink
-              to={item.path}
-              className={({ isActive }) => (isActive ? styles.active : '')}
-            >
-              {item.name !== 'Cart' && item.name}
-              {item.name === 'Cart' && (
-                <>
-                  <ShoppingCartIcon size={20} />
+        {NAV_ITEMS.map((item) => {
+          const Icon = item.icon
+
+          return (
+            <li key={item.slug}>
+              <NavLink
+                to={item.path}
+                className={({ isActive }) => (isActive ? styles.active : '')}
+              >
+                {Icon ? <Icon size={20} /> : item.title}
+
+                {item.slug === 'cart' && (
                   <span className="count">({cartCount})</span>
-                </>
-              )}
-            </NavLink>
-          </li>
-        ))}
+                )}
+              </NavLink>
+            </li>
+          )
+        })}
       </ul>
     </nav>
   )

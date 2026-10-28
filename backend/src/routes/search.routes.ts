@@ -4,13 +4,12 @@
 
 import { Router } from 'express'
 import { requireAdmin } from '../middleware/auth.middleware'
-import { indexProductsHandler, /* removeIndexedProductHandler, */ searchProductsHandler } from '../controllers/search.controller'
+import { indexProductsHandler, searchProductsHandler } from '../controllers/search.controller'
 
 const searchRouter = Router()
 
 searchRouter.post('/index', requireAdmin, indexProductsHandler)
-// searchRouter.delete('/index/:sku', requireAdmin, removeIndexedProductHandler)
 
-searchRouter.get('/search', searchProductsHandler)
+searchRouter.get('/', searchProductsHandler)
 
 export default searchRouter
