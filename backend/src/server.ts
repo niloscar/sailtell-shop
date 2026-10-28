@@ -4,20 +4,20 @@
 
 /* Import dependencies */
 import express from 'express'
+import type { NextFunction, Request, Response } from 'express'
 import expressSession from 'express-session'
 import connectPgSimple from 'connect-pg-simple'
 import dotenv from 'dotenv'
-import path from 'path'
 import { connect, pool } from './database'
 
 /* Import route handlers */
 import authRouter from './routes/auth.routes'
-import cartRoutes from './routes/cart.routes'
-import categoryRoutes from './routes/category.routes'
-import customerRoutes from './routes/customer.routes'
-import orderRoutes from './routes/order.routes'
-// import priceRoutes from './routes/price.routes'
-import productRoutes from './routes/product.routes'
+import cartRouter from './routes/cart.routes'
+import categoryRouter from './routes/category.routes'
+import customerRouter from './routes/customer.routes'
+import orderRouter from './routes/order.routes'
+import productRouter from './routes/product.routes'
+import searchRouter from './routes/search.routes'
 import supplierRouter from './routes/supplier.routes'
 import usersRouter from './routes/user.routes'
 
@@ -31,7 +31,7 @@ const port = process.env.PORT || 3000
 const PgSession = connectPgSimple(expressSession)
 
 /* Middleware */
-app.use(express.static('public')) // Serve static files from the "public" folder (so that e.g., avatars from users/ are accessible via /api/users/)
+app.use(express.static('public')) // Serve static files from the "public" folder
 app.use(express.json()) // Allow parsing of JSON in the request body
 app.use(express.urlencoded({ extended: true })) // Allow parsing of URL-encoded data (e.g., from forms)
 app.use(
@@ -51,26 +51,32 @@ app.use(
 
 /* API routes */
 app.use('/api/auth', authRouter)
-app.use('/api/carts', cartRoutes)
-app.use('/api/categories', categoryRoutes)
-app.use('/api/customers', customerRoutes)
-app.use('/api/orders', orderRoutes)
-// app.use('/api/price', priceRoutes)
-app.use('/api/products', productRoutes)
+app.use('/api/carts', cartRouter)
+app.use('/api/categories', categoryRouter)
+app.use('/api/customers', customerRouter)
+app.use('/api/orders', orderRouter)
+app.use('/api/products', productRouter)
+app.use('/api/search', searchRouter)
 app.use('/api/supplier', supplierRouter)
 app.use('/api/users', usersRouter)
 
 /* Handle unknown API endpoints */
-app.use('/api', (req, res) => {
+app.use('/api', (req: Request, res: Response) => {
   res.status(404).json({
     error: 'Ogiltig metod och/eller endpoint',
     message: `${req.method} och ${req.originalUrl} är ingen giltig kombination.`
   })
 })
 
-/* Serve frontend from the "public" folder */
-const publicPath = path.resolve(process.cwd(), 'public')
-app.use(express.static(publicPath))
+/* Handle API errors */
+app.use((error: Error, _req: Request, res: Response, _next: NextFunction) => {
+  console.error(error)
+
+  res.status(500).json({
+    error: 'Internal Server Error',
+    message: 'Ett internt serverfel inträffade.'
+  })
+})
 
 const start = async () => {
   await connect() // Ensure database connection is established before starting the server

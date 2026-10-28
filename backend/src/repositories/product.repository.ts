@@ -237,6 +237,17 @@ export async function createProduct(product: CreateProduct) {
       [productId, product.price]
     )
 
+    // ONTODO: Move this logic to the database instead.
+    await client.query(
+      `UPDATE products
+      SET sku = 'SHOP-' || CASE
+        WHEN id < 10000 THEN LPAD(id::text, 4, '0')
+        ELSE id::text
+      END
+      WHERE id = $1`,
+      [productId]
+    )
+
     for (const categoryId of product.category_ids) {
       await client.query(
         `INSERT INTO product_categories (
