@@ -1,3 +1,8 @@
+/**
+ * Adapter for interacting with the Frankfurter currency API.
+ */
+
+// ONTODO: Move this to env variables or a config file
 const BASE_URL = 'https://api.frankfurter.dev/v1/'
 
 interface getRatesProps {

@@ -3,7 +3,7 @@
  */
 
 import { z } from 'zod'
-
+import { indexAllProducts } from './search.service'
 import { getSupplierCatalog } from '../integrations/supplier.adapter'
 import { upsertSupplierProduct } from '../repositories/product.repository'
 
@@ -72,11 +72,21 @@ export async function importSupplierProducts(format: CatalogFormat
     }
   }
 
+  let searchIndexUpdated = true
+
+  try {
+    await indexAllProducts()
+  } catch (error) {
+    console.error('Kunde inte uppdatera Algolia efter import:', error)
+    searchIndexUpdated = false
+  }
+
   return {
     total: candidates.length,
     created,
     updated,
     skippedCount: skipped.length,
-    skipped
+    skipped,
+    searchIndexUpdated
   }
 }
