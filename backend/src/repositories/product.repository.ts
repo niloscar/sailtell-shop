@@ -134,6 +134,7 @@ export async function getProduct(id: number) {
   const { rows } = await pool.query<Product>(
     `SELECT DISTINCT ON (products.id)
       products.id,
+      products.sku,
       products.name,
       products.brand_name,
       products.description,
@@ -184,11 +185,13 @@ export async function getProduct(id: number) {
     [id]
   )
 
-  if (rows.length === 0) {
+  const product = rows[0]
+
+  if (!product) {
     throw new Error('Produkten kunde inte hittas.')
   }
 
-  return rows[0]
+  return product
 }
 
 export async function createProduct(product: CreateProduct) {
@@ -374,16 +377,21 @@ export async function updateProduct(id: number, updates: UpdateProduct) {
 }
 
 export async function deleteProduct(id: number) {
-  const { rowCount } = await pool.query(
+  const { rows } = await pool.query<{ sku: string }>(
     `UPDATE products
-    SET deleted_at = NOW()
-      WHERE id = $1`,
+     SET deleted_at = NOW()
+     WHERE id = $1
+     RETURNING sku`,
     [id]
   )
 
-  if (rowCount === 0) {
+  const deletedProduct = rows[0]
+
+  if (!deletedProduct) {
     throw new Error('Produkten kunde inte hittas.')
   }
+
+  return deletedProduct.sku
 }
 
 export async function upsertSupplierProduct(product: SupplierImportProduct): Promise<'created' | 'updated'> {

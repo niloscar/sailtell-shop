@@ -31,6 +31,8 @@ export default function PageAdminAddProduct() {
   const [creating, setCreating] = useState(false)
   const [createError, setCreateError] = useState<string | null>(null)
 
+  const [indexWarning, setIndexWarning] = useState<string | null>(null)
+
   useEffect(() => {
     const fetchProductOptions = async () => {
       try {
@@ -106,8 +108,11 @@ export default function PageAdminAddProduct() {
   }
 
   const handleSave = async () => {
+    if (creating || indexWarning) return
+
     setCreating(true)
     setCreateError(null)
+    setIndexWarning(null)
 
     try {
       const newProduct: CreateProduct = {
@@ -117,9 +122,14 @@ export default function PageAdminAddProduct() {
           .filter((item) => item !== '')
       }
 
-      await createProduct(newProduct)
+      const response = await createProduct(newProduct)
 
-      navigate('/products')
+      if (!response.data.searchIndexUpdated) {
+        setIndexWarning('Produkten skapades, men sökindexet kunde inte uppdateras.')
+        return
+      }
+
+      navigate('/admin/products')
     } catch (error) {
       setCreateError(getApiErrorMessage(error))
     } finally {
@@ -244,15 +254,16 @@ export default function PageAdminAddProduct() {
       </div>
 
       {createError && <p className="errorMessage">{createError}</p>}
+      {indexWarning && <p className="errorMessage">{indexWarning}</p>}
 
       <div className="buttonGroup">
         <button
           type="button"
           onClick={handleSave}
-          disabled={creating}
+          disabled={creating || !!indexWarning}
           className="add"
         >
-          {creating ? 'Skapar produkt...' : 'Skapa produkt'}
+          {creating ? 'Skapar produkt...' : indexWarning ? 'Produkt skapad' : 'Skapa produkt'}
         </button>
       </div>
 

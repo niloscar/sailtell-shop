@@ -49,6 +49,8 @@ export default function PageAdminUpdateProduct() {
     }
   })
 
+  const [indexWarning, setIndexWarning] = useState<string | null>(null)
+
   const updateLoadingState = (key: LoadKey, updates: Partial<LoadingState>) => {
     setLoadingState((prev) => ({
       ...prev,
@@ -193,9 +195,14 @@ export default function PageAdminUpdateProduct() {
       loading: true,
       error: null
     })
+    setIndexWarning(null)
 
     try {
-      await deleteProduct(Number(id))
+      const response = await deleteProduct(Number(id))
+
+      if (!response.data.searchIndexUpdated) {
+        window.alert('Produkten raderades, men kunde inte tas bort från sökindexet.')
+      }
 
       navigate('/admin/products')
     } catch (error) {
@@ -238,8 +245,12 @@ export default function PageAdminUpdateProduct() {
 
       const response = await updateProduct(Number(id), updatedProduct)
 
-      setProduct(response.data)
-      setOriginalProduct(structuredClone(response.data))
+      setProduct(response.data.product)
+      setOriginalProduct(structuredClone(response.data.product))
+
+      if (!response.data.searchIndexUpdated) {
+        setIndexWarning('Produkten uppdaterades, men sökindexet kunde inte uppdateras.')
+      }
     } catch (error) {
       updateLoadingState('action', { error: getApiErrorMessage(error) })
     } finally {
@@ -379,9 +390,8 @@ export default function PageAdminUpdateProduct() {
         )}
       </div>
 
-      {loadingState.action.error && (
-        <p className="errorMessage">{loadingState.action.error}</p>
-      )}
+      {loadingState.action.error && <p className="errorMessage">{loadingState.action.error}</p>}
+      {indexWarning && <p className="errorMessage">{indexWarning}</p>}
 
       <div className="buttonGroup">
         <button
