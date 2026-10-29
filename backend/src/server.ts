@@ -12,6 +12,7 @@ import dotenv from 'dotenv'
 /* Internal modules */
 import { connect, pool } from './database'
 import { webhookHandler } from './controllers/payment.controller'
+import HttpError from './utilities/HttpError'
 
 /* Routes */
 import authRouter from './routes/auth.routes'
@@ -82,6 +83,13 @@ app.use('/api', (req: Request, res: Response) => {
 
 /* Handle API errors */
 app.use((error: Error, _req: Request, res: Response, _next: NextFunction) => {
+  if (error instanceof HttpError) {
+    res.status(error.statusCode).json({
+      message: error.message
+    })
+    return
+  }
+
   console.error(error)
 
   res.status(500).json({

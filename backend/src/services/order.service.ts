@@ -11,6 +11,8 @@ import { createShippingAddress } from './shippingAddress.service'
 import { createOrderItems } from './orderItem.service'
 import { createOrderStatus } from './orderStatus.service'
 
+import HttpError from '../utilities/HttpError'
+
 export async function getOrderOptions() {
   const { rows } = await pool.query(
     `SELECT
@@ -234,8 +236,8 @@ export async function createOrder(order: CreateOrder) {
 
       productIds.add(item.product_id)
 
-      const { rows } = await client.query<{ stock: number | null }>(
-        `SELECT stock
+      const { rows } = await client.query<{ name: string; stock: number | null }>(
+        `SELECT name, stock
          FROM products
          WHERE id = $1
            AND deleted_at IS NULL
@@ -245,12 +247,16 @@ export async function createOrder(order: CreateOrder) {
 
       const product = rows[0]
 
-      if (!product || product.stock === null) {
-        throw new Error(`Produkten ${item.product_id} är inte tillgänglig.`)
+      if (!product) {
+        throw new HttpError(400, 'Produkten kunde inte hittas.')
+      }
+
+      if (product.stock === null) {
+        throw new HttpError(400, `${product.name} är inte tillgänglig för köp.`)
       }
 
       if (product.stock < item.quantity) {
-        throw new Error(`Otillräckligt lagersaldo för produkt ${item.product_id}.`)
+        throw new HttpError(400, `Det finns endast ${product.stock} st av ${product.name} i lager.`)
       }
     }
 

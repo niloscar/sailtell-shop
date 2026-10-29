@@ -5,6 +5,7 @@ import { useCart } from '../../contexts/CartContext'
 import { createPayment } from '../../api/paymentApi'
 import formatPrice from '../../utilities/formatPrice'
 import getApiErrorMessage from '../../utilities/apiError'
+import Error from '../../components/ui/Error'
 
 import type { CreateOrder } from '../../types/orderTypes'
 
@@ -258,17 +259,15 @@ export default function PageCheckout() {
             </div>
           </div>
 
+          {submitError && (
+            <Error message={submitError} />
+          )}
+
           <div className="row">
             <p className="terms">
               Genom att slutföra köpet godkänner du våra{' '}
               <Link to="#">villkor</Link>.
             </p>
-
-            {submitError && (
-              <p className="errorMessage" role="alert">
-                {submitError}
-              </p>
-            )}
 
             <button
               type="submit"
