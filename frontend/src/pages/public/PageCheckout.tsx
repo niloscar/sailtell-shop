@@ -1,18 +1,16 @@
-import { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+
+import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useCart } from '../../contexts/CartContext'
-import { createOrder, getOrderOptions } from '../../api/orderApi'
+import { createPayment } from '../../api/paymentApi'
 import formatPrice from '../../utilities/formatPrice'
 import getApiErrorMessage from '../../utilities/apiError'
-import Spinner from '../../components/ui/Spinner'
 
-import type { CreateOrder, OrderOptions } from '../../types/orderTypes'
+import type { CreateOrder } from '../../types/orderTypes'
 
 export default function PageCheckout() {
-  const { cartCount, cart, resetCart } = useCart()
-  const navigate = useNavigate()
+  const { cartCount, cart } = useCart()
 
-  const [orderOptions, setOrderOptions] = useState<OrderOptions>()
   const [orderDetails, setOrderDetails] = useState({
     fname: '',
     lname: '',
@@ -21,11 +19,12 @@ export default function PageCheckout() {
     street: '',
     zipcode: '',
     city: '',
-    payment_method: '',
     country: 'Sverige'
   })
-  const [loading, setLoading] = useState<boolean>(true)
-  const [loadingError, setLoadingError] = useState<string | null>(null)
+
+  const [submitting, setSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
+
   const cartItems = cart?.items ?? []
 
   const totalPrice = cartItems.reduce(
@@ -34,27 +33,8 @@ export default function PageCheckout() {
   )
   const totalVat = totalPrice * 0.2
 
-  useEffect(() => {
-    const fetchOrderOptions = async () => {
-      try {
-        setLoading(true)
-        setLoadingError(null)
-
-        const response = await getOrderOptions()
-
-        setOrderOptions(response.data)
-      } catch (error) {
-        setLoadingError(getApiErrorMessage(error))
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchOrderOptions()
-  }, [])
-
   const handleChange = (
-    event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    event: React.ChangeEvent<HTMLInputElement>
   ) => {
     const { name, value } = event.target
 
@@ -67,6 +47,8 @@ export default function PageCheckout() {
   const handleSubmit = async (event: React.SubmitEvent<HTMLFormElement>) => {
     event.preventDefault()
 
+    if (submitting) return
+
     const newOrder: CreateOrder = {
       customer: {
         fname: orderDetails.fname,
@@ -74,7 +56,7 @@ export default function PageCheckout() {
         email: orderDetails.email,
         phone: orderDetails.phone
       },
-      payment_method_id: Number(orderDetails.payment_method),
+      payment_method_id: 1,
       delivery_method_id: 1,
       shipping_address: {
         fname: orderDetails.fname,
@@ -91,12 +73,15 @@ export default function PageCheckout() {
     }
 
     try {
-      await createOrder(newOrder)
-      await resetCart()
+      setSubmitting(true)
+      setSubmitError(null)
 
-      navigate('/confirmation')
+      const { data } = await createPayment(newOrder)
+
+      window.location.assign(data.url)
     } catch (error) {
-      console.error(getApiErrorMessage(error))
+      setSubmitError(getApiErrorMessage(error))
+      setSubmitting(false)
     }
   }
 
@@ -108,10 +93,6 @@ export default function PageCheckout() {
       </>
     )
   }
-
-  if (loading) return <Spinner />
-  if (loadingError) return <p className="errorMessage">{loadingError}</p>
-  if (!orderOptions) return <p>Orderalternativ kunde inte laddas.</p>
 
   return (
     <>
@@ -206,6 +187,7 @@ export default function PageCheckout() {
               />
             </div>
           </div>
+
           <div className="formGroup">
             <h3 className="headingSize3">Leveransadress</h3>
             <div className="inputGroup">
@@ -265,56 +247,15 @@ export default function PageCheckout() {
               <select
                 id="payment_method"
                 name="payment_method"
-                required
-                value={orderDetails.payment_method}
-                onChange={handleChange}
+                value="1"
+                disabled
               >
-                <option value="" disabled>
-                  Välj betalningsmetod
-                </option>
-                {orderOptions.payment_methods.map((method) => (
-                  <option key={method.id} value={method.id}>
-                    {method.name}
-                  </option>
-                ))}
+                <option value="1">Kort</option>
               </select>
+              <p className="form-note">
+                Endast kortbetalning via Stripe är tillgänglig just nu.
+              </p>
             </div>
-
-            {orderDetails.payment_method === '1' && (
-              <>
-                <div className="inputGroup">
-                  <label htmlFor="card_number">Kortnummer</label>
-                  <input
-                    type="text"
-                    id="card_number"
-                    name="card_number"
-                    required
-                  />
-                </div>
-
-                <div className="inputGroup">
-                  <label htmlFor="card_expiration">Giltighetstid (MM/ÅÅ)</label>
-                  <input
-                    type="text"
-                    id="card_expiration"
-                    name="card_expiration"
-                    required
-                  />
-                </div>
-
-                <div className="inputGroup">
-                  <label htmlFor="card_cvc">CVC</label>
-                  <input type="text" id="card_cvc" name="card_cvc" required />
-                </div>
-              </>
-            )}
-
-            {orderDetails.payment_method === '3' && (
-              <div className="inputGroup">
-                <label htmlFor="ssn">Personnummer</label>
-                <input type="text" id="ssn" name="ssn" required />
-              </div>
-            )}
           </div>
 
           <div className="row">
@@ -323,8 +264,18 @@ export default function PageCheckout() {
               <Link to="#">villkor</Link>.
             </p>
 
-            <button type="submit" className="checkout-button">
-              Slutför köp
+            {submitError && (
+              <p className="errorMessage" role="alert">
+                {submitError}
+              </p>
+            )}
+
+            <button
+              type="submit"
+              className="checkout"
+              disabled={submitting}
+            >
+              {submitting ? 'Förbereder betalning...' : 'Gå till betalning'}
             </button>
           </div>
         </form>
