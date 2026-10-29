@@ -2,20 +2,24 @@
  * This file initializes the Express server, sets up middleware, and defines API routes.
  */
 
-/* Import dependencies */
+/* External dependencies */
 import express from 'express'
 import type { NextFunction, Request, Response } from 'express'
 import expressSession from 'express-session'
 import connectPgSimple from 'connect-pg-simple'
 import dotenv from 'dotenv'
-import { connect, pool } from './database'
 
-/* Import route handlers */
+/* Internal modules */
+import { connect, pool } from './database'
+import { webhookHandler } from './controllers/payment.controller'
+
+/* Routes */
 import authRouter from './routes/auth.routes'
 import cartRouter from './routes/cart.routes'
 import categoryRouter from './routes/category.routes'
 import customerRouter from './routes/customer.routes'
 import orderRouter from './routes/order.routes'
+import paymentRouter from './routes/payment.routes'
 import productRouter from './routes/product.routes'
 import searchRouter from './routes/search.routes'
 import supplierRouter from './routes/supplier.routes'
@@ -29,6 +33,13 @@ const app = express()
 const port = process.env.PORT || 3000
 
 const PgSession = connectPgSimple(expressSession)
+
+/* Stripe webhook – must be registered before express.json() */
+app.post(
+  '/api/payment/webhook',
+  express.raw({ type: 'application/json' }),
+  webhookHandler
+)
 
 /* Middleware */
 app.use(express.static('public')) // Serve static files from the "public" folder
@@ -55,6 +66,7 @@ app.use('/api/carts', cartRouter)
 app.use('/api/categories', categoryRouter)
 app.use('/api/customers', customerRouter)
 app.use('/api/orders', orderRouter)
+app.use('/api/payment', paymentRouter)
 app.use('/api/products', productRouter)
 app.use('/api/search', searchRouter)
 app.use('/api/supplier', supplierRouter)
