@@ -4,6 +4,8 @@ import { useCart } from '../../contexts/CartContext'
 import { createOrder, getOrderOptions } from '../../api/orderApi'
 import formatPrice from '../../utilities/formatPrice'
 import getApiErrorMessage from '../../utilities/apiError'
+import Spinner from '../../components/ui/Spinner'
+
 import type { CreateOrder, OrderOptions } from '../../types/orderTypes'
 
 export default function PageCheckout() {
@@ -107,7 +109,7 @@ export default function PageCheckout() {
     )
   }
 
-  if (loading) return <p>Laddar orderalternativ...</p>
+  if (loading) return <Spinner />
   if (loadingError) return <p className="errorMessage">{loadingError}</p>
   if (!orderOptions) return <p>Orderalternativ kunde inte laddas.</p>
 

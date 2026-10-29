@@ -16,6 +16,7 @@ import PageAdminAddProduct from './pages/admin/PageAdminAddProduct'
 
 import PageStart from './pages/public/PageStart'
 import PageProducts from './pages/public/PageProducts'
+import PageSearchProducts from './pages/public/PageSearchProducts'
 import PageSingleProduct from './pages/public/PageSingleProduct'
 import PageCart from './pages/public/PageCart'
 import PageCheckout from './pages/public/PageCheckout'
@@ -30,6 +31,7 @@ function App() {
       <Route element={<LayoutPublic />}>
         <Route path="/" element={<PageStart />} />
         <Route path="/products" element={<PageProducts />} />
+        <Route path="/products/search" element={<PageSearchProducts />} />
         <Route path="/products/:categorySlug" element={<PageProducts />} />
         <Route path="/product/:id" element={<PageSingleProduct />} />
         <Route path="/cart" element={<PageCart />} />

@@ -8,6 +8,7 @@ import {
 } from '../../api/productApi'
 import getApiErrorMessage from '../../utilities/apiError'
 import BackLink from '../../components/BackLink'
+import Spinner from '../../components/ui/Spinner'
 
 import type { Product, ProductOptions, UpdateProduct } from '@shop/shared'
 
@@ -48,6 +49,8 @@ export default function PageAdminUpdateProduct() {
       error: null
     }
   })
+
+  const [indexWarning, setIndexWarning] = useState<string | null>(null)
 
   const updateLoadingState = (key: LoadKey, updates: Partial<LoadingState>) => {
     setLoadingState((prev) => ({
@@ -193,9 +196,14 @@ export default function PageAdminUpdateProduct() {
       loading: true,
       error: null
     })
+    setIndexWarning(null)
 
     try {
-      await deleteProduct(Number(id))
+      const response = await deleteProduct(Number(id))
+
+      if (!response.data.searchIndexUpdated) {
+        window.alert('Produkten raderades, men kunde inte tas bort från sökindexet.')
+      }
 
       navigate('/admin/products')
     } catch (error) {
@@ -238,8 +246,12 @@ export default function PageAdminUpdateProduct() {
 
       const response = await updateProduct(Number(id), updatedProduct)
 
-      setProduct(response.data)
-      setOriginalProduct(structuredClone(response.data))
+      setProduct(response.data.product)
+      setOriginalProduct(structuredClone(response.data.product))
+
+      if (!response.data.searchIndexUpdated) {
+        setIndexWarning('Produkten uppdaterades, men sökindexet kunde inte uppdateras.')
+      }
     } catch (error) {
       updateLoadingState('action', { error: getApiErrorMessage(error) })
     } finally {
@@ -247,7 +259,7 @@ export default function PageAdminUpdateProduct() {
     }
   }
 
-  if (loadingState.product.loading) return <p>Laddar produkt...</p>
+  if (loadingState.product.loading) return <Spinner />
   if (loadingState.product.error)
     return <p className="errorMessage">{loadingState.product.error}</p>
   if (!product)
@@ -342,7 +354,7 @@ export default function PageAdminUpdateProduct() {
         <label htmlFor="product-categories">Kategorier</label>
 
         {loadingState.productOptions.loading ? (
-          <p>Laddar kategorier...</p>
+          <Spinner />
         ) : (
           <select
             id="product-categories"
@@ -363,7 +375,7 @@ export default function PageAdminUpdateProduct() {
         <label htmlFor="product-purchase-type">Försäljningstyp</label>
 
         {loadingState.productOptions.loading ? (
-          <p>Laddar försäljningstyper...</p>
+          <Spinner />
         ) : (
           <select
             id="product-purchase-type"
@@ -379,9 +391,8 @@ export default function PageAdminUpdateProduct() {
         )}
       </div>
 
-      {loadingState.action.error && (
-        <p className="errorMessage">{loadingState.action.error}</p>
-      )}
+      {loadingState.action.error && <p className="errorMessage">{loadingState.action.error}</p>}
+      {indexWarning && <p className="errorMessage">{indexWarning}</p>}
 
       <div className="buttonGroup">
         <button

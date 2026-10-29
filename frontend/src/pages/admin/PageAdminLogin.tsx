@@ -63,7 +63,7 @@ export default function PageAdminLogin() {
           />
         </div>
 
-        <button type="submit">Login</button>
+        <button type="submit">Logga in</button>
 
         {loginError && <p className="errorMessage">{loginError}</p>}
       </form>

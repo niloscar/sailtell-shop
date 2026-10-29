@@ -45,7 +45,7 @@ export async function getProductOptions() {
   return rows[0]
 }
 
-async function getProducts({ categoryId }: { categoryId?: number } = {}) {
+async function getProducts({ categoryId, skus }: { categoryId?: number; skus?: string[] } = {}) {
   const { rows } = await pool.query<ProductSummary>(
     `SELECT
       products.id,
@@ -85,16 +85,20 @@ async function getProducts({ categoryId }: { categoryId?: number } = {}) {
       ON categories.id = product_categories.category_id
 
     WHERE products.deleted_at IS NULL
-      AND (
-        $1::int IS NULL
-        OR EXISTS (
-          SELECT 1
-          FROM product_categories pc
-          WHERE pc.product_id = products.id
-            AND pc.category_id = $1
-        )
+    AND (
+      $1::int IS NULL
+      OR EXISTS (
+        SELECT 1
+        FROM product_categories pc
+        WHERE pc.product_id = products.id
+          AND pc.category_id = $1
       )
-
+    )
+    AND (
+      $2::text[] IS NULL
+      OR products.sku = ANY($2::text[])
+    )
+      
     GROUP BY
       products.id,
       latest_price.price
@@ -102,7 +106,7 @@ async function getProducts({ categoryId }: { categoryId?: number } = {}) {
     ORDER BY 
       products.sort_order ASC, 
       products.id ASC`,
-    [categoryId ?? null]
+    [categoryId ?? null, skus ?? null]
   )
 
   return rows
@@ -115,6 +119,12 @@ export async function getAllProducts() {
     products,
     category: null
   }
+}
+
+export async function getProductsBySkus(skus: string[]) {
+  if (skus.length === 0) return []
+
+  return getProducts({ skus })
 }
 
 export async function getProductsByCategorySlug(categorySlug: string) {
@@ -134,6 +144,7 @@ export async function getProduct(id: number) {
   const { rows } = await pool.query<Product>(
     `SELECT DISTINCT ON (products.id)
       products.id,
+      products.sku,
       products.name,
       products.brand_name,
       products.description,
@@ -184,11 +195,13 @@ export async function getProduct(id: number) {
     [id]
   )
 
-  if (rows.length === 0) {
+  const product = rows[0]
+
+  if (!product) {
     throw new Error('Produkten kunde inte hittas.')
   }
 
-  return rows[0]
+  return product
 }
 
 export async function createProduct(product: CreateProduct) {
@@ -235,6 +248,17 @@ export async function createProduct(product: CreateProduct) {
       )
       VALUES ($1, $2)`,
       [productId, product.price]
+    )
+
+    // ONTODO: Move this logic to the database instead.
+    await client.query(
+      `UPDATE products
+      SET sku = 'SHOP-' || CASE
+        WHEN id < 10000 THEN LPAD(id::text, 4, '0')
+        ELSE id::text
+      END
+      WHERE id = $1`,
+      [productId]
     )
 
     for (const categoryId of product.category_ids) {
@@ -363,16 +387,21 @@ export async function updateProduct(id: number, updates: UpdateProduct) {
 }
 
 export async function deleteProduct(id: number) {
-  const { rowCount } = await pool.query(
+  const { rows } = await pool.query<{ sku: string }>(
     `UPDATE products
-    SET deleted_at = NOW()
-      WHERE id = $1`,
+     SET deleted_at = NOW()
+     WHERE id = $1
+     RETURNING sku`,
     [id]
   )
 
-  if (rowCount === 0) {
+  const deletedProduct = rows[0]
+
+  if (!deletedProduct) {
     throw new Error('Produkten kunde inte hittas.')
   }
+
+  return deletedProduct.sku
 }
 
 export async function upsertSupplierProduct(product: SupplierImportProduct): Promise<'created' | 'updated'> {

@@ -5,6 +5,7 @@ import formatPrice from '../utilities/formatPrice'
 import getApiErrorMessage from '../utilities/apiError'
 import ToCartButton from './ToCartButton'
 import QuantitySelector from './QuantitySelector'
+import Spinner from './ui/Spinner'
 
 import type { Product } from '@shop/shared'
 
@@ -40,7 +41,7 @@ function ProductDetails() {
       ? 'Observera att du vill lägga till fler än vad som finns i lager. En del av din beställning kommer att få ett senare leveransdatum.'
       : ''
 
-  if (loading) return <p>Laddar produkt...</p>
+  if (loading) return <Spinner />
   if (loadingError) return <p className="errorMessage">{loadingError}</p>
   if (product === null) return <p>Produkten kunde inte hittas.</p>
 

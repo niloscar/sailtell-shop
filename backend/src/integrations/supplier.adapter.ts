@@ -1,3 +1,7 @@
+/**
+ * Adapter for interacting with the supplier's product catalog API.
+ */
+
 import { parse } from 'csv-parse/sync'
 import { XMLParser, XMLValidator } from 'fast-xml-parser'
 

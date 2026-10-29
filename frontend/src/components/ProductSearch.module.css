@@ -1,0 +1,17 @@
+.searchInput {
+  width: 100%;
+  padding: .5rem;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  background-color: #fff;
+  border-radius: 4px;
+}
+
+.searchInput::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  background: url('/icons/close.svg') center / contain no-repeat;
+}

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { getProductOptions, createProduct } from '../../api/productApi'
 import getApiErrorMessage from '../../utilities/apiError'
 import BackLink from '../../components/BackLink'
+import Spinner from '../../components/ui/Spinner'
 
 import type { CreateProduct, ProductOptions } from '@shop/shared'
 
@@ -30,6 +31,8 @@ export default function PageAdminAddProduct() {
 
   const [creating, setCreating] = useState(false)
   const [createError, setCreateError] = useState<string | null>(null)
+
+  const [indexWarning, setIndexWarning] = useState<string | null>(null)
 
   useEffect(() => {
     const fetchProductOptions = async () => {
@@ -106,8 +109,11 @@ export default function PageAdminAddProduct() {
   }
 
   const handleSave = async () => {
+    if (creating || indexWarning) return
+
     setCreating(true)
     setCreateError(null)
+    setIndexWarning(null)
 
     try {
       const newProduct: CreateProduct = {
@@ -117,9 +123,16 @@ export default function PageAdminAddProduct() {
           .filter((item) => item !== '')
       }
 
-      await createProduct(newProduct)
+      const response = await createProduct(newProduct)
 
-      navigate('/products')
+      if (!response.data.searchIndexUpdated) {
+        setIndexWarning(
+          'Produkten skapades, men sökindexet kunde inte uppdateras.'
+        )
+        return
+      }
+
+      navigate('/admin/products')
     } catch (error) {
       setCreateError(getApiErrorMessage(error))
     } finally {
@@ -127,136 +140,151 @@ export default function PageAdminAddProduct() {
     }
   }
 
-  if (loading) return <p>Laddar produktalternativ...</p>
-  if (loadingError) return <p className="errorMessage">{loadingError}</p>
-  if (!productOptions) return <p>Produktalternativ kunde inte hittas.</p>
-
   return (
     <div className="addProduct">
       <h1 className="headingSize1">Lägg till produkt</h1>
 
-      <div className="inputGroup">
-        <label htmlFor="product-name">Produktnamn</label>
-        <input
-          type="text"
-          id="product-name"
-          name="name"
-          value={product.name}
-          onChange={handleChange}
-        />
-      </div>
+      {loading && <Spinner />}
 
-      <div className="inputGroup">
-        <label htmlFor="product-brand">Varumärke</label>
-        <input
-          type="text"
-          id="product-brand"
-          name="brand_name"
-          value={product.brand_name}
-          onChange={handleChange}
-        />
-      </div>
+      {!loading && loadingError && (
+        <p className="errorMessage">{loadingError}</p>
+      )}
 
-      <div className="inputGroup">
-        <label htmlFor="product-description">Produktbeskrivning</label>
-        <textarea
-          id="product-description"
-          name="description"
-          value={product.description}
-          onChange={handleChange}
-        />
-      </div>
+      {!loading && !loadingError && !productOptions && (
+        <p>Produktalternativ kunde inte hittas.</p>
+      )}
 
-      <div className="inputGroup">
-        <label htmlFor="product-details">
-          Detaljer (separera med radbrytning)
-        </label>
-        <textarea
-          id="product-details"
-          name="details"
-          value={product.details.join('\n')}
-          onChange={handleChange}
-        />
-      </div>
+      {!loading && !loadingError && productOptions && (
+        <>
+          <div className="inputGroup">
+            <label htmlFor="product-name">Produktnamn</label>
+            <input
+              type="text"
+              id="product-name"
+              name="name"
+              value={product.name}
+              onChange={handleChange}
+            />
+          </div>
 
-      <div className="inputGroup">
-        <label htmlFor="product-image">Produktbild, URL</label>
-        <input
-          type="text"
-          id="product-image"
-          name="img_url"
-          value={product.img_url}
-          onChange={handleChange}
-        />
-      </div>
+          <div className="inputGroup">
+            <label htmlFor="product-brand">Varumärke</label>
+            <input
+              type="text"
+              id="product-brand"
+              name="brand_name"
+              value={product.brand_name}
+              onChange={handleChange}
+            />
+          </div>
 
-      <div className="inputGroup">
-        <label htmlFor="product-price">Pris i kr (inkl. moms)</label>
-        <input
-          type="number"
-          id="product-price"
-          name="price"
-          value={product.price}
-          onChange={handleChange}
-        />
-      </div>
+          <div className="inputGroup">
+            <label htmlFor="product-description">Produktbeskrivning</label>
+            <textarea
+              id="product-description"
+              name="description"
+              value={product.description}
+              onChange={handleChange}
+            />
+          </div>
 
-      <div className="inputGroup">
-        <label htmlFor="product-stock">Lagersaldo</label>
-        <input
-          type="number"
-          id="product-stock"
-          name="stock"
-          value={product.stock ?? ''}
-          onChange={handleChange}
-        />
-      </div>
+          <div className="inputGroup">
+            <label htmlFor="product-details">
+              Detaljer (separera med radbrytning)
+            </label>
+            <textarea
+              id="product-details"
+              name="details"
+              value={product.details.join('\n')}
+              onChange={handleChange}
+            />
+          </div>
 
-      <div className="inputGroup">
-        <label htmlFor="product-categories">Kategorier</label>
-        <select
-          id="product-categories"
-          multiple
-          value={product.category_ids.map(String)}
-          onChange={handleCategoriesChange}
-        >
-          {productOptions.categories.map((category) => (
-            <option key={category.id} value={category.id}>
-              {category.name}
-            </option>
-          ))}
-        </select>
-      </div>
+          <div className="inputGroup">
+            <label htmlFor="product-image">Produktbild, URL</label>
+            <input
+              type="text"
+              id="product-image"
+              name="img_url"
+              value={product.img_url}
+              onChange={handleChange}
+            />
+          </div>
 
-      <div className="inputGroup">
-        <label htmlFor="product-purchase-type">Försäljningstyp</label>
-        <select
-          id="product-purchase-type"
-          value={product.purchase_type}
-          onChange={handlePurchaseTypeChange}
-        >
-          {productOptions.purchase_types.map((option) => (
-            <option key={option} value={option}>
-              {option}
-            </option>
-          ))}
-        </select>
-      </div>
+          <div className="inputGroup">
+            <label htmlFor="product-price">Pris i kr (inkl. moms)</label>
+            <input
+              type="number"
+              id="product-price"
+              name="price"
+              value={product.price}
+              onChange={handleChange}
+            />
+          </div>
 
-      {createError && <p className="errorMessage">{createError}</p>}
+          <div className="inputGroup">
+            <label htmlFor="product-stock">Lagersaldo</label>
+            <input
+              type="number"
+              id="product-stock"
+              name="stock"
+              value={product.stock ?? ''}
+              onChange={handleChange}
+            />
+          </div>
 
-      <div className="buttonGroup">
-        <button
-          type="button"
-          onClick={handleSave}
-          disabled={creating}
-          className="add"
-        >
-          {creating ? 'Skapar produkt...' : 'Skapa produkt'}
-        </button>
-      </div>
+          <div className="inputGroup">
+            <label htmlFor="product-categories">Kategorier</label>
+            <select
+              id="product-categories"
+              multiple
+              value={product.category_ids.map(String)}
+              onChange={handleCategoriesChange}
+            >
+              {productOptions.categories.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.name}
+                </option>
+              ))}
+            </select>
+          </div>
 
-      <BackLink to="/admin/products" label="Tillbaka till produktlistan" />
+          <div className="inputGroup">
+            <label htmlFor="product-purchase-type">Försäljningstyp</label>
+            <select
+              id="product-purchase-type"
+              value={product.purchase_type}
+              onChange={handlePurchaseTypeChange}
+            >
+              {productOptions.purchase_types.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {createError && <p className="errorMessage">{createError}</p>}
+          {indexWarning && <p className="errorMessage">{indexWarning}</p>}
+
+          <div className="buttonGroup">
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={creating || !!indexWarning}
+              className="add"
+            >
+              {creating
+                ? 'Skapar produkt...'
+                : indexWarning
+                  ? 'Produkt skapad'
+                  : 'Skapa produkt'}
+            </button>
+          </div>
+
+          <BackLink to="/admin/products" label="Tillbaka till produktlistan" />
+        </>
+      )}
     </div>
   )
 }

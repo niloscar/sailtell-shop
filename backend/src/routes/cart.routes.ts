@@ -11,12 +11,12 @@ import {
   deleteCartItemHandler
 } from '../controllers/cart.controller'
 
-const router = Router()
+const cartRouter = Router()
 
-router.post('/', createCartHandler)
-router.get('/:cartUuid', getCartHandler)
-router.post('/:cartUuid/items', addCartItemHandler)
-router.patch('/:cartUuid/items/:productId', updateCartItemHandler)
-router.delete('/:cartUuid/items/:productId', deleteCartItemHandler)
+cartRouter.post('/', createCartHandler)
+cartRouter.get('/:cartUuid', getCartHandler)
+cartRouter.post('/:cartUuid/items', addCartItemHandler)
+cartRouter.patch('/:cartUuid/items/:productId', updateCartItemHandler)
+cartRouter.delete('/:cartUuid/items/:productId', deleteCartItemHandler)
 
-export default router
+export default cartRouter

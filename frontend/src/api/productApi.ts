@@ -1,5 +1,14 @@
 import api from './apiClient'
-import type { CreateProduct, UpdateProduct } from '@shop/shared'
+import type { Product, CreateProduct, UpdateProduct } from '@shop/shared'
+
+interface ProductMutationResponse {
+  product: Product
+  searchIndexUpdated: boolean
+}
+
+interface DeleteProductResponse {
+  searchIndexUpdated: boolean
+}
 
 export function getProductOptions() {
   return api.get('/products/options')
@@ -11,17 +20,17 @@ export function getProducts({ category }: { category?: string } = {}) {
 }
 
 export function getProduct(id: number) {
-  return api.get(`/products/${id}`)
+  return api.get<Product>(`/products/${id}`)
 }
 
 export function createProduct(product: CreateProduct) {
-  return api.post('/products', product)
+  return api.post<ProductMutationResponse>('/products', product)
 }
 
 export function updateProduct(id: number, product: UpdateProduct) {
-  return api.patch(`/products/${id}`, product)
+  return api.patch<ProductMutationResponse>(`/products/${id}`, product)
 }
 
 export function deleteProduct(id: number) {
-  return api.delete(`/products/${id}`)
+  return api.delete<DeleteProductResponse>(`/products/${id}`)
 }
