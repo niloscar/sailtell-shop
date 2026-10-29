@@ -400,7 +400,8 @@ button.delete {
 }
 
 button.add,
-button.save {
+button.save,
+button.checkout {
   background-color: var(--success);
   border: none;
   color: #fff;
@@ -421,4 +422,13 @@ button.delete {
   & .inputGroup {
     width: 100%;
   }
+}
+
+.form-note {
+  text-align: center;
+  display: block;
+  font-size: var(--font-small);
+  color: var(--text-muted);
+  margin: .5rem  auto 0 auto;
+  font-style: italic;
 }

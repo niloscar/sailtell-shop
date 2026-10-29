@@ -1,5 +1,5 @@
 import api from './apiClient'
-import type { CreateOrder, UpdateOrder } from '../types/orderTypes'
+import type { CreateOrder, UpdateOrder, OrderDetails } from '../types/orderTypes'
 
 export function getOrderOptions() {
   return api.get('/orders/options')
@@ -10,7 +10,7 @@ export function getOrders() {
 }
 
 export function getOrder(id: number) {
-  return api.get(`/orders/${id}`)
+  return api.get<OrderDetails>(`/orders/${id}`)
 }
 
 export function createOrder(orderData: CreateOrder) {

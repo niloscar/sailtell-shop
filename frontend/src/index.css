@@ -5,6 +5,7 @@
 
   --text: #1f2937;
   --text-h: #111827;
+  --text-muted: #6b7280;
   --bg: #f9fafb;
 
   font: 18px/145% var(--sans);
@@ -65,4 +66,21 @@ h2 {
 
 p {
   margin: 0;
+}
+
+.text-small {
+  font-size: var(--font-small);
+}
+
+.text-muted {
+  color: var(--text-muted);
+}
+
+:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+
+  &:hover {
+    opacity: .5;
+  }
 }

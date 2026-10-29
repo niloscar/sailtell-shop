@@ -50,13 +50,29 @@ export async function updateOrderHandler(req: Request, res: Response) {
     const orderId = Number(req.params.id)
     const { status_id } = req.body
 
-    if (status_id !== undefined) {
-      await updateOrderStatus(orderId, status_id)
+    if ([6, 7, 8].includes(status_id)) {
+      res.status(400).json({
+        message: 'Betalningsstatus kan inte ändras manuellt.'
+      })
+      return
     }
 
     const order = await getOrder(orderId)
 
-    res.json(order)
+    if (order.order_status.id === 7 && status_id !== undefined) {
+      res.status(400).json({
+        message: 'En obetald order kan inte ändra status manuellt.'
+      })
+      return
+    }
+
+    if (status_id !== undefined) {
+      await updateOrderStatus(orderId, status_id)
+    }
+
+    const updatedOrder = await getOrder(orderId)
+
+    res.json(updatedOrder)
   } catch (error) {
     console.error(error)
     res.status(500).json({ message: 'Kunde inte uppdatera ordern.' })

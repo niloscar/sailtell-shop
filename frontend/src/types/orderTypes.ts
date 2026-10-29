@@ -15,8 +15,6 @@ export interface Order {
 export interface OrderDetails {
   id: number
   customer_id: number
-  payment_method_id: number
-  delivery_method_id: number
   ordered_at: string
   sum: number
   order_status: {

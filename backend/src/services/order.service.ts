@@ -201,13 +201,59 @@ export async function getOrder(id: number, db: Pool | PoolClient = pool) {
     [id]
   )
 
-  if (rows.length === 0) throw new Error('Beställningen kunde inte hittas.')
+  const order = rows[0]
 
-  return rows[0]
+  if (!order) {
+    throw new Error('Beställningen kunde inte hittas.')
+  }
+
+  return order
 }
 
 export async function createOrder(order: CreateOrder) {
   return withTransaction(async (client) => {
+    // Validate order items and stock
+    if (!order.order_items.length) {
+      throw new Error('Ordern måste innehålla minst en produkt.')
+    }
+
+    const productIds = new Set<number>()
+
+    for (const item of order.order_items) {
+      if (
+        !Number.isInteger(item.product_id) ||
+        !Number.isInteger(item.quantity) ||
+        item.quantity <= 0
+      ) {
+        throw new Error('Ogiltig produkt eller antal.')
+      }
+
+      if (productIds.has(item.product_id)) {
+        throw new Error('Samma produkt förekommer flera gånger.')
+      }
+
+      productIds.add(item.product_id)
+
+      const { rows } = await client.query<{ stock: number | null }>(
+        `SELECT stock
+         FROM products
+         WHERE id = $1
+           AND deleted_at IS NULL
+         FOR UPDATE`,
+        [item.product_id]
+      )
+
+      const product = rows[0]
+
+      if (!product || product.stock === null) {
+        throw new Error(`Produkten ${item.product_id} är inte tillgänglig.`)
+      }
+
+      if (product.stock < item.quantity) {
+        throw new Error(`Otillräckligt lagersaldo för produkt ${item.product_id}.`)
+      }
+    }
+
     // Get existing customer or create a new one
     const customer = await getOrCreateCustomer(
       {
@@ -266,8 +312,8 @@ export async function createOrder(order: CreateOrder) {
     // Create the order items
     await createOrderItems(orderId, order.order_items, client)
 
-    // Set the initial order status to "Mottagen"
-    await createOrderStatus(orderId, 1, client)
+    // Set the initial order status to "Väntar på betalning"
+    await createOrderStatus(orderId, 7, client)
 
     // Return the complete order details
     return getOrder(orderId, client)
