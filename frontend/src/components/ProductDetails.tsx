@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
+import { useCart } from '../contexts/CartContext'
 import { getProduct } from '../api/productApi'
 import formatPrice from '../utilities/formatPrice'
 import getApiErrorMessage from '../utilities/apiError'
@@ -17,6 +18,8 @@ function ProductDetails() {
   const [quantity, setQuantity] = useState<number>(1)
   const [loading, setLoading] = useState<boolean>(true)
   const [loadingError, setLoadingError] = useState<string | null>(null)
+
+  const { cart } = useCart()
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -36,10 +39,13 @@ function ProductDetails() {
     }
   }, [id])
 
-  const stockMessage =
-    product && product.stock !== null && quantity > product.stock
-      ? 'Observera att du vill lägga till fler än vad som finns i lager. En del av din beställning kommer att få ett senare leveransdatum.'
-      : ''
+  const quantityInCart =
+    cart?.items.find((item) => item.product_id === product?.id)?.quantity ?? 0
+
+  const availableStock =
+    product?.stock === null || product?.stock === undefined
+      ? 0
+      : Math.max(0, product.stock - quantityInCart)
 
   if (loading) return <Spinner />
   if (loadingError) return <p className="errorMessage">{loadingError}</p>
@@ -108,13 +114,14 @@ function ProductDetails() {
             </div>
 
             <div className={styles.purchaseControls}>
-              <QuantitySelector quantity={quantity} onChange={setQuantity} />
+              <QuantitySelector
+                quantity={quantity}
+                onChange={setQuantity}
+                max={availableStock}
+              />
+
               <ToCartButton product={product} quantity={quantity} />
             </div>
-
-            {stockMessage && (
-              <p className={styles.stockNotice}>{stockMessage}</p>
-            )}
           </section>
         )}
       </div>

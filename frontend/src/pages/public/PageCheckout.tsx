@@ -9,6 +9,8 @@ import Error from '../../components/ui/Error'
 
 import type { CreateOrder } from '../../types/orderTypes'
 
+import styles from './PageCheckout.module.css'
+
 export default function PageCheckout() {
   const { cartCount, cart } = useCart()
 
@@ -102,38 +104,40 @@ export default function PageCheckout() {
       <section className="checkout-summary">
         <h2 className="headingSize2">Sammanställning</h2>
 
-        <table>
-          <thead>
-            <tr>
-              <th>Produkt</th>
-              <th>Antal</th>
-              <th>Pris/st</th>
-              <th>Summa</th>
-            </tr>
-          </thead>
+        <div className={styles.checkoutGrid}>
+          <div className={styles.checkoutHeader}>
+            <span>Produkt</span>
+            <span>Antal</span>
+            <span>Pris/st</span>
+            <span>Summa</span>
+          </div>
 
-          <tbody className="checkout-items">
+          <ul className={styles.checkoutList}>
             {cartItems.map((item) => (
-              <tr key={item.id}>
-                <td>{item.name}</td>
-                <td>{item.quantity} st</td>
-                <td>{formatPrice(Number(item.price))}</td>
-                <td>{formatPrice(item.price * item.quantity)}</td>
-              </tr>
-            ))}
-          </tbody>
+              <li key={item.id} className={styles.checkoutItem}>
+                <Link to={`/product/${item.product_id}`}>
+                  {item.name}
+                </Link>
 
-          <tfoot className="checkout-totals">
-            <tr>
-              <td colSpan={3}>Varav moms (25%)</td>
-              <td>{formatPrice(totalVat)}</td>
-            </tr>
-            <tr>
-              <th colSpan={3}>Totalt</th>
-              <th>{formatPrice(totalPrice)}</th>
-            </tr>
-          </tfoot>
-        </table>
+                <span>{item.quantity} st</span>
+                <span>{formatPrice(Number(item.price))}</span>
+                <span>{formatPrice(item.price * item.quantity)}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div className={styles.checkoutTotals}>
+          <div>
+            <span>Varav moms (25%)</span>
+            <span>{formatPrice(totalVat)}</span>
+          </div>
+
+          <div>
+            <strong>Totalt</strong>
+            <strong>{formatPrice(totalPrice)}</strong>
+          </div>
+        </div>
       </section>
 
       <section className="customer-credentials">

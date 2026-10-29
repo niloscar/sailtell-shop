@@ -7,6 +7,8 @@ import {
   updateCartItem,
   deleteCartItem
 } from '../api/cartApi'
+import getApiErrorMessage from '../utilities/apiError'
+
 import type { ReactNode } from 'react'
 import type { Product } from '@shop/shared'
 import type { Cart } from '../types/cartTypes'
@@ -94,6 +96,7 @@ export default function CartProvider({ children }: { children: ReactNode }) {
                   brand_name: product.brand_name,
                   img_url: product.img_url,
                   quantity,
+                  stock: product.stock,
                   price: product.price
                 }
               ]
@@ -132,10 +135,7 @@ export default function CartProvider({ children }: { children: ReactNode }) {
         [product.id]: {
           loading: false,
           added: false,
-          error:
-            error instanceof Error
-              ? error.message
-              : 'Kunde inte lägga produkten i varukorgen.'
+          error: getApiErrorMessage(error)
         }
       }))
     }
@@ -161,22 +161,22 @@ export default function CartProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  const removeFromCart = async (product: Product) => {
+  const removeFromCart = async (productId: number, productName: string) => {
     if (!cart) return
 
     const previousCart = cart
 
     setCart({
       ...cart,
-      items: cart.items.filter((item) => item.product_id !== product.id)
+      items: cart.items.filter((item) => item.product_id !== productId)
     })
 
     try {
-      await deleteCartItem(cart.cart_uuid, product.id)
+      await deleteCartItem(cart.cart_uuid, productId)
     } catch (error) {
       setCart(previousCart)
       console.error(
-        `${product.name} kunde inte tas bort från varukorgen.`,
+        `${productName} kunde inte tas bort från varukorgen.`,
         error
       )
     }

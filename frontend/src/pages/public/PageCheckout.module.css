@@ -1,0 +1,49 @@
+.checkoutGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) auto 1fr 1fr;
+  column-gap: 1.5rem;
+}
+
+.checkoutHeader {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  padding: 1rem 0;
+  font-weight: 600;
+}
+
+.checkoutList {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.checkoutItem {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  align-items: center;
+  padding: 0.5rem 0;
+}
+
+.checkoutItem > * {
+  min-width: 0;
+}
+
+.checkoutTotals {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+  padding: 1rem 0;
+}
+
+.checkoutTotals > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1.5rem;
+  min-width: 15rem;
+}
