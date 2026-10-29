@@ -230,6 +230,7 @@ export default function PageAdminAddProduct() {
               name="stock"
               value={product.stock ?? ''}
               onChange={handleChange}
+              min={0}
             />
           </div>
 

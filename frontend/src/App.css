@@ -191,6 +191,11 @@ button {
   }
 }
 
+textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
 select[multiple] {
   height: 175px;
 }
