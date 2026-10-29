@@ -1,3 +1,7 @@
+/**
+ * Category repository functions for handling category-related operations such as new categories, updates and deletes.
+ */
+
 import pool from '../database'
 import type { Category, UpdateCategory } from '../types/category.types'
 

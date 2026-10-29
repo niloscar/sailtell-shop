@@ -1,5 +1,5 @@
 /**
- * Product service functions for handling product-related operations such as new products, updates and deletes.
+ * Product repository functions for handling product-related operations such as new products, updates and deletes.
  */
 
 import pool from '../database'
@@ -55,6 +55,7 @@ async function getProducts({ categoryId, skus }: { categoryId?: number; skus?: s
       products.description,
       products.details,
       products.img_url,
+      products.img_path,
       products.stock,
       products.purchase_type,
       products.sort_order,
@@ -150,6 +151,7 @@ export async function getProduct(id: number) {
       products.description,
       products.details,
       products.img_url,
+      products.img_path,
       products.stock,
       products.purchase_type,
       prices.price AS "price",
@@ -505,5 +507,20 @@ export async function upsertSupplierProduct(product: SupplierImportProduct): Pro
     throw error
   } finally {
     client.release()
+  }
+}
+
+export async function updateProductImage(id: number, path: string, url: string) {
+  const { rowCount } = await pool.query(
+    `UPDATE products
+     SET img_path = $1,
+         img_url = $2
+     WHERE id = $3
+       AND deleted_at IS NULL`,
+    [path, url, id]
+  )
+
+  if (rowCount === 0) {
+    throw new Error('Produkten kunde inte hittas.')
   }
 }

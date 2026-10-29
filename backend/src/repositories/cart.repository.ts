@@ -1,3 +1,7 @@
+/**
+ * Cart repository functions for handling cart-related operations such as creating carts, adding items, and updating item quantities.
+ */
+
 import pool from '../database'
 import HttpError from '../utilities/HttpError'
 
