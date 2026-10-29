@@ -19,12 +19,14 @@ export default function ProductListItem({ product }: { product: ProductListItemD
       className={`clickable ${styles.listItem}`}
       onClick={() => navigate(`/product/${product.id}`)}
     >
-      {product.img_url && (
+      {product.img_url ? (
         <img
           className={styles.image}
-          src={`${product.img_url}`}
+          src={product.img_url}
           alt={product.name}
         />
+      ) : (
+        <div className={styles.imagePlaceholder} aria-hidden="true" />
       )}
       <div className={styles.info}>
         <h2 className="headingSize2 product-title">{product.name}</h2>

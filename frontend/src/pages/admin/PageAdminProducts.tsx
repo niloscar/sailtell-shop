@@ -5,6 +5,7 @@ import { importSupplierProducts } from '../../api/supplierApi'
 import categoriesToString from '../../utilities/categoriesToString'
 import formatPrice from '../../utilities/formatPrice'
 import getApiErrorMessage from '../../utilities/apiError'
+import Spinner from '../../components/ui/Spinner'
 
 import type { Product } from '@shop/shared'
 import type { CatalogFormat, ImportReport } from '../../api/supplierApi'
@@ -128,7 +129,7 @@ export default function PageAdminProducts() {
       </section>
 
       {productsLoading ? (
-        <p>Laddar produkter...</p>
+        <Spinner />
       ) : productsLoadError ? (
         <p className="errorMessage">{productsLoadError}</p>
       ) : products.length === 0 ? (
@@ -162,13 +163,15 @@ export default function PageAdminProducts() {
         </table>
       )}
 
-      <button
-        type="button"
-        onClick={() => navigate('/admin/product/add')}
-        className="add"
-      >
-        Lägg till produkt
-      </button>
+      <div className="buttonGroup">
+        <button
+          type="button"
+          onClick={() => navigate('/admin/product/add')}
+          className="add"
+        >
+          Lägg till produkt
+        </button>
+      </div>
     </>
   )
 }

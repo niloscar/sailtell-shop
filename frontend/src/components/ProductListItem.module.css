@@ -19,7 +19,8 @@
   margin: 0;
 }
 
-.image {
+.image, 
+.imagePlaceholder {
   display: block;
   width: 100%;
   height: auto;
@@ -27,6 +28,11 @@
   object-fit: cover;
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
+}
+
+.imagePlaceholder {
+  min-height: 250px;
+  background-color: #f3f3f3;
 }
 
 .info {

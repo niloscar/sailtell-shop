@@ -2,12 +2,13 @@ import { useEffect, useState } from 'react'
 import { getProducts } from '../api/productApi'
 import ProductListItem from './ProductListItem'
 import getApiErrorMessage from '../utilities/apiError'
+import Spinner from './ui/Spinner'
 
 import type { Product } from '@shop/shared'
 
 import styles from './ProductList.module.css'
 
-function ProductList({ category, onCategoryLoad }: { category?: string; onCategoryLoad: (name: string) => void }) {
+function ProductList({ category, onCategoryLoad }: { category?: string; onCategoryLoad?: (name: string | null) => void }) {
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState<boolean>(true)
   const [loadingError, setLoadingError] = useState<string | null>(null)
@@ -30,9 +31,7 @@ function ProductList({ category, onCategoryLoad }: { category?: string; onCatego
     fetchProducts()
   }, [category, onCategoryLoad])
 
-console.log('ProductList render', { category, products, loading, loadingError })
-
-  if (loading) return <p>Laddar produkter...</p>
+  if (loading) return <Spinner />
   if (loadingError) return <p className="errorMessage">{loadingError}</p>
   if (products.length === 0) return <p>Inga produkter hittades.</p>
 

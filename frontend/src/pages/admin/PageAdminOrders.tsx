@@ -8,6 +8,8 @@ import formatDateTime, {
 } from '../../utilities/formatDateTime'
 import formatPrice from '../../utilities/formatPrice'
 import getApiErrorMessage from '../../utilities/apiError'
+import Spinner from '../../components/ui/Spinner'
+
 import type { Order } from '../../types/orderTypes'
 
 export default function PageAdminOrders() {
@@ -63,49 +65,57 @@ export default function PageAdminOrders() {
     return groupedOrders
   }, [orders])
 
-  if (loading) return <p>Laddar ordrar...</p>
-  if (loadingError) return <p className="errorMessage">{loadingError}</p>
-  if (orders.length === 0) return <p>Inga ordrar hittades.</p>
-
   return (
     <div className="page-orders">
       <h1 className="headingSize1">Ordrar</h1>
 
-      <table>
-        {Object.entries(ordersByStatus).map(([status, orders]) => (
-          <tbody key={status}>
-            <tr>
-              <th colSpan={4}>
-                <h3 className="headingSize3">{status}</h3>
-              </th>
-            </tr>
+      {loading && <Spinner />}
 
-            <tr>
-              <th>Order.nr</th>
-              <th>Orderdatum</th>
-              <th>Statusändring</th>
-              <th>Summa</th>
-            </tr>
+      {!loading && loadingError && (
+        <p className="errorMessage">{loadingError}</p>
+      )}
 
-            {orders.map((order) => (
-              <tr
-                key={order.id}
-                className="clickable-row"
-                onClick={() => navigate(`/admin/order/${order.id}`)}
-              >
-                <td>{order.id}</td>
-                <td title={formatTime(order.ordered_at)}>
-                  {formatDate(order.ordered_at)}
-                </td>
-                <td title={formatDateTime(order.order_status?.set_at)}>
-                  {timeAgo(order.order_status?.set_at)}
-                </td>
-                <td>{formatPrice(Number(order.sum))}</td>
+      {!loading && !loadingError && orders.length === 0 && (
+        <p>Inga ordrar hittades.</p>
+      )}
+
+      {!loading && !loadingError && orders.length > 0 && (
+        <table>
+          {Object.entries(ordersByStatus).map(([status, orders]) => (
+            <tbody key={status}>
+              <tr>
+                <th colSpan={4}>
+                  <h3 className="headingSize3">{status}</h3>
+                </th>
               </tr>
-            ))}
-          </tbody>
-        ))}
-      </table>
+
+              <tr>
+                <th>Order.nr</th>
+                <th>Orderdatum</th>
+                <th>Statusändring</th>
+                <th>Summa</th>
+              </tr>
+
+              {orders.map((order) => (
+                <tr
+                  key={order.id}
+                  className="clickable-row"
+                  onClick={() => navigate(`/admin/order/${order.id}`)}
+                >
+                  <td>{order.id}</td>
+                  <td title={formatTime(order.ordered_at)}>
+                    {formatDate(order.ordered_at)}
+                  </td>
+                  <td title={formatDateTime(order.order_status?.set_at)}>
+                    {timeAgo(order.order_status?.set_at)}
+                  </td>
+                  <td>{formatPrice(Number(order.sum))}</td>
+                </tr>
+              ))}
+            </tbody>
+          ))}
+        </table>
+      )}
     </div>
   )
 }

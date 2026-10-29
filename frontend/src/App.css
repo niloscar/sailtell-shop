@@ -1,4 +1,6 @@
 :root {
+  --primary: #002f3f;
+
   --success: #22c55e;
   --alert: #ef4444;
   --warning: #facc15;
@@ -165,6 +167,13 @@ label {
 
 input,
 textarea,
+select {
+  padding: .5rem;
+  font-size: 1rem;
+}
+
+input,
+textarea,
 select,
 button {
   font: inherit;
@@ -184,10 +193,21 @@ select[multiple] {
   height: 175px;
 }
 
+table select {
+  border: none;
+  padding: 0;
+}
+
 .buttonGroup {
   display: flex;
-  gap: 0.5rem;
   flex-wrap: wrap;
+  gap: .5rem;
+  justify-content: flex-end;
+  margin-top: 1rem;
+}
+
+.buttonGroup .delete {
+  margin-right: auto;
 }
 
 .inputGroup {

@@ -1,4 +1,5 @@
-import { useState } from 'react'
+
+import { useEffect, useState } from 'react'
 import { searchProducts } from '../api/searchApi'
 import getApiErrorMessage from '../utilities/apiError'
 import ProductListItem from './ProductListItem'
@@ -14,74 +15,86 @@ export default function ProductSearch() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [hasSearched, setHasSearched] = useState(false)
+  const [debouncedQuery, setDebouncedQuery] = useState('')
 
   const [page, setPage] = useState(1)
   const [total, setTotal] = useState(0)
   const [totalPages, setTotalPages] = useState(0)
-  const [searchedQuery, setSearchedQuery] = useState('')
 
-  const handleSearch = async (searchQuery: string, searchPage = 1) => {
-    setLoading(true)
-    setError(null)
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setDebouncedQuery(query.trim())
+    }, 300)
 
-    try {
-      const response = await searchProducts(searchQuery, searchPage)
+    return () => clearTimeout(timeout)
+  }, [query])
 
-      setProducts(response.data.products)
-      setPage(response.data.page)
-      setTotal(response.data.total)
-      setTotalPages(response.data.totalPages)
-      setSearchedQuery(searchQuery)
-      setHasSearched(true)
-    } catch (error) {
-      setError(getApiErrorMessage(error))
-    } finally {
-      setLoading(false)
+  useEffect(() => {
+    if (!debouncedQuery) return
+
+    let active = true
+
+    const fetchProducts = async () => {
+      try {
+        const response = await searchProducts(debouncedQuery, page)
+
+        if (!active) return
+
+        setProducts(response.data.products)
+        setTotal(response.data.total)
+        setTotalPages(response.data.totalPages)
+        setHasSearched(true)
+      } catch (error) {
+        if (active) setError(getApiErrorMessage(error))
+      } finally {
+        if (active) setLoading(false)
+      }
     }
-  }
+
+    void fetchProducts()
+
+    return () => {
+      active = false
+    }
+  }, [debouncedQuery, page])
 
   return (
     <div className={styles.searchContainer}>
-      <form
-        onSubmit={(event) => {
-          event.preventDefault()
-          void handleSearch(query)
+      <input
+        name="search"
+        type="search"
+        value={query}
+        onChange={(event) => {
+          setQuery(event.target.value)
+          setPage(1)
+          setHasSearched(false)
+          setLoading(false)
+          setError(null)
         }}
-      >
-        <input
-          type="search"
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-          placeholder="Sök produkter..."
-          aria-label="Sök produkter"
-          className={styles.searchInput}
-        />
-        <button
-          type="submit"
-          disabled={loading}
-          className={styles.searchButton}
-        >
-          {loading ? 'Söker...' : 'Sök'}
-        </button>
-      </form>
+        placeholder="Börja skriva för att söka..."
+        aria-label="Sök produkter"
+        className={styles.searchInput}
+      />
+
+      {loading && <p>Söker...</p>}
 
       {error && <p className="errorMessage">{error}</p>}
 
-      {hasSearched &&
-        !loading &&
-        !error &&
-        (products.length === 0 ? (
-          <p>Inga produkter hittades.</p>
-        ) : (
-          <ul className={`unstyled ${listStyles.productList}`}>
-            {products.map((product) => (
-              <ProductListItem key={product.id} product={product} />
-            ))}
-          </ul>
-        ))}
-
       {hasSearched && !loading && !error && (
         <>
+          {products.length === 0 ? (
+            <p>Inga produkter hittades.</p>
+          ) : (
+            <ul className={`unstyled ${listStyles.productList}`}>
+              {products.map((product) => (
+                <ProductListItem
+                  key={product.id}
+                  product={product}
+                />
+              ))}
+            </ul>
+          )}
+
           <p>{total} produkter hittades.</p>
 
           {totalPages > 1 && (
@@ -89,7 +102,7 @@ export default function ProductSearch() {
               <button
                 type="button"
                 disabled={page <= 1}
-                onClick={() => void handleSearch(searchedQuery, page - 1)}
+                onClick={() => setPage(page - 1)}
               >
                 Föregående
               </button>
@@ -101,7 +114,7 @@ export default function ProductSearch() {
               <button
                 type="button"
                 disabled={page >= totalPages}
-                onClick={() => void handleSearch(searchedQuery, page + 1)}
+                onClick={() => setPage(page + 1)}
               >
                 Nästa
               </button>

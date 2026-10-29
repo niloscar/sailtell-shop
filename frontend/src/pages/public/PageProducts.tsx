@@ -9,7 +9,7 @@ function PageProducts() {
   return (
     <>
       <h1 className="headingSize1">
-        {categorySlug ? categoryName ?? 'Produkter' : 'Alla produkter'}
+        {categorySlug ? categoryName : 'Alla produkter'}
       </h1>
 
       <ProductList category={categorySlug} onCategoryLoad={setCategoryName} />

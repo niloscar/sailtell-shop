@@ -8,6 +8,7 @@ import {
 } from '../../api/productApi'
 import getApiErrorMessage from '../../utilities/apiError'
 import BackLink from '../../components/BackLink'
+import Spinner from '../../components/ui/Spinner'
 
 import type { Product, ProductOptions, UpdateProduct } from '@shop/shared'
 
@@ -258,7 +259,7 @@ export default function PageAdminUpdateProduct() {
     }
   }
 
-  if (loadingState.product.loading) return <p>Laddar produkt...</p>
+  if (loadingState.product.loading) return <Spinner />
   if (loadingState.product.error)
     return <p className="errorMessage">{loadingState.product.error}</p>
   if (!product)
@@ -353,7 +354,7 @@ export default function PageAdminUpdateProduct() {
         <label htmlFor="product-categories">Kategorier</label>
 
         {loadingState.productOptions.loading ? (
-          <p>Laddar kategorier...</p>
+          <Spinner />
         ) : (
           <select
             id="product-categories"
@@ -374,7 +375,7 @@ export default function PageAdminUpdateProduct() {
         <label htmlFor="product-purchase-type">Försäljningstyp</label>
 
         {loadingState.productOptions.loading ? (
-          <p>Laddar försäljningstyper...</p>
+          <Spinner />
         ) : (
           <select
             id="product-purchase-type"

@@ -10,7 +10,7 @@ function PageStart() {
         all nödvändig information tillgänglig på din handled.
       </p>
       <div className="featuredContainer">
-        <ProductList category="featured" title={false} />
+        <ProductList category="featured" />
       </div>
     </>
   )

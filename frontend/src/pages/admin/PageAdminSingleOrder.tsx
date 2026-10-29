@@ -9,6 +9,7 @@ import formatPrice from '../../utilities/formatPrice'
 import formatPhoneNumber from '../../utilities/formatPhoneNumber'
 import getApiErrorMessage from '../../utilities/apiError'
 import BackLink from '../../components/BackLink'
+import Spinner from '../../components/ui/Spinner'
 
 import type { OrderDetails, OrderOptions } from '../../types/orderTypes'
 import type { Customer } from '../../types/customerTypes'
@@ -156,7 +157,7 @@ export default function PageAdminSingleOrder() {
   }
 
   if (loadingState.order.loading || loadingState.orderOptions.loading)
-    return <p>Laddar order...</p>
+    return <Spinner />
   if (loadingState.order.error)
     return <p className="errorMessage">{loadingState.order.error}</p>
   if (loadingState.orderOptions.error)
@@ -257,7 +258,7 @@ export default function PageAdminSingleOrder() {
       <h2 className="headingSize2">Kunduppgifter</h2>
 
       {loadingState.customer.loading ? (
-        <p>Laddar kunduppgifter...</p>
+        <Spinner />
       ) : loadingState.customer.error ? (
         <p className="errorMessage">{loadingState.customer.error}</p>
       ) : customer ? (

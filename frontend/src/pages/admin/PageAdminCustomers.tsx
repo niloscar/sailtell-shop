@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { getCustomers } from '../../api/customerApi'
 import formatPhoneNumber from '../../utilities/formatPhoneNumber'
 import getApiErrorMessage from '../../utilities/apiError'
+import Spinner from '../../components/ui/Spinner'
 
 export default function PageAdminCustomers() {
   const [customers, setCustomers] = useState<Customer[]>([])
@@ -25,7 +26,7 @@ export default function PageAdminCustomers() {
     fetchCustomers()
   }, [])
 
-  if (loading) return <p>Laddar kunder...</p>
+  if (loading) return <Spinner />
   if (loadingError) return <p className="errorMessage">{loadingError}</p>
   if (customers.length === 0) return <p>Inga kunder hittades.</p>
 
