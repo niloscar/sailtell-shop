@@ -1,4 +1,5 @@
 import pool from '../database'
+import HttpError from '../utilities/HttpError'
 
 export async function createCart() {
   const result = await pool.query(
@@ -37,6 +38,7 @@ export async function getCartItems(cartId: number) {
       products.brand_name,
       products.img_url,
       cart_items.quantity,
+      products.stock,
       latest_price.price
     FROM cart_items
 
@@ -71,48 +73,70 @@ export async function findCartIdByUuid(cartUuid: string) {
   return result.rows[0]?.id ?? null
 }
 
-export async function upsertCartItem(
-  cartId: number,
-  productId: number,
-  quantity: number
-) {
-  await pool.query(
+export async function upsertCartItem(cartId: number, productId: number, quantity: number) {
+  if (!Number.isInteger(quantity) || quantity <= 0) {
+    throw new HttpError(400, 'Antalet måste vara ett positivt heltal.')
+  }
+  
+  const { rowCount } = await pool.query(
     `INSERT INTO cart_items (
       cart_id,
       product_id,
       quantity
     )
-    VALUES ($1, $2, $3)
+    SELECT $1, p.id, $3
+    FROM products p
+    WHERE p.id = $2
+      AND p.deleted_at IS NULL
+      AND p.stock >= $3
 
     ON CONFLICT (cart_id, product_id)
     DO UPDATE SET
-      quantity = cart_items.quantity + EXCLUDED.quantity`,
+      quantity = cart_items.quantity + EXCLUDED.quantity
+
+    WHERE (
+      SELECT stock
+      FROM products
+      WHERE id = EXCLUDED.product_id
+    ) >= cart_items.quantity + EXCLUDED.quantity`,
     [cartId, productId, quantity]
   )
+
+  if (rowCount !== 1) {
+    throw new HttpError(400, 'Det önskade antalet överstiger tillgängligt lagersaldo.')
+  }
 }
 
-export async function updateCartItemQuantity(
-  cartUuid: string,
-  productId: number,
-  quantity: number
-) {
-  const result = await pool.query(
+export async function updateCartItemQuantity(cartUuid: string, productId: number, quantity: number) {
+  if (!Number.isInteger(quantity) || quantity <= 0) {
+    throw new HttpError(400, 'Antalet måste vara ett positivt heltal.')
+  }
+
+  const { rowCount } = await pool.query(
     `UPDATE cart_items
-
-    SET quantity = $1
-
-    WHERE cart_id = (
-      SELECT id
-      FROM carts
-      WHERE cart_uuid = $2
-    )
-    AND product_id = $3
-
-    RETURNING id`,
+     SET quantity = $1
+     WHERE cart_id = (
+       SELECT id
+       FROM carts
+       WHERE cart_uuid = $2
+     )
+     AND product_id = $3
+     AND quantity > 0
+     AND EXISTS (
+       SELECT 1
+       FROM products
+       WHERE id = $3
+         AND deleted_at IS NULL
+         AND stock >= $1
+     )`,
     [quantity, cartUuid, productId]
   )
 
-  return result.rows.length > 0
+  if (rowCount !== 1) {
+    throw new HttpError(400, 'Det önskade antalet överstiger tillgängligt lagersaldo.')
+  }
+
+  return true
 }
 
 export async function deleteCartItem(cartUuid: string, productId: number) {

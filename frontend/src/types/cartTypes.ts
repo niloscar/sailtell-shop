@@ -5,6 +5,7 @@ export interface CartItem {
   brand_name: string | null
   img_url: string | null
   quantity: number
+  stock: number | null
   price: number
 }
 

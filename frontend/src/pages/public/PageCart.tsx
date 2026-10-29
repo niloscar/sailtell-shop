@@ -1,12 +1,15 @@
 import { useCart } from '../../contexts/CartContext'
 import { Link, useNavigate } from 'react-router-dom'
+import { TrashIcon } from '@phosphor-icons/react'
 import QuantitySelector from '../../components/QuantitySelector'
 import formatPrice from '../../utilities/formatPrice'
 
 import styles from './PageCart.module.css'
 
 export default function PageCart() {
-  const { cartCount, cart, resetCart, changeQuantity } = useCart()
+  const { cartCount, cart, resetCart, changeQuantity, removeFromCart } =
+    useCart()
+
   const navigate = useNavigate()
 
   const cartItems = cart?.items ?? []
@@ -24,44 +27,57 @@ export default function PageCart() {
       <h1 className="headingSize1">
         Varukorg {cartCount > 0 && `(${cartCount})`}
       </h1>
+
       {cartCount === 0 ? (
         <p>Din varukorg är tom.</p>
       ) : (
         <>
-          <table>
-            <thead>
-              <tr>
-                <th>Produkt</th>
-                <th>Antal</th>
-                <th>Pris/st</th>
-                <th>Summa</th>
-              </tr>
-            </thead>
-            <tbody>
-              {cartItems.map((item) => (
-                <tr key={item.id}>
-                  <td>
-                    <Link to={`/product/${item.product_id}`}>{item.name}</Link>
-                  </td>
+          <div className={styles.cartGrid}>
+            <div className={styles.cartHeader}>
+              <span>Produkt</span>
+              <span>Antal</span>
+              <span>Pris/st</span>
+              <span>Summa</span>
+              <span />
+            </div>
 
-                  <td className={styles.quantityCell}>
+            <ul className={styles.cartList}>
+              {cartItems.map((item) => (
+                <li key={item.id} className={styles.cartItem}>
+                  <Link to={`/product/${item.product_id}`}>{item.name}</Link>
+
+                  <div className={styles.quantityCell}>
                     <QuantitySelector
                       quantity={item.quantity}
                       onChange={(quantity) =>
                         changeQuantity(item.product_id, quantity)
                       }
+                      max={item.stock ?? 0}
                     />
-                  </td>
+                  </div>
 
-                  <td>{formatPrice(Number(item.price))}</td>
+                  <span>{formatPrice(Number(item.price))}</span>
 
-                  <td>{formatPrice(item.price * item.quantity)}</td>
-                </tr>
+                  <span>{formatPrice(item.price * item.quantity)}</span>
+
+                  <button
+                    type="button"
+                    className={styles.removeItemButton}
+                    onClick={() => removeFromCart(item.product_id, item.name)}
+                    aria-label={`Ta bort ${item.name} från varukorgen`}
+                  >
+                    <TrashIcon />
+                  </button>
+                </li>
               ))}
-            </tbody>
-          </table>
-          <hr />
-          Delsumma: {formatPrice(subtotal)}
+            </ul>
+          </div>
+
+          <div className={styles.cartSubtotal}>
+            <span>Delsumma</span>
+            <strong>{formatPrice(subtotal)}</strong>
+          </div>
+
           <div className={styles.cartButtons}>
             <button
               className={styles.checkoutButton}

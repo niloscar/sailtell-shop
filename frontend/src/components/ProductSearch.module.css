@@ -29,6 +29,15 @@
   gap: 1rem;
 }
 
+.pagination button {
+  border: none;
+  padding: 0;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
 .searchResult {
   text-align: center;
   font-size: var(--font-small);
