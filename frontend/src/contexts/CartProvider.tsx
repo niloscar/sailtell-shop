@@ -35,7 +35,9 @@ export default function CartProvider({ children }: { children: ReactNode }) {
       try {
         const response = await getCart(cartUuid)
 
-        setCart(response.data)
+        if (localStorage.getItem('cart_uuid') === cartUuid) {
+          setCart(response.data)
+        }
       } catch (error) {
         console.error('Kunde inte hämta varukorgen.', error)
       }
@@ -181,22 +183,27 @@ export default function CartProvider({ children }: { children: ReactNode }) {
   }
 
   const resetCart = async () => {
-    if (!cart) return
+    const cartUuid = localStorage.getItem('cart_uuid')
 
-    const previousCart = cart
-    setCart(null)
+    if (!cartUuid) {
+      setCart(null)
+      return
+    }
 
     try {
+      const { data } = await getCart(cartUuid)
+
       await Promise.all(
-        cart.items.map((item) =>
-          deleteCartItem(cart.cart_uuid, item.product_id)
+        data.items.map((item) =>
+          deleteCartItem(cartUuid, item.product_id)
         )
       )
 
       localStorage.removeItem('cart_uuid')
+      setCart(null)
     } catch (error) {
-      setCart(previousCart)
       console.error('Varukorgen kunde inte tömmas.', error)
+      throw error
     }
   }
 

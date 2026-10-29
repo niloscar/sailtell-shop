@@ -1,3 +1,9 @@
+.searchContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
 .searchInput {
   width: 100%;
   padding: .5rem;
@@ -14,4 +20,18 @@
   height: 18px;
   cursor: pointer;
   background: url('/icons/close.svg') center / contain no-repeat;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+}
+
+.searchResult {
+  text-align: center;
+  font-size: var(--font-small);
+  color: var(--text-muted);
+  font-style: italic;
 }

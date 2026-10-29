@@ -1,7 +1,6 @@
-
-import { createOrder } from './order.service'
+import { createOrder, getOrder } from './order.service'
 import { createOrderStatus } from './orderStatus.service'
-import { createCheckoutSession } from '../integrations/payment.adapter'
+import { createCheckoutSession, getCheckoutSession } from '../integrations/payment.adapter'
 import { withTransaction } from '../database'
 
 import type { CreateOrder } from '../types/order.types'
@@ -19,7 +18,7 @@ export async function createPayment(orderData: CreateOrder) {
     quantity: item.quantity
   }))
 
-  const session = await createCheckoutSession(order.id, items)
+  const session = await createCheckoutSession(order.id, items, orderData.customer.email)
 
   if (!session.url) {
     throw new Error('Stripe kunde inte skapa en betalningslänk.')
@@ -28,6 +27,31 @@ export async function createPayment(orderData: CreateOrder) {
   return {
     orderId: order.id,
     url: session.url
+  }
+}
+
+export async function getPaymentConfirmation(sessionId: string) {
+  const session = await getCheckoutSession(sessionId)
+
+  const orderId = Number(session.client_reference_id)
+
+  if (!Number.isSafeInteger(orderId) || orderId <= 0) {
+    throw new Error('Ogiltigt order-ID i betalningssessionen.')
+  }
+
+  const order = await getOrder(orderId)
+
+  return {
+    orderId: order.id,
+    status: order.order_status.name,
+    statusId: order.order_status.id,
+    items: order.order_items.map((item) => ({
+      productId: item.product_id,
+      name: item.name,
+      quantity: item.quantity,
+      unitPrice: Number(item.unit_price)
+    })),
+    total: Number(order.sum)
   }
 }
 

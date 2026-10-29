@@ -430,4 +430,5 @@ button.delete {
   font-size: var(--font-small);
   color: var(--text-muted);
   margin: .5rem  auto 0 auto;
+  font-style: italic;
 }

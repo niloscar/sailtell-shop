@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { searchProducts } from '../api/searchApi'
 import getApiErrorMessage from '../utilities/apiError'
 import ProductListItem from './ProductListItem'
+import { ArrowLeftIcon, ArrowRightIcon } from '@phosphor-icons/react'
 
 import type { ProductSummary } from '@shop/shared'
 
@@ -95,7 +96,7 @@ export default function ProductSearch() {
             </ul>
           )}
 
-          <p>{total} produkter hittades.</p>
+          <p className={styles.searchResult}>{total} produkter hittades.</p>
 
           {totalPages > 1 && (
             <div className={styles.pagination}>
@@ -104,7 +105,8 @@ export default function ProductSearch() {
                 disabled={page <= 1}
                 onClick={() => setPage(page - 1)}
               >
-                Föregående
+                <ArrowLeftIcon />
+                <span>Föregående</span>
               </button>
 
               <span>
@@ -116,7 +118,8 @@ export default function ProductSearch() {
                 disabled={page >= totalPages}
                 onClick={() => setPage(page + 1)}
               >
-                Nästa
+                <span>Nästa</span>
+                <ArrowRightIcon />
               </button>
             </div>
           )}

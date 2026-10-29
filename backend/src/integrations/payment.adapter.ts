@@ -16,10 +16,11 @@ export type PaymentEvent =
   | { type: 'expired'; orderId: number }
   | null
 
-export async function createCheckoutSession(orderId: number, items: CheckoutItem[]) {
+export async function createCheckoutSession(orderId: number, items: CheckoutItem[], email: string) {
   return stripe.checkout.sessions.create({
     mode: 'payment',
     allowed_payment_method_types: ['card'], // Only allow card payments for now
+    customer_email: email,
     line_items: items.map((item) => ({
       price_data: {
         currency: 'sek',
@@ -31,7 +32,7 @@ export async function createCheckoutSession(orderId: number, items: CheckoutItem
       quantity: item.quantity
     })),
     client_reference_id: String(orderId),
-    success_url: `${process.env.CLIENT_URL}/payment/confirmation?session_id={CHECKOUT_SESSION_ID}`,
+    success_url: `${process.env.CLIENT_URL}/confirmation?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${process.env.CLIENT_URL}/cart`
   })
 }
@@ -69,3 +70,8 @@ export function verifyPaymentWebhook(body: Buffer, signature: string): PaymentEv
       return null
   }
 }
+
+export async function getCheckoutSession(sessionId: string) {
+  return stripe.checkout.sessions.retrieve(sessionId)
+}
+

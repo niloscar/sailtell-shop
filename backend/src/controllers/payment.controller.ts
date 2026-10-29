@@ -1,5 +1,5 @@
 import { Request, Response } from 'express'
-import { createPayment, handlePaymentEvent } from '../services/payment.service'
+import { createPayment, handlePaymentEvent, getPaymentConfirmation } from '../services/payment.service'
 import { verifyPaymentWebhook } from '../integrations/payment.adapter'
 
 export async function createPaymentHandler(req: Request, res: Response) {
@@ -29,4 +29,17 @@ export async function webhookHandler(req: Request, res: Response) {
   }
 
   res.json({ received: true })
+}
+
+export async function getPaymentConfirmationHandler(req: Request, res: Response) {
+  const sessionId = req.query.session_id
+
+  if (typeof sessionId !== 'string' || !sessionId.startsWith('cs_')) {
+    res.status(400).json({ message: 'Ogiltigt betalnings-ID.' })
+    return
+  }
+
+  const confirmation = await getPaymentConfirmation(sessionId)
+
+  res.json(confirmation)
 }
