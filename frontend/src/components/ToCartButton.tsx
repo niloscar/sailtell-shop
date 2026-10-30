@@ -1,6 +1,8 @@
 
 import { useCart } from '../contexts/CartContext'
+import Ellipsis from './ui/Ellipsis'
 import { CheckIcon, ShoppingCartIcon } from '@phosphor-icons/react'
+
 import type { Product } from '@shop/shared'
 
 import styles from './ToCartButton.module.css'
@@ -28,7 +30,7 @@ export default function ToCartButton({ product, quantity }: { product: Product, 
         }
       >
         {actionState?.loading ? (
-          <span>Lägger till...</span>
+          <span>Lägger till<Ellipsis /></span>
         ) : actionState?.added ? (
           <>
             <CheckIcon size={18} />

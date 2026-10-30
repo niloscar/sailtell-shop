@@ -14,6 +14,10 @@ import {
   getProductsByCategoryHandler,
   getProductOptionsHandler
 } from '../controllers/product.controller'
+import {
+  imageUploadMiddleware,
+  uploadProductImageHandler
+} from '../controllers/productImage.controller'
 
 const productRouter = Router()
 
@@ -25,5 +29,7 @@ productRouter.get('/:id', getProductHandler)
 productRouter.post('/', requireAdmin, createProductHandler)
 productRouter.patch('/:id', requireAdmin, updateProductHandler)
 productRouter.delete('/:id', requireAdmin, deleteProductHandler)
+
+productRouter.post('/:id/image', requireAdmin, imageUploadMiddleware, uploadProductImageHandler)
 
 export default productRouter

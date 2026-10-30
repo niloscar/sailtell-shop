@@ -1,4 +1,3 @@
-
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useCart } from '../../contexts/CartContext'
@@ -6,6 +5,7 @@ import { createPayment } from '../../api/paymentApi'
 import formatPrice from '../../utilities/formatPrice'
 import getApiErrorMessage from '../../utilities/apiError'
 import Error from '../../components/ui/Error'
+import Ellipsis from '../../components/ui/Ellipsis'
 
 import type { CreateOrder } from '../../types/orderTypes'
 
@@ -36,9 +36,7 @@ export default function PageCheckout() {
   )
   const totalVat = totalPrice * 0.2
 
-  const handleChange = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target
 
     setOrderDetails((prevDetails) => ({
@@ -115,9 +113,7 @@ export default function PageCheckout() {
           <ul className={styles.checkoutList}>
             {cartItems.map((item) => (
               <li key={item.id} className={styles.checkoutItem}>
-                <Link to={`/product/${item.product_id}`}>
-                  {item.name}
-                </Link>
+                <Link to={`/product/${item.product_id}`}>{item.name}</Link>
 
                 <span>{item.quantity} st</span>
                 <span>{formatPrice(Number(item.price))}</span>
@@ -263,9 +259,7 @@ export default function PageCheckout() {
             </div>
           </div>
 
-          {submitError && (
-            <Error message={submitError} />
-          )}
+          {submitError && <Error message={submitError} />}
 
           <div className="row">
             <p className="terms">
@@ -273,12 +267,12 @@ export default function PageCheckout() {
               <Link to="#">villkor</Link>.
             </p>
 
-            <button
-              type="submit"
-              className="checkout"
-              disabled={submitting}
-            >
-              {submitting ? 'Förbereder betalning...' : 'Gå till betalning'}
+            <button type="submit" className="checkout" disabled={submitting}>
+              {submitting ? (
+                <>Förbereder betalning<Ellipsis /></>
+              ) : (
+                'Gå till betalning'
+              )}
             </button>
           </div>
         </form>

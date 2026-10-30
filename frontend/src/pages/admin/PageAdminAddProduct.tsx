@@ -1,11 +1,19 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { getProductOptions, createProduct } from '../../api/productApi'
+import {
+  getProductOptions,
+  createProduct,
+  uploadProductImage
+} from '../../api/productApi'
 import getApiErrorMessage from '../../utilities/apiError'
 import BackLink from '../../components/BackLink'
 import Spinner from '../../components/ui/Spinner'
+import Error from '../../components/ui/Error'
+import Ellipsis from '../../components/ui/Ellipsis'
 
 import type { CreateProduct, ProductOptions } from '@shop/shared'
+
+import styles from './PageAdminAddProduct.module.css'
 
 export default function PageAdminAddProduct() {
   const navigate = useNavigate()
@@ -33,6 +41,10 @@ export default function PageAdminAddProduct() {
   const [createError, setCreateError] = useState<string | null>(null)
 
   const [indexWarning, setIndexWarning] = useState<string | null>(null)
+
+  const [selectedImage, setSelectedImage] = useState<File | null>(null)
+  const [imageError, setImageError] = useState<string | null>(null)
+  const [createdProductId, setCreatedProductId] = useState<number | null>(null)
 
   useEffect(() => {
     const fetchProductOptions = async () => {
@@ -108,11 +120,17 @@ export default function PageAdminAddProduct() {
     }))
   }
 
+  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSelectedImage(event.target.files?.[0] ?? null)
+    setImageError(null)
+  }
+
   const handleSave = async () => {
-    if (creating || indexWarning) return
+    if (creating || createdProductId !== null) return
 
     setCreating(true)
     setCreateError(null)
+    setImageError(null)
     setIndexWarning(null)
 
     try {
@@ -124,15 +142,30 @@ export default function PageAdminAddProduct() {
       }
 
       const response = await createProduct(newProduct)
+      const createdProduct = response.data.product
+
+      setCreatedProductId(createdProduct.id)
 
       if (!response.data.searchIndexUpdated) {
         setIndexWarning(
           'Produkten skapades, men sökindexet kunde inte uppdateras.'
         )
-        return
       }
 
-      navigate('/admin/products')
+      if (selectedImage) {
+        try {
+          await uploadProductImage(createdProduct.id, selectedImage)
+        } catch (error) {
+          setImageError(
+            `${getApiErrorMessage(error)} Produkten har skapats utan bild. Du kan lägga till bilden genom att redigera produkten.`
+          )
+          return
+        }
+      }
+
+      if (response.data.searchIndexUpdated) {
+        navigate('/admin/products')
+      }
     } catch (error) {
       setCreateError(getApiErrorMessage(error))
     } finally {
@@ -200,15 +233,18 @@ export default function PageAdminAddProduct() {
             />
           </div>
 
-          <div className="inputGroup">
-            <label htmlFor="product-image">Produktbild, URL</label>
+          <div className={`inputGroup ${styles.productImageInputGroup}`}>
+            <label htmlFor="product-image">Produktbild</label>
+
             <input
-              type="text"
+              type="file"
               id="product-image"
-              name="img_url"
-              value={product.img_url}
-              onChange={handleChange}
+              accept="image/jpeg,image/png"
+              onChange={handleImageChange}
+              disabled={creating || createdProductId !== null}
             />
+
+            {imageError && <Error message={imageError} />}
           </div>
 
           <div className="inputGroup">
@@ -230,6 +266,7 @@ export default function PageAdminAddProduct() {
               name="stock"
               value={product.stock ?? ''}
               onChange={handleChange}
+              min={0}
             />
           </div>
 
@@ -271,14 +308,16 @@ export default function PageAdminAddProduct() {
             <button
               type="button"
               onClick={handleSave}
-              disabled={creating || !!indexWarning}
+              disabled={creating || createdProductId !== null}
               className="add"
             >
-              {creating
-                ? 'Skapar produkt...'
-                : indexWarning
-                  ? 'Produkt skapad'
-                  : 'Skapa produkt'}
+              {creating ? (
+                <span>Skapar produkt<Ellipsis /></span>
+              ) : createdProductId !== null ? (
+                'Produkt skapad'
+              ) : (
+                'Skapa produkt'
+              )}
             </button>
           </div>
 

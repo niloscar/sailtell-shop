@@ -1,16 +1,22 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import {
   getProduct,
   getProductOptions,
   updateProduct,
+  uploadProductImage,
   deleteProduct
 } from '../../api/productApi'
 import getApiErrorMessage from '../../utilities/apiError'
 import BackLink from '../../components/BackLink'
 import Spinner from '../../components/ui/Spinner'
+import Ellipsis from '../../components/ui/Ellipsis'
+import Error from '../../components/ui/Error'
+
 
 import type { Product, ProductOptions, UpdateProduct } from '@shop/shared'
+
+import styles from './PageAdminUpdateProduct.module.css'
 
 type LoadingState = {
   loading: boolean
@@ -31,9 +37,7 @@ export default function PageAdminUpdateProduct() {
 
   const [product, setProduct] = useState<Product | null>(null)
   const [originalProduct, setOriginalProduct] = useState<Product | null>(null)
-  const [productOptions, setProductOptions] = useState<ProductOptions | null>(
-    null
-  )
+  const [productOptions, setProductOptions] = useState<ProductOptions | null>(null)
 
   const [loadingState, setLoadingState] = useState<PageLoadingState>({
     product: {
@@ -51,6 +55,11 @@ export default function PageAdminUpdateProduct() {
   })
 
   const [indexWarning, setIndexWarning] = useState<string | null>(null)
+
+  const [imageError, setImageError] = useState<string | null>(null)
+  const [selectedImage, setSelectedImage] = useState<File | null>(null)
+
+  const imageInputRef = useRef<HTMLInputElement>(null)
 
   const updateLoadingState = (key: LoadKey, updates: Partial<LoadingState>) => {
     setLoadingState((prev) => ({
@@ -183,6 +192,11 @@ export default function PageAdminUpdateProduct() {
     })
   }
 
+  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSelectedImage(event.target.files?.[0] ?? null)
+    setImageError(null)
+  }
+
   const handleDelete = async () => {
     if (!product || !id) return
 
@@ -202,7 +216,9 @@ export default function PageAdminUpdateProduct() {
       const response = await deleteProduct(Number(id))
 
       if (!response.data.searchIndexUpdated) {
-        window.alert('Produkten raderades, men kunde inte tas bort från sökindexet.')
+        window.alert(
+          'Produkten raderades, men kunde inte tas bort från sökindexet.'
+        )
       }
 
       navigate('/admin/products')
@@ -219,6 +235,9 @@ export default function PageAdminUpdateProduct() {
     if (!originalProduct) return
 
     setProduct(structuredClone(originalProduct))
+    setSelectedImage(null)
+    imageInputRef.current!.value = ''
+    setImageError(null)
 
     updateLoadingState('action', { error: null })
   }
@@ -231,13 +250,15 @@ export default function PageAdminUpdateProduct() {
       error: null
     })
 
+    setImageError(null)
+    setIndexWarning(null)
+
     try {
       const updatedProduct: UpdateProduct = {
         name: product.name,
         brand_name: product.brand_name ?? '',
         description: product.description ?? '',
         details: product.details ?? [],
-        img_url: product.img_url ?? '',
         stock: product.stock,
         price: product.price,
         purchase_type: product.purchase_type,
@@ -245,12 +266,26 @@ export default function PageAdminUpdateProduct() {
       }
 
       const response = await updateProduct(Number(id), updatedProduct)
+      const savedProduct = response.data.product
 
-      setProduct(response.data.product)
-      setOriginalProduct(structuredClone(response.data.product))
+      setProduct(savedProduct)
+      setOriginalProduct(structuredClone(savedProduct))
 
       if (!response.data.searchIndexUpdated) {
         setIndexWarning('Produkten uppdaterades, men sökindexet kunde inte uppdateras.')
+      }
+
+      if (selectedImage) {
+        try {
+          const { img_url, img_path } = await uploadProductImage(Number(id), selectedImage)
+
+          setProduct((current) => current ? { ...current, img_url, img_path } : current )
+          setOriginalProduct((current) => current ? { ...current, img_url, img_path } : current )
+          setSelectedImage(null)
+          if (imageInputRef.current) imageInputRef.current.value = ''
+        } catch (error) {
+          setImageError(getApiErrorMessage(error))
+        }
       }
     } catch (error) {
       updateLoadingState('action', { error: getApiErrorMessage(error) })
@@ -260,10 +295,8 @@ export default function PageAdminUpdateProduct() {
   }
 
   if (loadingState.product.loading) return <Spinner />
-  if (loadingState.product.error)
-    return <p className="errorMessage">{loadingState.product.error}</p>
-  if (!product)
-    return <p className="errorMessage">Produkten kunde inte hittas.</p>
+  if (loadingState.product.error) return <p className="errorMessage">{loadingState.product.error}</p>
+  if (!product) return <p className="errorMessage">Produkten kunde inte hittas.</p>
 
   return (
     <div className="updateProduct">
@@ -317,15 +350,27 @@ export default function PageAdminUpdateProduct() {
         />
       </div>
 
-      <div className="inputGroup">
-        <label htmlFor="product-image">Produktbild, URL</label>
+      <div className={`inputGroup ${styles.productImageInputGroup}`}>
+        <label htmlFor="product-image">Produktbild</label>
+
+        {product.img_url && (
+          <img
+            src={product.img_url}
+            alt={product.name}
+            className={styles.productImagePreview}
+          />
+        )}
+
         <input
-          type="text"
+          ref={imageInputRef}
+          type="file"
           id="product-image"
-          name="img_url"
-          value={product.img_url ?? ''}
-          onChange={handleChange}
+          accept="image/jpeg,image/png"
+          onChange={handleImageChange}
+          disabled={loadingState.action.loading}
         />
+
+        {imageError && <Error message={imageError} />}
       </div>
 
       <div className="inputGroup">
@@ -347,6 +392,7 @@ export default function PageAdminUpdateProduct() {
           name="stock"
           value={product.stock ?? ''}
           onChange={handleChange}
+          min={0}
         />
       </div>
 
@@ -391,7 +437,9 @@ export default function PageAdminUpdateProduct() {
         )}
       </div>
 
-      {loadingState.action.error && <p className="errorMessage">{loadingState.action.error}</p>}
+      {loadingState.action.error && (
+        <p className="errorMessage">{loadingState.action.error}</p>
+      )}
       {indexWarning && <p className="errorMessage">{indexWarning}</p>}
 
       <div className="buttonGroup">
@@ -418,7 +466,11 @@ export default function PageAdminUpdateProduct() {
           disabled={loadingState.action.loading}
           className="save"
         >
-          {loadingState.action.loading ? 'Sparar...' : 'Spara ändringar'}
+          {loadingState.action.loading ? (
+            <span>Sparar<Ellipsis /></span>
+          ) : (
+            'Spara ändringar'
+          )}
         </button>
       </div>
 

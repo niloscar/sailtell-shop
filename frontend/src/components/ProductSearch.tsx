@@ -3,7 +3,10 @@ import { useEffect, useState } from 'react'
 import { searchProducts } from '../api/searchApi'
 import getApiErrorMessage from '../utilities/apiError'
 import ProductListItem from './ProductListItem'
+import Ellipsis from './ui/Ellipsis'
+import Error from './ui/Error'
 import { ArrowLeftIcon, ArrowRightIcon } from '@phosphor-icons/react'
+
 
 import type { ProductSummary } from '@shop/shared'
 
@@ -36,6 +39,9 @@ export default function ProductSearch() {
     let active = true
 
     const fetchProducts = async () => {
+      setLoading(true)
+      setError(null)
+
       try {
         const response = await searchProducts(debouncedQuery, page)
 
@@ -77,9 +83,11 @@ export default function ProductSearch() {
         className={styles.searchInput}
       />
 
-      {loading && <p>Söker...</p>}
+      {loading && (
+        <p>Söker<Ellipsis /></p>
+      )}
 
-      {error && <p className="errorMessage">{error}</p>}
+      {error && <Error message={error} />}
 
       {hasSearched && !loading && !error && (
         <>

@@ -7,6 +7,7 @@ export interface ProductSummary {
   description: string | null
   details: string[] | null
   img_url: string | null
+  img_path: string | null
   stock: number | null
   price: number
   categories: Category[]

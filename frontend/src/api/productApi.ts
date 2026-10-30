@@ -34,3 +34,16 @@ export function updateProduct(id: number, product: UpdateProduct) {
 export function deleteProduct(id: number) {
   return api.delete<DeleteProductResponse>(`/products/${id}`)
 }
+
+export async function uploadProductImage(id: number, file: File) {
+  const formData = new FormData()
+  formData.append('image', file)
+
+  const { data } = await api.post<{
+    message: string
+    img_url: string
+    img_path: string
+  }>(`/products/${id}/image`, formData)
+
+  return data
+}
