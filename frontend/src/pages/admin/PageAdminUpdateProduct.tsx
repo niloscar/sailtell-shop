@@ -10,6 +10,9 @@ import {
 import getApiErrorMessage from '../../utilities/apiError'
 import BackLink from '../../components/BackLink'
 import Spinner from '../../components/ui/Spinner'
+import Ellipsis from '../../components/ui/Ellipsis'
+import Error from '../../components/ui/Error'
+
 
 import type { Product, ProductOptions, UpdateProduct } from '@shop/shared'
 
@@ -367,7 +370,7 @@ export default function PageAdminUpdateProduct() {
           disabled={loadingState.action.loading}
         />
 
-        {imageError && <p className="errorMessage">{imageError}</p>}
+        {imageError && <Error message={imageError} />}
       </div>
 
       <div className="inputGroup">
@@ -463,7 +466,11 @@ export default function PageAdminUpdateProduct() {
           disabled={loadingState.action.loading}
           className="save"
         >
-          {loadingState.action.loading ? 'Sparar...' : 'Spara ändringar'}
+          {loadingState.action.loading ? (
+            <span>Sparar<Ellipsis /></span>
+          ) : (
+            'Spara ändringar'
+          )}
         </button>
       </div>
 

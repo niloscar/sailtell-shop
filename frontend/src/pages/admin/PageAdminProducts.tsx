@@ -6,6 +6,7 @@ import categoriesToString from '../../utilities/categoriesToString'
 import formatPrice from '../../utilities/formatPrice'
 import getApiErrorMessage from '../../utilities/apiError'
 import Spinner from '../../components/ui/Spinner'
+import Ellipsis from '../../components/ui/Ellipsis'
 
 import type { Product } from '@shop/shared'
 import type { CatalogFormat, ImportReport } from '../../api/supplierApi'
@@ -15,8 +16,9 @@ import styles from './PageAdminProducts.module.css'
 export default function PageAdminProducts() {
   const [products, setProducts] = useState<Product[]>([])
   const [productsLoading, setProductsLoading] = useState<boolean>(true)
-  const [productsLoadError, setProductsLoadError] = useState<string | null>(null)
-
+  const [productsLoadError, setProductsLoadError] = useState<string | null>(
+    null
+  )
 
   const [importLoading, setImportLoading] = useState<CatalogFormat | null>(null)
   const [importLoadError, setImportLoadError] = useState<string | null>(null)
@@ -78,7 +80,11 @@ export default function PageAdminProducts() {
             onClick={() => handleImport('csv')}
             disabled={importLoading !== null}
           >
-            {importLoading === 'csv' ? 'Importerar CSV...' : 'Importera CSV'}
+            {importLoading === 'csv' ? (
+              <span>Importerar CSV<Ellipsis /></span>
+            ) : (
+              'Importera CSV'
+            )}
           </button>
 
           <button
@@ -86,7 +92,11 @@ export default function PageAdminProducts() {
             onClick={() => handleImport('xml')}
             disabled={importLoading !== null}
           >
-            {importLoading === 'xml' ? 'Importerar XML...' : 'Importera XML'}
+            {importLoading === 'xml' ? (
+              <span>Importerar XML<Ellipsis /></span>
+            ) : (
+              'Importera XML'
+            )}
           </button>
         </div>
 
@@ -156,7 +166,9 @@ export default function PageAdminProducts() {
                 <td>{product.name}</td>
                 <td>{categoriesToString(product.categories)}</td>
                 <td>{formatPrice(Number(product.price))}</td>
-                <td>{product.stock === null ? 'Okänt' : `${product.stock} st`}</td>
+                <td>
+                  {product.stock === null ? 'Okänt' : `${product.stock} st`}
+                </td>
               </tr>
             ))}
           </tbody>
