@@ -3,6 +3,13 @@
  */
 
 import pool from '../database'
+import HttpError from '../utilities/HttpError'
+
+function validatePrice(price: number) {
+  if (!Number.isSafeInteger(price) || price < 0) {
+    throw new HttpError(400, 'Priset måste vara ett heltal i ören.')
+  }
+}
 
 export async function getPriceHistory(productId: number) {
   const { rows } = await pool.query(
@@ -36,6 +43,7 @@ export async function getPrice(productId: number) {
 }
 
 export async function createPrice(productId: number, price: number) {
+  validatePrice(price)
   const { rows } = await pool.query(
     `INSERT INTO prices (product_id, price)
     VALUES ($1, $2)

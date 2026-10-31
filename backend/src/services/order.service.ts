@@ -112,7 +112,10 @@ export async function getOrders() {
 
   if (rows.length === 0) throw new Error('Inga beställningar kunde hittas.')
 
-  return rows
+  return rows.map((order) => ({
+    ...order,
+    sum: Number(order.sum)
+  }))
 }
 
 export async function getOrder(id: number, db: Pool | PoolClient = pool) {
@@ -209,7 +212,14 @@ export async function getOrder(id: number, db: Pool | PoolClient = pool) {
     throw new Error('Beställningen kunde inte hittas.')
   }
 
-  return order
+  return {
+    ...order,
+    sum: Number(order.sum),
+    order_items: order.order_items.map((item) => ({
+      ...item,
+      unit_price: Number(item.unit_price)
+    }))
+  }
 }
 
 export async function createOrder(order: CreateOrder) {

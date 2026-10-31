@@ -15,6 +15,42 @@ import type { CreateProduct, ProductOptions } from '@shop/shared'
 
 import styles from './PageAdminAddProduct.module.css'
 
+function parsePriceInOre(value: string): number | null {
+  const normalized = value.trim().replace(',', '.')
+
+  if (!/^\d+(?:\.\d{1,2})?$/.test(normalized)) {
+    return null
+  }
+
+  const [whole, fraction = ''] = normalized.split('.')
+  const price = Number(`${whole}${fraction.padEnd(2, '0')}`)
+
+  return Number.isSafeInteger(price) ? price : null
+}
+
+function formatPriceInput(value: string): string {
+  const normalized = value.trim().replace(',', '.')
+
+  if (!/^\d+(?:\.\d+)?$/.test(normalized)) return value
+
+  const [wholePart, fraction = ''] = normalized.split('.')
+  let whole = BigInt(wholePart)
+  let cents = Number((fraction + '00').slice(0, 2))
+
+  if (fraction[2] && fraction[2] >= '5') cents += 1
+
+  if (cents === 100) {
+    whole += 1n
+    cents = 0
+  }
+
+  const priceInOre = Number(whole) * 100 + cents
+
+  if (!Number.isSafeInteger(priceInOre)) return value
+
+  return `${whole},${String(cents).padStart(2, '0')}`
+}
+
 export default function PageAdminAddProduct() {
   const navigate = useNavigate()
 
@@ -39,6 +75,7 @@ export default function PageAdminAddProduct() {
 
   const [creating, setCreating] = useState(false)
   const [createError, setCreateError] = useState<string | null>(null)
+  const [priceInput, setPriceInput] = useState('0,00')
 
   const [indexWarning, setIndexWarning] = useState<string | null>(null)
 
@@ -69,18 +106,17 @@ export default function PageAdminAddProduct() {
   ) => {
     const { name, value } = event.target
 
+    if (name === 'price') {
+      setPriceInput(value)
+      return
+    }
+
     setProduct((currentProduct) => {
       switch (name) {
         case 'details':
           return {
             ...currentProduct,
             details: value.split('\n')
-          }
-
-        case 'price':
-          return {
-            ...currentProduct,
-            price: Number(value)
           }
 
         case 'stock':
@@ -128,6 +164,15 @@ export default function PageAdminAddProduct() {
   const handleSave = async () => {
     if (creating || createdProductId !== null) return
 
+    const price = parsePriceInOre(priceInput)
+
+    if (price === null) {
+      setCreateError(
+        'Priset måste vara ett icke-negativt belopp med högst två decimaler.'
+      )
+      return
+    }
+
     setCreating(true)
     setCreateError(null)
     setImageError(null)
@@ -136,6 +181,7 @@ export default function PageAdminAddProduct() {
     try {
       const newProduct: CreateProduct = {
         ...product,
+        price,
         details: product.details
           .map((item) => item.trim())
           .filter((item) => item !== '')
@@ -180,11 +226,11 @@ export default function PageAdminAddProduct() {
       {loading && <Spinner />}
 
       {!loading && loadingError && (
-        <p className="errorMessage">{loadingError}</p>
+        <Error message={loadingError} />
       )}
 
       {!loading && !loadingError && !productOptions && (
-        <p>Produktalternativ kunde inte hittas.</p>
+        <Error message="Produktalternativ kunde inte hittas." />
       )}
 
       {!loading && !loadingError && productOptions && (
@@ -250,11 +296,14 @@ export default function PageAdminAddProduct() {
           <div className="inputGroup">
             <label htmlFor="product-price">Pris i kr (inkl. moms)</label>
             <input
-              type="number"
+              type="text"
+              inputMode="decimal"
               id="product-price"
               name="price"
-              value={product.price}
+              step="0.01"
+              value={priceInput}
               onChange={handleChange}
+              onBlur={() => setPriceInput((value) => formatPriceInput(value))}
             />
           </div>
 
@@ -301,8 +350,8 @@ export default function PageAdminAddProduct() {
             </select>
           </div>
 
-          {createError && <p className="errorMessage">{createError}</p>}
-          {indexWarning && <p className="errorMessage">{indexWarning}</p>}
+          {createError && <Error message={createError} />}
+          {indexWarning && <Error message={indexWarning} />}
 
           <div className="buttonGroup">
             <button

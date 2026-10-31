@@ -23,6 +23,7 @@ import orderRouter from './routes/order.routes'
 import paymentRouter from './routes/payment.routes'
 import productRouter from './routes/product.routes'
 import searchRouter from './routes/search.routes'
+import shippingRouter from './routes/shipping.routes'
 import supplierRouter from './routes/supplier.routes'
 import usersRouter from './routes/user.routes'
 
@@ -70,6 +71,7 @@ app.use('/api/orders', orderRouter)
 app.use('/api/payment', paymentRouter)
 app.use('/api/products', productRouter)
 app.use('/api/search', searchRouter)
+app.use('/api/shipping', shippingRouter)
 app.use('/api/supplier', supplierRouter)
 app.use('/api/users', usersRouter)
 

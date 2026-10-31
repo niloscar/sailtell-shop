@@ -27,7 +27,7 @@ export async function createCheckoutSession(orderId: number, items: CheckoutItem
         product_data: {
           name: item.name
         },
-        unit_amount: Math.round(item.unitPrice * 100)
+        unit_amount: item.unitPrice
       },
       quantity: item.quantity
     })),
@@ -74,4 +74,3 @@ export function verifyPaymentWebhook(body: Buffer, signature: string): PaymentEv
 export async function getCheckoutSession(sessionId: string) {
   return stripe.checkout.sessions.retrieve(sessionId)
 }
-

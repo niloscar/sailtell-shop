@@ -18,6 +18,42 @@ import type { Product, ProductOptions, UpdateProduct } from '@shop/shared'
 
 import styles from './PageAdminUpdateProduct.module.css'
 
+function parsePriceInOre(value: string): number | null {
+  const normalized = value.trim().replace(',', '.')
+
+  if (!/^\d+(?:\.\d{1,2})?$/.test(normalized)) {
+    return null
+  }
+
+  const [whole, fraction = ''] = normalized.split('.')
+  const price = Number(`${whole}${fraction.padEnd(2, '0')}`)
+
+  return Number.isSafeInteger(price) ? price : null
+}
+
+function formatPriceInput(value: string): string {
+  const normalized = value.trim().replace(',', '.')
+
+  if (!/^\d+(?:\.\d+)?$/.test(normalized)) return value
+
+  const [wholePart, fraction = ''] = normalized.split('.')
+  let whole = BigInt(wholePart)
+  let cents = Number((fraction + '00').slice(0, 2))
+
+  if (fraction[2] && fraction[2] >= '5') cents += 1
+
+  if (cents === 100) {
+    whole += 1n
+    cents = 0
+  }
+
+  const priceInOre = Number(whole) * 100 + cents
+
+  if (!Number.isSafeInteger(priceInOre)) return value
+
+  return `${whole},${String(cents).padStart(2, '0')}`
+}
+
 type LoadingState = {
   loading: boolean
   error: string | null
@@ -37,6 +73,7 @@ export default function PageAdminUpdateProduct() {
 
   const [product, setProduct] = useState<Product | null>(null)
   const [originalProduct, setOriginalProduct] = useState<Product | null>(null)
+  const [priceInput, setPriceInput] = useState('')
   const [productOptions, setProductOptions] = useState<ProductOptions | null>(null)
 
   const [loadingState, setLoadingState] = useState<PageLoadingState>({
@@ -110,6 +147,7 @@ export default function PageAdminUpdateProduct() {
 
         setProduct(response.data)
         setOriginalProduct(structuredClone(response.data))
+        setPriceInput((response.data.price / 100).toFixed(2).replace('.', ','))
       } catch (error) {
         updateLoadingState('product', { error: getApiErrorMessage(error) })
       } finally {
@@ -125,6 +163,11 @@ export default function PageAdminUpdateProduct() {
   ) => {
     const { name, value } = event.target
 
+    if (name === 'price') {
+      setPriceInput(value)
+      return
+    }
+
     setProduct((currentProduct) => {
       if (!currentProduct) return currentProduct
 
@@ -133,12 +176,6 @@ export default function PageAdminUpdateProduct() {
           return {
             ...currentProduct,
             details: value.split('\n')
-          }
-
-        case 'price':
-          return {
-            ...currentProduct,
-            price: Number(value)
           }
 
         case 'stock':
@@ -235,6 +272,7 @@ export default function PageAdminUpdateProduct() {
     if (!originalProduct) return
 
     setProduct(structuredClone(originalProduct))
+    setPriceInput((originalProduct.price / 100).toFixed(2).replace('.', ','))
     setSelectedImage(null)
     imageInputRef.current!.value = ''
     setImageError(null)
@@ -244,6 +282,16 @@ export default function PageAdminUpdateProduct() {
 
   const handleSave = async () => {
     if (!product || !id) return
+
+    const price = parsePriceInOre(priceInput)
+
+    if (price === null) {
+      updateLoadingState('action', {
+        error:
+          'Priset måste vara ett icke-negativt belopp med högst två decimaler.'
+      })
+      return
+    }
 
     updateLoadingState('action', {
       loading: true,
@@ -260,7 +308,7 @@ export default function PageAdminUpdateProduct() {
         description: product.description ?? '',
         details: product.details ?? [],
         stock: product.stock,
-        price: product.price,
+        price,
         purchase_type: product.purchase_type,
         category_ids: product.categories.map((category) => category.id)
       }
@@ -270,6 +318,7 @@ export default function PageAdminUpdateProduct() {
 
       setProduct(savedProduct)
       setOriginalProduct(structuredClone(savedProduct))
+      setPriceInput((savedProduct.price / 100).toFixed(2).replace('.', ','))
 
       if (!response.data.searchIndexUpdated) {
         setIndexWarning('Produkten uppdaterades, men sökindexet kunde inte uppdateras.')
@@ -295,15 +344,15 @@ export default function PageAdminUpdateProduct() {
   }
 
   if (loadingState.product.loading) return <Spinner />
-  if (loadingState.product.error) return <p className="errorMessage">{loadingState.product.error}</p>
-  if (!product) return <p className="errorMessage">Produkten kunde inte hittas.</p>
+  if (loadingState.product.error) return <Error message={loadingState.product.error} />
+  if (!product) return <Error message="Produkten kunde inte hittas." />
 
   return (
     <div className="updateProduct">
       <h1 className="headingSize1">Redigera produkt</h1>
 
       {loadingState.productOptions.error && (
-        <p className="errorMessage">{loadingState.productOptions.error}</p>
+        <Error message={loadingState.productOptions.error} />
       )}
 
       <div className="inputGroup">
@@ -376,11 +425,14 @@ export default function PageAdminUpdateProduct() {
       <div className="inputGroup">
         <label htmlFor="product-price">Pris i kr (inkl. moms)</label>
         <input
-          type="number"
+          type="text"
+          inputMode="decimal"
           id="product-price"
           name="price"
-          value={product.price}
+          step="0.01"
+          value={priceInput}
           onChange={handleChange}
+          onBlur={() => setPriceInput((value) => formatPriceInput(value))}
         />
       </div>
 
@@ -438,9 +490,9 @@ export default function PageAdminUpdateProduct() {
       </div>
 
       {loadingState.action.error && (
-        <p className="errorMessage">{loadingState.action.error}</p>
+        <Error message={loadingState.action.error} />
       )}
-      {indexWarning && <p className="errorMessage">{indexWarning}</p>}
+      {indexWarning && <Error message={indexWarning} />}
 
       <div className="buttonGroup">
         <button

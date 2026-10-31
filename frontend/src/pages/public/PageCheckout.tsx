@@ -34,7 +34,7 @@ export default function PageCheckout() {
     (total, item) => total + item.price * item.quantity,
     0
   )
-  const totalVat = totalPrice * 0.2
+  const totalVat = Math.round((totalPrice * 20) / 100)
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target

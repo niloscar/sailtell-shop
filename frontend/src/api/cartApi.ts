@@ -1,6 +1,6 @@
 import api from './apiClient'
 
-import type { Cart, AddCartItem, UpdateCartItem } from '../types/cartTypes'
+import type { Cart, AddCartItem, UpdateCartItem } from '@shop/shared'
 
 export function createCart() {
   return api.post<Cart>('/carts')
