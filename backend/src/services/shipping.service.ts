@@ -7,9 +7,9 @@ import {
 import { getDeliveryMethodPrice } from '../repositories/deliveryMethod.repository'
 import { getCart } from './cart.service'
 
-const PICKUP_DELIVERY_METHOD_ID = 1
-const HOME_DELIVERY_METHOD_ID = 3
-const FREE_SHIPPING_THRESHOLD = 50000
+export const PICKUP_DELIVERY_METHOD_ID = 1
+export const HOME_DELIVERY_METHOD_ID = 3
+export const FREE_SHIPPING_THRESHOLD = 50000
 
 export type DeliveryEstimate = {
   deliveryMethodId: number

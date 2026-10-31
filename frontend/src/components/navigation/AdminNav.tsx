@@ -11,9 +11,9 @@ import { useAuth } from '../../contexts/AuthContext'
 import styles from './AdminNav.module.css'
 
 const navItems = [
-  { name: 'Start', path: '/admin', end: true },
-  { name: 'Orders', path: '/admin/orders' },
-  { name: 'Products', path: '/admin/products' }
+  { name: 'Översikt', path: '/admin', end: true },
+  { name: 'Ordrar', path: '/admin/orders' },
+  { name: 'Produkter', path: '/admin/products' }
 ]
 
 export default function AdminNav() {
@@ -35,7 +35,7 @@ export default function AdminNav() {
         ))}
         {isAuthenticated && user && (
           <li>
-            <button onClick={logout}>Logout</button>
+            <button onClick={logout}>Logga ut</button>
           </li>
         )}
       </ul>
