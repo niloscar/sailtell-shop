@@ -11,6 +11,10 @@
   background-position: center;
 }
 
+.pageHeader.adminHeader {
+  min-height: 100px;
+}
+
 .pageHeader h1.logo {
   margin: 0;
   line-height: 1;

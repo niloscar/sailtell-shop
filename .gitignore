@@ -10,7 +10,8 @@ dist/
 backend/public/
 
 # Environment
-.env*
+.env
+.env.*
 !.env.example
 
 # Editor and OS

@@ -72,6 +72,7 @@ export interface CreateOrder {
   }
   payment_method_id: number
   delivery_method_id: number
+  servicePointId?: string
   ordered_at?: string
   shipping_address: {
     fname: string

@@ -6,7 +6,7 @@ import AdminNav from '../components/navigation/AdminNav'
 export default function LayoutAdmin() {
   return (
     <>
-      <Header />
+      <Header admin />
       <div className="navTrack">
         <AdminNav />
         <main className="pageMain">

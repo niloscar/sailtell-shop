@@ -74,7 +74,7 @@ export default function PageAdminStart() {
 
   return (
     <>
-      <h1 className="headingSize1">Adminpanel</h1>
+      <h1 className="headingSize1">Översikt</h1>
 
       {loading && <Spinner />}
 
@@ -109,7 +109,7 @@ export default function PageAdminStart() {
                   <th>Senaste order</th>
                   <td>
                     {orders.length > 0
-                      ? formatDateTime(orders[0].ordered_at)
+                      ? formatDateTime(orders[orders.length - 1].ordered_at)
                       : 'Ingen order'}
                   </td>
                 </tr>

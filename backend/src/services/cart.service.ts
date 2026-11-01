@@ -1,10 +1,11 @@
 import * as repository from '../repositories/cart.repository'
+import type { Cart } from '@shop/shared'
 
 export async function createCart() {
   return repository.createCart()
 }
 
-export async function getCart(cartUuid: string) {
+export async function getCart(cartUuid: string): Promise<Cart | null> {
   const cart = await repository.findCartByUuid(cartUuid)
 
   if (!cart) {

@@ -18,6 +18,7 @@ const supplierImportProductSchema = z.object({
     .trim()
     .min(1, { error: 'Produktnamn saknas.' }),
   price: z.number({ error: 'Ogiltigt pris.' })
+    .int({ error: 'Priset måste vara ett heltal i ören.' })
     .nonnegative({ error: 'Priset får inte vara negativt.' }),
   stock: z.number({ error: 'Ogiltigt lagersaldo.' })
     .int({ error: 'Lagersaldot måste vara ett heltal.' })

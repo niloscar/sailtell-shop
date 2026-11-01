@@ -4,8 +4,11 @@
 
 import pool from '../database'
 import HttpError from '../utilities/HttpError'
+import type { Cart, CartItem } from '@shop/shared'
 
-export async function createCart() {
+type CartRecord = Pick<Cart, 'id' | 'cart_uuid' | 'created_at' | 'updated_at'>
+
+export async function createCart(): Promise<CartRecord> {
   const result = await pool.query(
     `INSERT INTO carts DEFAULT VALUES
     RETURNING
@@ -18,8 +21,10 @@ export async function createCart() {
   return result.rows[0]
 }
 
-export async function findCartByUuid(cartUuid: string) {
-  const result = await pool.query(
+export async function findCartByUuid(
+  cartUuid: string
+): Promise<CartRecord | null> {
+  const result = await pool.query<CartRecord>(
     `SELECT
       id,
       cart_uuid,
@@ -33,8 +38,8 @@ export async function findCartByUuid(cartUuid: string) {
   return result.rows[0] ?? null
 }
 
-export async function getCartItems(cartId: number) {
-  const result = await pool.query(
+export async function getCartItems(cartId: number): Promise<CartItem[]> {
+  const result = await pool.query<CartItem>(
     `SELECT
       cart_items.id,
       cart_items.product_id,

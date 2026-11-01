@@ -27,13 +27,13 @@ export async function createCheckoutSession(orderId: number, items: CheckoutItem
         product_data: {
           name: item.name
         },
-        unit_amount: Math.round(item.unitPrice * 100)
+        unit_amount: item.unitPrice
       },
       quantity: item.quantity
     })),
     client_reference_id: String(orderId),
     success_url: `${process.env.CLIENT_URL}/confirmation?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${process.env.CLIENT_URL}/cart`
+    cancel_url: `${process.env.CLIENT_URL}/checkout`
   })
 }
 
@@ -74,4 +74,3 @@ export function verifyPaymentWebhook(body: Buffer, signature: string): PaymentEv
 export async function getCheckoutSession(sessionId: string) {
   return stripe.checkout.sessions.retrieve(sessionId)
 }
-

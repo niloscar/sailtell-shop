@@ -1,6 +1,6 @@
 import { createContext, useContext } from 'react'
 import type { Product } from '@shop/shared'
-import type { Cart } from '../types/cartTypes'
+import type { Cart } from '@shop/shared'
 
 type CartActionState = {
   loading: boolean

@@ -11,7 +11,7 @@ import getApiErrorMessage from '../utilities/apiError'
 
 import type { ReactNode } from 'react'
 import type { Product } from '@shop/shared'
-import type { Cart } from '../types/cartTypes'
+import type { Cart } from '@shop/shared'
 
 type CartActionState = {
   loading: boolean

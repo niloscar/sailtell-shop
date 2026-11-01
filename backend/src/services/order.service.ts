@@ -8,8 +8,17 @@ import type { Order, UpdateOrder, CreateOrder } from '../types/order.types'
 
 import { getOrCreateCustomer } from './customer.service'
 import { createShippingAddress } from './shippingAddress.service'
-import { createOrderItems } from './orderItem.service'
+import {
+  createOrderItems,
+  type OrderItemWithPrice
+} from './orderItem.service'
 import { createOrderStatus } from './orderStatus.service'
+import {
+  calculateShippingPrice,
+  HOME_DELIVERY_METHOD_ID,
+  PICKUP_DELIVERY_METHOD_ID,
+  validateServicePoint
+} from './shipping.service'
 
 import HttpError from '../utilities/HttpError'
 
@@ -83,7 +92,10 @@ export async function getOrders() {
         )
         FROM order_items
         WHERE order_items.order_id = orders.id
-      ) AS sum,
+      ) + COALESCE(orders.shipping_price, 0) AS sum,
+      orders.shipping_price,
+      orders.service_point_id,
+      orders.service_point_name,
 
       JSONB_BUILD_OBJECT(
         'id', current_status.id,
@@ -112,7 +124,10 @@ export async function getOrders() {
 
   if (rows.length === 0) throw new Error('Inga beställningar kunde hittas.')
 
-  return rows
+  return rows.map((order) => ({
+    ...order,
+    sum: Number(order.sum)
+  }))
 }
 
 export async function getOrder(id: number, db: Pool | PoolClient = pool) {
@@ -129,7 +144,10 @@ export async function getOrder(id: number, db: Pool | PoolClient = pool) {
         )
         FROM order_items
         WHERE order_items.order_id = orders.id
-      ) AS sum,
+      ) + COALESCE(orders.shipping_price, 0) AS sum,
+      orders.shipping_price,
+      orders.service_point_id,
+      orders.service_point_name,
 
       COALESCE(
         (
@@ -209,10 +227,58 @@ export async function getOrder(id: number, db: Pool | PoolClient = pool) {
     throw new Error('Beställningen kunde inte hittas.')
   }
 
-  return order
+  return {
+    ...order,
+    sum: Number(order.sum),
+    shipping_price: Number(order.shipping_price ?? 0),
+    order_items: order.order_items.map((item) => ({
+      ...item,
+      unit_price: Number(item.unit_price)
+    }))
+  }
 }
 
 export async function createOrder(order: CreateOrder) {
+  const postalCode = order.shipping_address.zipcode.replace(/\s/g, '')
+
+  if (!/^\d{5}$/.test(postalCode)) {
+    throw new HttpError(400, 'Postnumret måste bestå av fem siffror.')
+  }
+
+  if (
+    order.delivery_method_id !== PICKUP_DELIVERY_METHOD_ID &&
+    order.delivery_method_id !== HOME_DELIVERY_METHOD_ID
+  ) {
+    throw new HttpError(400, 'Ogiltig leveransmetod.')
+  }
+
+  let servicePointName: string | null = null
+
+  if (order.delivery_method_id === PICKUP_DELIVERY_METHOD_ID) {
+    if (!order.servicePointId) {
+      throw new HttpError(400, 'Ett ombud måste väljas.')
+    }
+
+    try {
+      const servicePoint = await validateServicePoint(
+        postalCode,
+        order.servicePointId
+      )
+      servicePointName = servicePoint.name
+    } catch (error) {
+      if (
+        error instanceof Error &&
+        error.message === 'Det valda ombudet är inte giltigt för postnumret.'
+      ) {
+        throw new HttpError(400, error.message)
+      }
+
+      throw new HttpError(502, 'Kunde inte validera ombudet via PostNord.')
+    }
+  } else if (order.servicePointId) {
+    throw new HttpError(400, 'Ombud får inte anges för hemleverans.')
+  }
+
   return withTransaction(async (client) => {
     // Validate order items and stock
     if (!order.order_items.length) {
@@ -220,6 +286,8 @@ export async function createOrder(order: CreateOrder) {
     }
 
     const productIds = new Set<number>()
+    const orderItems: OrderItemWithPrice[] = []
+    let merchandiseTotal = 0
 
     for (const item of order.order_items) {
       if (
@@ -236,8 +304,19 @@ export async function createOrder(order: CreateOrder) {
 
       productIds.add(item.product_id)
 
-      const { rows } = await client.query<{ name: string; stock: number | null }>(
+      const { rows } = await client.query<{
+        name: string
+        stock: number | null
+        price: number | string | null
+      }>(
         `SELECT name, stock
+                ,(
+                  SELECT price
+                  FROM prices
+                  WHERE prices.product_id = products.id
+                  ORDER BY prices.set_at DESC
+                  LIMIT 1
+                ) AS price
          FROM products
          WHERE id = $1
            AND deleted_at IS NULL
@@ -258,7 +337,30 @@ export async function createOrder(order: CreateOrder) {
       if (product.stock < item.quantity) {
         throw new HttpError(400, `Det finns endast ${product.stock} st av ${product.name} i lager.`)
       }
+
+      const price = Number(product.price)
+
+      if (!Number.isSafeInteger(price) || price < 0) {
+        throw new Error(`Pris saknas för produkt ${item.product_id}.`)
+      }
+
+      merchandiseTotal += price * item.quantity
+
+      if (!Number.isSafeInteger(merchandiseTotal)) {
+        throw new Error('Varusumman blev för stor.')
+      }
+
+      orderItems.push({
+        product_id: item.product_id,
+        quantity: item.quantity,
+        unit_price: price
+      })
     }
+
+    const shippingPrice = await calculateShippingPrice(
+      order.delivery_method_id,
+      merchandiseTotal
+    )
 
     // Get existing customer or create a new one
     const customer = await getOrCreateCustomer(
@@ -268,7 +370,7 @@ export async function createOrder(order: CreateOrder) {
         email: order.customer.email,
         phone: order.customer.phone,
         street: order.shipping_address.street,
-        zipcode: order.shipping_address.zipcode,
+        zipcode: postalCode,
         city: order.shipping_address.city,
         country: order.shipping_address.country
       },
@@ -283,14 +385,22 @@ export async function createOrder(order: CreateOrder) {
         customer_id,
         payment_method_id,
         delivery_method_id,
+        shipping_price,
+        service_point_id,
+        service_point_name,
         ordered_at
       )
-      VALUES ($1, $2, $3, $4)
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
       RETURNING id`,
       [
         customerId,
         order.payment_method_id,
         order.delivery_method_id,
+        shippingPrice,
+        order.delivery_method_id === PICKUP_DELIVERY_METHOD_ID
+          ? order.servicePointId
+          : null,
+        servicePointName,
         order.ordered_at ?? new Date()
       ]
     )
@@ -310,13 +420,13 @@ export async function createOrder(order: CreateOrder) {
       order.shipping_address.lname,
       order.shipping_address.street,
       order.shipping_address.city,
-      order.shipping_address.zipcode,
+      postalCode,
       order.shipping_address.country,
       client
     )
 
     // Create the order items
-    await createOrderItems(orderId, order.order_items, client)
+    await createOrderItems(orderId, orderItems, client)
 
     // Set the initial order status to "Väntar på betalning"
     await createOrderStatus(orderId, 7, client)

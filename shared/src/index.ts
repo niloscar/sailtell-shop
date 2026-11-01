@@ -10,3 +10,10 @@ export type {
   Category, 
   ProductOptions
 } from './product.types'
+
+export type {
+  CartItem,
+  Cart,
+  AddCartItem,
+  UpdateCartItem
+} from './cart.types'

@@ -4,10 +4,23 @@
 
 import * as repository from '../repositories/product.repository'
 import { indexProducts, removeIndexedProduct } from '../integrations/search.adapter'
+import { z } from 'zod'
+import HttpError from '../utilities/HttpError'
 
 import type { CreateProduct, UpdateProduct } from '@shop/shared'
 
+const priceSchema = z.number()
+  .int()
+  .nonnegative()
+
+function validatePrice(price: number | undefined) {
+  if (price !== undefined && !priceSchema.safeParse(price).success) {
+    throw new HttpError(400, 'Priset måste vara ett heltal i ören.')
+  }
+}
+
 export async function createProduct(product: CreateProduct) {
+  validatePrice(product.price)
   const createdProduct = await repository.createProduct(product)
 
   try {
@@ -20,6 +33,7 @@ export async function createProduct(product: CreateProduct) {
 }
 
 export async function updateProduct(id: number, updates: UpdateProduct) {
+  validatePrice(updates.price)
   const updatedProduct = await repository.updateProduct(id, updates)
 
   try {

@@ -20,6 +20,7 @@ interface CsvRow {
   artNr?: string
   ean?: string
   benamning?: string
+  prisOre?: string
   pris?: string
   lagersaldo?: string
   varianter?: string
@@ -29,6 +30,7 @@ interface XmlProduct {
   '@_artNr'?: string
   ean?: string
   benamning?: string
+  prisOre?: string
   pris?: {
     '#text'?: string
     '@_valuta'?: string
@@ -92,7 +94,7 @@ function parseCsvCatalog(buffer: Buffer): ProductCandidate[] {
     sku: row.artNr,
     ean: row.ean ?? '',
     name: row.benamning ?? '',
-    price: parseDecimal(row.pris),
+    price: parseOre(row.prisOre ?? row.pris),
     stock: parseStock(row.lagersaldo),
     variants: row.varianter
       ? row.varianter.split('|').map((variant) => variant.trim())
@@ -133,10 +135,11 @@ function parseXmlCatalog(buffer: Buffer): ProductCandidate[] {
     sku: product['@_artNr'],
     ean: product.ean ?? '',
     name: product.benamning ?? '',
-    price: parseDecimal(
-      typeof product.pris === 'object'
-        ? product.pris?.['#text']
-        : product.pris
+    price: parseOre(
+      product.prisOre ??
+        (typeof product.pris === 'object'
+          ? product.pris?.['#text']
+          : product.pris)
     ),
     stock: parseStock(product.lagersaldo),
     variants: product.varianter?.variant ?? []
@@ -144,12 +147,10 @@ function parseXmlCatalog(buffer: Buffer): ProductCandidate[] {
 }
 
 
-function parseDecimal(value: unknown): number {
-  const text = String(value ?? '')
-    .replace(/\s/g, '')
-    .replace(',', '.')
+function parseOre(value: unknown): number {
+  const text = String(value ?? '').replace(/\s/g, '')
 
-  return text === '' ? NaN : Number(text)
+  return /^\d+$/.test(text) ? Number(text) : NaN
 }
 
 function parseStock(value: unknown): number | null {

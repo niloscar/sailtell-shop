@@ -18,7 +18,23 @@ export async function createPayment(orderData: CreateOrder) {
     quantity: item.quantity
   }))
 
-  const session = await createCheckoutSession(order.id, items, orderData.customer.email)
+  const checkoutItems =
+    order.shipping_price > 0
+      ? [
+          ...items,
+          {
+            name: 'Frakt',
+            unitPrice: order.shipping_price,
+            quantity: 1
+          }
+        ]
+      : items
+
+  const session = await createCheckoutSession(
+    order.id,
+    checkoutItems,
+    orderData.customer.email
+  )
 
   if (!session.url) {
     throw new Error('Stripe kunde inte skapa en betalningslänk.')

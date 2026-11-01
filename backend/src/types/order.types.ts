@@ -8,6 +8,9 @@ export interface Order {
   delivery_method: DeliveryMethod
   shipping_address: ShippingAddress
   order_status: Status
+  shipping_price: number
+  service_point_id: string | null
+  service_point_name: string | null
 }
 
 export type CreateOrder = {
@@ -19,6 +22,7 @@ export type CreateOrder = {
   }
   payment_method_id: number
   delivery_method_id: number
+  servicePointId?: string
   ordered_at?: string
   shipping_address: {
     fname: string
