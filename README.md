@@ -1,114 +1,154 @@
 # E-handel – Inlämningsuppgift 1, Integration med tredjepartssystem (FSU25D)
 
-[Uppgiftsbeskrivning](docs/assignment-description.md)
+[Uppgiftsbeskrivning](docs/assignment-description.md) | [Driftsatt applikation](https://sailtell-shop.vercel.app)
 
-_Oscar Nilsson_  
-_oscar.nilsson@medieinstitutet.se_  
-[_GitHub_](https://github.com/niloscar)
+*Oscar Nilsson*  
+*oscar.nilsson@medieinstitutet.se*  
+[GitHub](https://github.com/niloscar) | [LinkedIn](https://www.linkedin.com/in/oscar-nilsson1) | [Portfolio](https://oscarnilsson.dev/?ref=assignment)
 
 ## Integrera shoppen med omvärlden
 
-Projektet bygger vidare på en befintlig e-handelsapplikation och fokuserar på integration med externa tjänster och dataformat.
+Projektet bygger vidare på en befintlig e-handelsapplikation med fem integrationer: produktimport via Sibars special-API, sökning med Algolia, betalning med Stripe, bildlagring i Supabase Storage och fraktinformation från PostNord.
 
-Under uppgiften utökas shoppen stegvis med produktimport, sökfunktionalitet, betalning, molnlagring och frakt.
+## Kom igång
 
-Integrationerna implementeras i fem labbar:
+### Installation
 
-1. Import av produktdata
-2. Sök-API
-3. Betalning
-4. Produktbilder i molnlagring
-5. Frakt
+Installera beroenden från projektets rot:
 
-## Integrationer
+```bash
+npm install
+```
 
-### Labb 1 – Import av produktdata
+Skapa `backend/.env` utifrån `backend/.env.example` och fyll i databasuppgifter och miljövariabler för integrationerna.
 
-Import av produktdata från externa leverantörer i CSV- och XML-format.
+### Starta applikationen
 
-Den externa datan valideras innan den används och produkter skapas eller uppdateras i databasen.
+Starta backend och frontend från projektets rot:
 
-### Labb 2 – Sök-API
+```bash
+npm run dev
+```
 
-Sökfunktion för produkter med stöd för:
+### Testning
 
-- fritextsökning
-- filtrering
-- sortering
-- paginering
+Integrationerna kan testas i den [driftsatta applikationen](https://sailtell-shop.vercel.app) eller lokalt med respektive tjänsts testkonfiguration. För lokala Stripe-webhooks används Stripe CLI.
 
-Sökparametrar valideras i backend innan de används.
+**Administratörskonto**
 
-### Labb 3 – Betalning
+- Inloggning: https://sailtell-shop.vercel.app/admin
+- E-post: `admin@test.se`
+- Lösenord: `admin`
 
-Integration med extern betaltjänst.
+## Reflektion
 
-### Labb 4 – Produktbilder i molnlagring
+### Backend kontra frontend
 
-Produktbilder lagras och hämtas via extern molnlagring.
+Samtliga externa integrationer hanteras genom Express i stället för direkt från React. Det gör att API-nycklar kan hållas på servern och att extern data kan valideras och anpassas innan den skickas till klienten. Backend ansvarar även för felhantering och affärslogik, exempelvis beräkning av priser och uppdatering av orderstatus. Genom att använda separata adaptrar begränsas också beroendet av varje tjänsts API-struktur.
 
-### Labb 5 – Frakt
+### Labb 1 – Import av produktdata (Sibars special-API)
 
-Integration med extern frakttjänst för beräkning av fraktpris och val av ombud.
+Produktimporten kombinerar REST med filbaserad integration. Leverantörens CSV- och XML-filer hämtas via API:et, tolkas och valideras med Zod innan produkterna sparas i PostgreSQL. Modellen passar eftersom många produkter kan importeras samtidigt. Upsert används för att uppdatera befintliga produkter utan att skapa dubbletter.
 
-## Integrationsarkitektur
+Integrationen ersätter manuell registrering och uppdatering av produktinformation. Att hantera detta själv skulle kräva mer administration och egna rutiner för att hålla sortimentet aktuellt.
 
-React-klienten kommunicerar endast med applikationens eget API i Express. Kommunikation med externa tjänster sker från backend.
+Om leverantörens API är otillgängligt kan importen inte genomföras, men redan importerade produkter finns kvar. Anropen har timeout och ogiltiga produkter hoppas över och redovisas i en importrapport.
 
-Varje extern tjänst kapslas in i en separat adapter som ansvarar för tjänstens:
+En risk är att ändringar i leverantörens filformat kan kräva anpassningar av adaptern.
 
-- URL:er och API-anrop
-- autentisering
-- dataformat
-- felkoder
-- översättning till applikationens interna datamodell
+### Labb 2 – Sök-API (Algolia)
 
-Extern data valideras innan den används eller sparas.
+Sökfunktionen använder Algolias API och SDK för indexering och sökning. Produkterna skickas till ett separat sökindex, medan PostgreSQL fortsätter vara den huvudsakliga datakällan. Modellen passar eftersom Algolia är utvecklat för snabba sökningar med bland annat relevansrankning och stavfelstolerans.
 
-Anrop till externa tjänster ska också ha timeout och felhantering så att ett fel hos en tredjepartstjänst inte gör att hela applikationen kraschar.
+Att bygga motsvarande funktionalitet själv skulle kräva egen indexering, söklogik och prestandaoptimering. Integrationen gör att dessa funktioner kan användas utan att utvecklas från grunden.
+
+Om Algolia inte är tillgängligt fungerar inte den externa sökningen. Produkterna finns däremot kvar i databasen och kan fortfarande visas genom shoppens ordinarie produktlistor. Fel hanteras separat så att övriga funktioner inte påverkas.
+
+En risk är beroendet av Algolias tillgänglighet, eventuell förändring av deras priser och användningsvillkor.
+
+### Labb 3 – Betalning (Stripe)
+
+Betalningen kombinerar REST, redirect och webhook. Express skapar en Stripe Checkout-session och kunden skickas vidare till Stripes betalningssida. Därefter bekräftas betalningen genom en signerad webhook som uppdaterar orderstatus och lagersaldo. Webhooken är särskilt viktig eftersom betalningen måste kunna registreras även om kunden inte återvänder till shoppen.
+
+Stripe innebär att shoppen slipper hantera kortuppgifter och utveckla ett eget betalningssystem. En egen lösning skulle innebära betydligt större ansvar för säkerhet, betalningstransaktioner och regelefterlevnad.
+
+Beloppen beräknas i backend. Om Stripe är otillgängligt kan betalningen inte slutföras, men orderuppgifterna finns kvar. Ordern markeras inte som betald förrän en verifierad betalningsbekräftelse har mottagits.
+
+Riskerna omfattar driftstörningar, avgifter och förändrade villkor.
+
+### Labb 4 – Produktbilder i molnlagring (Supabase Storage)
+
+Produktbilder hanteras genom Supabases SDK och API. Filerna laddas upp via backend och lagras i Supabase Storage, medan PostgreSQL innehåller referenser till bilderna. Modellen passar eftersom själva fillagringen kan hanteras separat från produktinformationen.
+
+Integrationen ersätter behovet av egen filserver och lagringsinfrastruktur. En egen lösning skulle bland annat kräva hantering av filåtkomst, lagringsutrymme och säkerhet.
+
+Om Supabase är otillgängligt kan uppladdning och byte av bilder misslyckas. Även visning av befintliga bilder kan påverkas, men produktinformationen finns kvar i databasen. Fel vid uppladdning hanteras utan att hela applikationen slutar fungera.
+
+En risk är beroendet av tjänstens tillgänglighet och ökade kostnader allteftersom mängden data och trafik ökar.
+
+### Labb 5 – Frakt (PostNord)
+
+Fraktintegrationen använder REST för att hämta närliggande ombud och beräknade leveranstider utifrån kundens postnummer. Modellen passar eftersom informationen behöver hämtas utifrån den aktuella leveransadressen. Svaren valideras med Zod och omvandlas till interna datamodeller.
+
+PostNord tillhandahåller information som annars skulle kräva ett eget och kontinuerligt uppdaterat register över ombud och leveransförutsättningar. Fraktpriserna hanteras däremot i shoppens backend, med fasta priser och fri frakt från 500 kr. Vald leveransmetod, kostnad och eventuellt ombud sparas på ordern och inkluderas i Stripe Checkout.
+
+Om PostNords API inte svarar kan kunden fortfarande välja hemleverans och genomföra köpet. Timeout och felhantering begränsar påverkan på kassan.
+
+En risk är att förändringar i PostNords API, tjänsteutbud eller svarformat kräver uppdateringar av adaptern.
+
+## AI-användning – Labb 5
+
+Jag använde GitHub Copilot i VS Code för PostNord-integrationen, bland annat för API-anrop, Zod-validering och kopplingen till checkout.
+
+Exempel på prompt:
+
+> Skriv en adapter i vår Express-backend som hämtar de närmaste PostNord-ombuden för ett svenskt postnummer. Validera API-svaret med Zod och hantera timeout och fel.
+
+Copilot föreslog först en felaktig endpoint för leveranstider. Efter kontroll mot PostNords dokumentation ändrades den till `/transport/v2/transittime/addresstoaddress`.
+
+Integrationen testades mot PostNords sandbox. Agentens åtkomst begränsades och `.env` skyddades.
 
 ## Tech stack
 
-### Frontend
-
-- React
-- TypeScript
-- Vite
-
-### Backend
-
-- Node.js
-- Express
-- TypeScript
-
-### Databas
-
-- PostgreSQL
-
-### Verktyg och bibliotek
-
-- npm
-- Git och GitHub
-- ESLint
-- Prettier
-- Zod
+- **Frontend:** React, TypeScript, Vite
+- **Backend:** Node.js, Express, TypeScript
+- **Databas:** PostgreSQL
+- **Integrationer:** Sibars special-API, Algolia, Stripe, Supabase Storage, PostNord
+- **Verktyg:** npm, Git, GitHub, Zod, ESLint, Prettier, GitHub Copilot
 
 ## Projektstruktur
 
+Projektet är organiserat som ett monorepo med npm workspaces.
+
 ```text
 .
-├── backend
-│   └── src
-│       ├── controllers
-│       ├── integrations
-│       ├── middleware
-│       ├── repositories
-│       ├── routes
-│       ├── services
-│       ├── types
-│       └── utilities
-├── frontend
-│   └── src
-├── docs
+├── backend/
+│   └── src/
+│       ├── controllers/
+│       ├── integrations/
+│       ├── lib/
+│       ├── middleware/
+│       ├── repositories/
+│       ├── routes/
+│       ├── services/
+│       ├── types/
+│       └── utilities/
+├── frontend/
+│   ├── public/
+│   └── src/
+│       ├── api/
+│       ├── components/
+│       ├── contexts/
+│       ├── layouts/
+│       ├── pages/
+│       ├── types/
+│       └── utilities/
+├── shared/
+│   └── src/
+├── docs/
 ├── package.json
+├── vercel.json
 └── README.md
+```
+
+Backendens adaptrar hanterar externa tjänster, services innehåller affärslogik och `@shop/shared` delar typer och konstanter mellan frontend och backend.
