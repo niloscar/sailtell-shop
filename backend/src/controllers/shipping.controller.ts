@@ -4,7 +4,8 @@ import type { Request, Response } from 'express'
 import { getNearestServicePoints } from '../integrations/shipping.adapter'
 import {
   getDeliveryEstimates,
-  getShippingPrices
+  getShippingPrices,
+  ShippingConfigurationError
 } from '../services/shipping.service'
 
 const postalCodeSchema = z
@@ -19,7 +20,6 @@ const servicePointsQuerySchema = z.object({
 })
 
 const deliveryEstimatesQuerySchema = z.object({
-  originPostalCode: postalCodeSchema,
   destinationPostalCode: postalCodeSchema
 })
 
@@ -54,11 +54,15 @@ export async function getDeliveryEstimatesHandler(
 
   try {
     const deliveryEstimates = await getDeliveryEstimates(
-      parsed.data.originPostalCode,
       parsed.data.destinationPostalCode
     )
     res.json(deliveryEstimates)
-  } catch {
+  } catch (error) {
+    if (error instanceof ShippingConfigurationError) {
+      res.status(500).json({ message: error.message })
+      return
+    }
+
     res.status(502).json({
       message: 'Kunde inte hämta leveranstider från PostNord.'
     })

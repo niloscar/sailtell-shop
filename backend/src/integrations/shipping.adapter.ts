@@ -49,6 +49,11 @@ export interface ServicePoint {
 
 export type TransitTime = z.infer<typeof transitTimeResponseSchema>
 
+export type TransitTimeResult = {
+  startTime: string
+  transitTimes: TransitTime[]
+}
+
 function getBaseUrl() {
   if (!BASE_URL) {
     throw new Error('PostNords API-adress är inte konfigurerad.')
@@ -133,7 +138,7 @@ export async function getNearestServicePoints(
 export async function getTransitTime(
   originPostalCode: string,
   destinationPostalCode: string
-): Promise<TransitTime[]> {
+): Promise<TransitTimeResult> {
   const now = new Date()
   const pad = (value: number) => value.toString().padStart(2, '0')
   const startTime = [
@@ -162,5 +167,5 @@ export async function getTransitTime(
     throw new Error('PostNord skickade ett oväntat leveranstidssvar.')
   }
 
-  return result.data
+  return { startTime, transitTimes: result.data }
 }

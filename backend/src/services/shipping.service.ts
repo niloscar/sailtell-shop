@@ -14,7 +14,25 @@ export const FREE_SHIPPING_THRESHOLD = 50000
 export type DeliveryEstimate = {
   deliveryMethodId: number
   serviceCode: string
+  startTime: string
   estimatedTimeOfArrival: TransitTime['estimatedTimeOfArrival']
+}
+
+export class ShippingConfigurationError extends Error {}
+
+function getOriginPostalCode(): string {
+  const postalCode = process.env.POSTNORD_ORIGIN_POSTAL_CODE?.replace(
+    /\s/g,
+    ''
+  )
+
+  if (!postalCode || !/^\d{5}$/.test(postalCode)) {
+    throw new ShippingConfigurationError(
+      'POSTNORD_ORIGIN_POSTAL_CODE måste vara ett svenskt postnummer med fem siffror.'
+    )
+  }
+
+  return postalCode
 }
 
 export async function calculateShippingPrice(
@@ -81,10 +99,10 @@ export async function validateServicePoint(
 }
 
 export async function getDeliveryEstimates(
-  originPostalCode: string,
   destinationPostalCode: string
 ): Promise<DeliveryEstimate[]> {
-  const transitTimes = await getTransitTime(
+  const originPostalCode = getOriginPostalCode()
+  const { startTime, transitTimes } = await getTransitTime(
     originPostalCode,
     destinationPostalCode
   )
@@ -101,6 +119,7 @@ export async function getDeliveryEstimates(
         transitTime.service.basicServiceCode === '17'
           ? HOME_DELIVERY_METHOD_ID
           : PICKUP_DELIVERY_METHOD_ID,
+      startTime,
       serviceCode: transitTime.service.basicServiceCode,
       estimatedTimeOfArrival: transitTime.estimatedTimeOfArrival
     }))

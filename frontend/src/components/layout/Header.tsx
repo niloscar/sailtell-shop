@@ -2,7 +2,7 @@ import logo from '../../assets/img/logo-lg-white.svg'
 
 import styles from './Header.module.css'
 
-export default function Header(admin?: { admin: boolean }) {
+export default function Header({admin = false}) {
 
   const classNames = [
     styles.pageHeader,

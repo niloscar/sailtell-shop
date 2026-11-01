@@ -33,7 +33,7 @@ export async function createCheckoutSession(orderId: number, items: CheckoutItem
     })),
     client_reference_id: String(orderId),
     success_url: `${process.env.CLIENT_URL}/confirmation?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${process.env.CLIENT_URL}/cart`
+    cancel_url: `${process.env.CLIENT_URL}/checkout`
   })
 }
 
