@@ -107,7 +107,7 @@ export async function getDeliveryEstimates(
     destinationPostalCode
   )
 
-  return transitTimes
+  const estimates = transitTimes
     .filter(
       (transitTime) =>
         transitTime.isSupported &&
@@ -123,4 +123,59 @@ export async function getDeliveryEstimates(
       serviceCode: transitTime.service.basicServiceCode,
       estimatedTimeOfArrival: transitTime.estimatedTimeOfArrival
     }))
+
+  const estimatesByMethod = new Map<number, DeliveryEstimate[]>()
+
+  for (const estimate of estimates) {
+    const arrival = estimate.estimatedTimeOfArrival
+    const hasTimeOfArrival =
+      typeof arrival?.timeOfArrival === 'string' &&
+      arrival.timeOfArrival.length > 0
+    const range = arrival?.dayRangeOfArrival
+    const hasDayRange =
+      range !== undefined &&
+      Number.isInteger(range.daysMinimum) &&
+      Number.isInteger(range.daysMaximum) &&
+      range.daysMinimum >= 0 &&
+      range.daysMaximum >= range.daysMinimum
+
+    if (!hasTimeOfArrival && !hasDayRange) continue
+
+    const methodEstimates = estimatesByMethod.get(estimate.deliveryMethodId)
+    if (methodEstimates) {
+      methodEstimates.push(estimate)
+    } else {
+      estimatesByMethod.set(estimate.deliveryMethodId, [estimate])
+    }
+  }
+
+  return [...estimatesByMethod.values()].map((methodEstimates) => {
+    const timeEstimates = methodEstimates.filter(
+      (estimate) => estimate.estimatedTimeOfArrival?.timeOfArrival
+    )
+
+    if (timeEstimates.length > 0) {
+      return timeEstimates.reduce((earliest, estimate) => {
+        const currentTime = estimate.estimatedTimeOfArrival?.timeOfArrival
+        const earliestTime = earliest.estimatedTimeOfArrival?.timeOfArrival
+
+        return currentTime && earliestTime && currentTime < earliestTime
+          ? estimate
+          : earliest
+      })
+    }
+
+    return methodEstimates.reduce((earliest, estimate) => {
+      const currentRange = estimate.estimatedTimeOfArrival?.dayRangeOfArrival
+      const earliestRange = earliest.estimatedTimeOfArrival?.dayRangeOfArrival
+
+      if (!currentRange || !earliestRange) return earliest
+
+      return currentRange.daysMinimum < earliestRange.daysMinimum ||
+        (currentRange.daysMinimum === earliestRange.daysMinimum &&
+          currentRange.daysMaximum < earliestRange.daysMaximum)
+        ? estimate
+        : earliest
+    })
+  })
 }
