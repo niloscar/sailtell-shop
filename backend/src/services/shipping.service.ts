@@ -21,18 +21,15 @@ export type DeliveryEstimate = {
 export class ShippingConfigurationError extends Error {}
 
 function getOriginPostalCode(): string {
-  const postalCode = process.env.POSTNORD_ORIGIN_POSTAL_CODE?.replace(
-    /\s/g,
-    ''
-  )
+  const postalCode = process.env.POSTNORD_ORIGIN_POSTAL_CODE
 
-  if (!postalCode || !/^\d{5}$/.test(postalCode)) {
+  if (!postalCode) {
     throw new ShippingConfigurationError(
-      'POSTNORD_ORIGIN_POSTAL_CODE måste vara ett svenskt postnummer med fem siffror.'
+      'POSTNORD_ORIGIN_POSTAL_CODE saknas.'
     )
   }
 
-  return postalCode
+  return normalizePostalCode(postalCode)
 }
 
 export async function calculateShippingPrice(
@@ -86,7 +83,9 @@ export async function validateServicePoint(
   postalCode: string,
   servicePointId: string
 ): Promise<ServicePoint> {
-  const servicePoints = await getNearestServicePoints(postalCode)
+  const servicePoints = await getNearestServicePoints(
+    normalizePostalCode(postalCode)
+  )
   const servicePoint = servicePoints.find(
     (candidate) => candidate.id === servicePointId
   )
@@ -104,7 +103,7 @@ export async function getDeliveryEstimates(
   const originPostalCode = getOriginPostalCode()
   const { startTime, transitTimes } = await getTransitTime(
     originPostalCode,
-    destinationPostalCode
+    normalizePostalCode(destinationPostalCode)
   )
 
   const estimates = transitTimes
@@ -178,4 +177,14 @@ export async function getDeliveryEstimates(
         : earliest
     })
   })
+}
+
+function normalizePostalCode(value: string): string {
+  const postalCode = value.replace(/\D/g, '')
+
+  if (!/^\d{5}$/.test(postalCode)) {
+    throw new Error('Ogiltigt postnummer.')
+  }
+
+  return postalCode
 }
