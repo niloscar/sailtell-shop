@@ -10,7 +10,7 @@ import {
 
 const postalCodeSchema = z
   .string()
-  .transform((value) => value.replace(/\s/g, ''))
+  .transform((value) => value.replace(/\D/g, ''))
   .refine((value) => /^\d{5}$/.test(value), {
     message: 'Postnumret måste bestå av fem siffror.'
   })

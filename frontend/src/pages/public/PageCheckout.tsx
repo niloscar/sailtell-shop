@@ -11,6 +11,7 @@ import {
   type ShippingPrices
 } from '../../api/shippingApi'
 import formatPrice from '../../utilities/formatPrice'
+import formatPostalCode from '../../utilities/formatPostalCode'
 import getApiErrorMessage from '../../utilities/apiError'
 import Error from '../../components/ui/Error'
 import Spinner from '../../components/ui/Spinner'
@@ -204,9 +205,10 @@ export default function PageCheckout() {
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target
+    const formattedValue = name === 'zipcode' ? formatPostalCode(value) : value
 
     if (name === 'zipcode') {
-      const normalizedPostalCode = value.replace(/\s/g, '')
+      const normalizedPostalCode = formattedValue.replace(/\D/g, '')
 
       setServicePointId('')
       setServicePoints([])
@@ -220,7 +222,7 @@ export default function PageCheckout() {
 
     setOrderDetails((prevDetails) => ({
       ...prevDetails,
-      [name]: value
+      [name]: formattedValue
     }))
   }
 
@@ -450,6 +452,9 @@ export default function PageCheckout() {
                 <label htmlFor="zipcode">Postnummer</label>
                 <input
                   type="text"
+                  inputMode="numeric"
+                  maxLength={6}
+                  autoComplete="postal-code"
                   id="zipcode"
                   name="zipcode"
                   required
