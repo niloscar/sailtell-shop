@@ -1,14 +1,30 @@
-# E-handel – Inlämningsuppgift 1, Integration med tredjepartssystem (FSU25D)
 
-[Uppgiftsbeskrivning](docs/assignment-description.md) | [Driftsatt applikation](https://sailtell-shop.vercel.app)
+# E-handel – Integration med tredjepartssystem (FSU25D)
+
+**Uppgiftsbeskrivningar**  
+[Uppgift 1 (Tredjepartsintegrationer)](docs/assignment-1-description.md)  
+[Uppgift 2 (Konton och autentisering)](docs/assignment-2-description.md)
+
+**Driftsatt applikation**  
+[SailTell Shop](https://sailtell-shop.vercel.app)
 
 *Oscar Nilsson*  
 *oscar.nilsson@medieinstitutet.se*  
 [GitHub](https://github.com/niloscar) | [LinkedIn](https://www.linkedin.com/in/oscar-nilsson1) | [Portfolio](https://oscarnilsson.dev/?ref=assignment)
 
-## Integrera shoppen med omvärlden
+## Om projektet
 
-Projektet bygger vidare på en befintlig e-handelsapplikation med fem integrationer: produktimport via Sibars special-API, sökning med Algolia, betalning med Stripe, bildlagring i Supabase Storage och fraktinformation från PostNord.
+Projektet bygger vidare på en befintlig e-handelsapplikation och omfattar två inlämningsuppgifter i kursen Integration med tredjepartssystem.
+
+### Uppgift 1 – Integrera shoppen med omvärlden
+
+Den första uppgiften omfattar fem integrationer: produktimport via Sibars special-API, sökning med Algolia, betalning med Stripe, bildlagring i Supabase Storage och fraktinformation från PostNord.
+
+### Uppgift 2 – Konton och autentisering
+
+Den andra uppgiften utökar shoppen med kundinloggning via Google, admininloggning via GitHub och orderbekräftelser via e-post. För VG tillkommer möjligheten att skapa GitHub-issues från adminsidan med administratörens egen token.
+
+**Status:** Pågående. Inlämning 22 november 2026.
 
 ## Kom igång
 
@@ -34,13 +50,11 @@ npm run dev
 
 Integrationerna kan testas i den [driftsatta applikationen](https://sailtell-shop.vercel.app) eller lokalt med respektive tjänsts testkonfiguration. För lokala Stripe-webhooks används Stripe CLI.
 
-**Administratörskonto**
+**Administration:** https://sailtell-shop.vercel.app/admin
 
-- Inloggning: https://sailtell-shop.vercel.app/admin
-- E-post: `admin@test.se`
-- Lösenord: `admin`
+Uppgifter till eventuella testkonton lämnas separat till läraren vid inlämning.
 
-## Reflektion
+## Uppgift 1 – Reflektion
 
 ### Backend kontra frontend
 
@@ -96,6 +110,29 @@ Om PostNords API inte svarar kan kunden fortfarande välja hemleverans och genom
 
 En risk är att förändringar i PostNords API, tjänsteutbud eller svarformat kräver uppdateringar av adaptern.
 
+## Uppgift 2 – Konton och autentisering
+
+### Labb 6 – Kundinloggning med Google
+
+*Dokumenteras efter implementation.*
+
+### Labb 7 – Admininloggning med GitHub
+
+*Dokumenteras efter implementation.*
+
+### Labb 8 – E-post
+
+*Dokumenteras efter implementation.*
+
+### Redogörelse för autentisering
+
+*Kompletteras löpande med följande delar:*
+
+- **Inloggningsflödet:** Hur OAuth-inloggningen fungerar från att användaren klickar på inloggningsknappen tills shoppen identifierar användaren. Vilka skydd som används (state och/eller PKCE) och varför.
+- **Tokens:** Vilka tokens som erhålls från Google och GitHub, vad de används till, var de lagras och hur länge de gäller.
+- **Session eller JWT:** Hur shoppen håller användaren inloggad och varför den valda metoden passar applikationen.
+- **Säkerhet (VG):** Risker vid tokenstöld, hur tokens kan återkallas och när session respektive JWT är lämpligt.
+
 ## AI-användning – Labb 5
 
 Jag använde GitHub Copilot i VS Code för PostNord-integrationen, bland annat för API-anrop, Zod-validering och kopplingen till checkout.
@@ -113,7 +150,8 @@ Integrationen testades mot PostNords sandbox. Agentens åtkomst begränsades och
 - **Frontend:** React, TypeScript, Vite
 - **Backend:** Node.js, Express, TypeScript
 - **Databas:** PostgreSQL
-- **Integrationer:** Sibars special-API, Algolia, Stripe, Supabase Storage, PostNord
+- **Integrationer (uppgift 1):** Sibars special-API, Algolia, Stripe, Supabase Storage, PostNord
+- **Integrationer (uppgift 2, pågår):** Google OAuth, GitHub OAuth, e-posttjänst
 - **Verktyg:** npm, Git, GitHub, Zod, ESLint, Prettier, GitHub Copilot
 
 ## Projektstruktur
