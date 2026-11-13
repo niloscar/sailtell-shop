@@ -3,7 +3,7 @@ import type { User, UserCredentials } from '@shop/shared'
 
 type AuthContextType = {
   user: User | null
-  login: (credentials: UserCredentials) => Promise<boolean>
+  login: (credentials: UserCredentials) => Promise<User | null>
   logout: () => void
   isLoading: boolean
   isAuthenticated: boolean

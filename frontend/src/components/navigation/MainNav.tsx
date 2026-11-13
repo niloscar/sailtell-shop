@@ -7,10 +7,12 @@
  */
 
 import { NavLink } from 'react-router-dom'
+import { useAuth } from '../../contexts/AuthContext'
 import { useCart } from '../../contexts/CartContext'
 import { ShoppingCartIcon, MagnifyingGlassIcon } from '@phosphor-icons/react'
 
 import styles from './MainNav.module.css'
+import MyAccountLink from './MyAccountLink'
 
 const NAV_ITEMS = [
   { 
@@ -52,6 +54,7 @@ const NAV_ITEMS = [
 ]
 
 export default function MainNav() {
+  const { user } = useAuth()
   const { cartCount } = useCart()
 
   return (
@@ -75,6 +78,11 @@ export default function MainNav() {
             </li>
           )
         })}
+        {user && (
+          <li>
+            <MyAccountLink />
+          </li>
+        )}
       </ul>
     </nav>
   )

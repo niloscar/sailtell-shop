@@ -17,7 +17,7 @@ const navItems = [
 ]
 
 export default function AdminNav() {
-  const { user, isAuthenticated, logout } = useAuth()
+  const { user, logout } = useAuth()
 
   return (
     <nav className={styles.adminNav}>
@@ -33,7 +33,7 @@ export default function AdminNav() {
             </NavLink>
           </li>
         ))}
-        {isAuthenticated && user && (
+        {user && (
           <li>
             <button onClick={logout}>Logga ut</button>
           </li>

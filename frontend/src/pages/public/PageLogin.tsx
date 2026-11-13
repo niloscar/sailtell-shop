@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { ChangeEvent, FormEvent } from 'react'
+import type { ChangeEvent, SubmitEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 
@@ -21,22 +21,22 @@ export default function PageAdminLogin() {
     }))
   }
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: SubmitEvent) => {
     event.preventDefault()
 
-    const success = await login({
+    const user = await login({
       email: credentials.email.trim(),
       password: credentials.password.trim()
     })
 
-    if (success) {
-      navigate('/admin')
-    }
+    if (!user) return
+
+    navigate(user.role === 'admin' ? '/admin' : '/my-account')
   }
 
   return (
     <div className="loginPage">
-      <h1 className="headingSize1">Admin login</h1>
+      <h1 className="headingSize1">Logga in</h1>
 
       <form className="admin-login-form" onSubmit={handleSubmit}>
         <div className="inputGroup">
@@ -52,7 +52,7 @@ export default function PageAdminLogin() {
         </div>
 
         <div className="inputGroup">
-          <label htmlFor="password">Password</label>
+          <label htmlFor="password">Lösenord</label>
           <input
             type="password"
             id="password"

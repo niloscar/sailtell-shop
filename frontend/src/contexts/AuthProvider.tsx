@@ -12,9 +12,8 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const checkSession = async () => {
       try {
-        const response = await getSession()
-        console.log('Session:', response)
-        setUser(response.data.user)
+        const { user } = await getSession()
+        setUser(user)
       } catch {
         setUser(null)
       } finally {
@@ -25,30 +24,30 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
     checkSession()
   }, [])
 
-  const login = async (credentials: UserCredentials): Promise<boolean> => {
+  const login = async (credentials: UserCredentials): Promise<User | null> => {
     const { email, password } = credentials
 
     setLoginError(null)
 
     if (!email.trim() || !password.trim()) {
       setLoginError('E-post och lösenord måste fyllas i.')
-      return false
+      return null
     }
 
     try {
-      const response = await loginUser({
+      const { user } = await loginUser({
         email: email.trim(),
         password: password.trim()
       })
 
-      setUser(response.data.user)
+      setUser(user)
 
-      return true
+      return user
     } catch {
       setUser(null)
       setLoginError('Felaktig e-post eller lösenord.')
 
-      return false
+      return null
     }
   }
 
