@@ -1,5 +1,5 @@
 import api from './apiClient'
-import type { UserCredentials } from '../types/userTypes'
+import type { UserCredentials } from '@shop/shared'
 
 export function loginUser(credentials: UserCredentials) {
   return api.post('/auth/login', credentials)

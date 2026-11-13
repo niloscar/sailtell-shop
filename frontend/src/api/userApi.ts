@@ -1,5 +1,5 @@
 import api from './apiClient'
-import type { User } from '../types/userTypes'
+import type { User } from '@shop/shared'
 
 export function getUsers() {
   return api.get('/users')

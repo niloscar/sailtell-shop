@@ -1,5 +1,5 @@
 import { createContext, useContext } from 'react'
-import type { User, UserCredentials } from '../types/userTypes'
+import type { User, UserCredentials } from '@shop/shared'
 
 type AuthContextType = {
   user: User | null

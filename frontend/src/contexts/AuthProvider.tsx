@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { AuthContext } from './AuthContext'
 import type { ReactNode } from 'react'
-import type { User, UserCredentials } from '../types/userTypes'
+import type { User, UserCredentials } from '@shop/shared'
 import { loginUser, logoutUser, getSession } from '../api/authApi'
 
 export default function AuthProvider({ children }: { children: ReactNode }) {

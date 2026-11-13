@@ -14,7 +14,7 @@ export async function loginUser(
 ): Promise<LoginResult> {
   const user = await findUserByEmail(email)
 
-  if (!user) {
+  if (!user || !user.password_hash) {
     throw new Error('Fel användarnamn eller lösenord')
   }
 
