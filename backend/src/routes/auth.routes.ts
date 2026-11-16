@@ -4,12 +4,20 @@
 
 import { Router } from 'express'
 import { login, getSession, logout } from '../controllers/auth.controller'
-import { getAuthorizeUrl, exchangeCode } from '../integrations/auth/google.adapter'
-import { randomString } from '../lib/pkce'
+import { findOrCreateGoogleUser } from '../services/user.service'
+import { establishSession } from '../services/session.service'
+import {
+  getAuthorizeUrl,
+  exchangeCode
+} from '../integrations/auth/google.adapter'
+import { randomString, toCodeChallenge } from '../lib/pkce'
 
 const authRouter = Router()
 
+const CLIENT_URL = process.env.CLIENT_URL
 const OAUTH_STATE_TTL = 10 * 60 * 1000
+
+if (!CLIENT_URL) throw new Error('CLIENT_URL saknas i miljövariablerna.')
 
 authRouter.post('/login', login)
 authRouter.get('/session', getSession)
@@ -17,28 +25,34 @@ authRouter.post('/logout', logout)
 
 authRouter.get('/google', (req, res, next) => {
   const state = randomString()
+  const codeVerifier = randomString()
+  const codeChallenge = toCodeChallenge(codeVerifier)
 
   req.session.oauthState = state
   req.session.oauthStateExpiresAt = Date.now() + OAUTH_STATE_TTL
+  req.session.oauthCodeVerifier = codeVerifier
 
   req.session.save((error) => {
     if (error) return next(error)
 
-    res.redirect(getAuthorizeUrl(state))
+    res.redirect(getAuthorizeUrl(state, codeChallenge))
   })
 })
 
 authRouter.get('/google/callback', async (req, res) => {
   const { code, state, error } = req.query
+
   const expectedState = req.session.oauthState
   const expiresAt = req.session.oauthStateExpiresAt
+  const codeVerifier = req.session.oauthCodeVerifier
 
   delete req.session.oauthState
   delete req.session.oauthStateExpiresAt
+  delete req.session.oauthCodeVerifier
 
   // User cancelled the login flow
   if (error) {
-    res.redirect('/login?error=cancelled')
+    res.redirect(new URL('/login?error=cancelled', CLIENT_URL).toString())
     return
   }
 
@@ -48,28 +62,36 @@ authRouter.get('/google/callback', async (req, res) => {
     !expectedState ||
     state !== expectedState ||
     !expiresAt ||
-    Date.now() >= expiresAt
+    Date.now() >= expiresAt ||
+    !codeVerifier
   ) {
-    res.redirect('/login?error=state')
+    res.redirect(new URL('/login?error=state', CLIENT_URL).toString())
     return
   }
 
   try {
-    const user = await exchangeCode(code)
+    const googleUser = await exchangeCode(code, codeVerifier)
 
-    if (!user.emailVerified) {
-      res.redirect('/login?error=not-verified')
+    if (!googleUser.emailVerified) {
+      res.redirect(new URL('/login?error=not-verified', CLIENT_URL).toString())
       return
     }
 
-    // Save the information in the customer or user table if the user doesn't exist yet
+    const user = await findOrCreateGoogleUser(googleUser)
 
-    // Find the customer by google_sub, never by email, or create a new one if it doesn't exist:
-    // insert into customers (google_sub, email, name) … on conflict (google_sub) do update …
-    // and put YOUR customer id in the token instead of user.sub.
+    await establishSession(req, user.id)
+
+    res.redirect(new URL('/my-account', CLIENT_URL).toString())
   } catch (err) {
+    if (err instanceof Error && err.message === 'GOOGLE_EMAIL_CONFLICT') {
+      res.redirect(
+        new URL('/login?error=email-conflict', CLIENT_URL).toString()
+      )
+      return
+    }
+
     console.error(err)
-    res.redirect('/login?error=google')
+    res.redirect(new URL('/login?error=google', CLIENT_URL).toString())
   }
 })
 

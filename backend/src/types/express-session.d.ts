@@ -5,5 +5,6 @@ declare module 'express-session' {
     userId?: number
     oauthState?: string
     oauthStateExpiresAt?: number
+    oauthCodeVerifier?: string
   }
 }

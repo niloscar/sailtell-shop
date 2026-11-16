@@ -9,36 +9,47 @@ if (!CLIENT_ID || !CLIENT_SECRET || !CALLBACK_URL) {
   throw new Error('Missing Google OAuth configuration in environment variables.')
 }
 
-export function getAuthorizeUrl(state: string) {
+export function getAuthorizeUrl(state: string, codeChallenge: string) {
   const params = new URLSearchParams({
     response_type: 'code',
     client_id: CLIENT_ID,
     scope: 'openid email profile',
     redirect_uri: CALLBACK_URL,
     state,
+    code_challenge: codeChallenge,
+    code_challenge_method: 'S256',
+    prompt: 'select_account'
   })
 
   return `https://accounts.google.com/o/oauth2/v2/auth?${params}`
 }
 
-export async function exchangeCode(code: string) {
+export async function exchangeCode(code: string, codeVerifier: string) {
   const response = await fetch('https://oauth2.googleapis.com/token', {
     method: 'POST',
     body: new URLSearchParams({
       client_id: CLIENT_ID,
       client_secret: CLIENT_SECRET,
       code,
+      code_verifier: codeVerifier,
       grant_type: 'authorization_code',
-      redirect_uri: CALLBACK_URL,
+      redirect_uri: CALLBACK_URL
     }),
     signal: AbortSignal.timeout(5_000),
   })
 
+  const answer: unknown = await response.json()
+
   if (!response.ok) {
+    if (answer && typeof answer === 'object') {
+      const error = 'error' in answer ? answer.error : undefined
+      const description = 'error_description' in answer ? answer.error_description : undefined
+
+      console.error('Google OAuth error:', { error, description })
+    }
+
     throw new Error(`Failed to exchange Google authorization code (${response.status}).`)
   }
-
-  const answer: unknown = await response.json()
 
   if (
     !answer ||
@@ -82,6 +93,7 @@ export async function exchangeCode(code: string) {
     sub: claims.sub,
     email: claims.email,
     emailVerified: claims.email_verified,
-    name: typeof claims.name === 'string' ? claims.name : claims.email,
+    fname: typeof claims.given_name === 'string' ? claims.given_name : null,
+    lname: typeof claims.family_name === 'string' ? claims.family_name : null
   }
 }
