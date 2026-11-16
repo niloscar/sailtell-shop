@@ -3,7 +3,7 @@ import type { ChangeEvent, SubmitEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 
-export default function PageAdminLogin() {
+export default function PageLogin() {
   const navigate = useNavigate()
   const { login, loginError } = useAuth()
 

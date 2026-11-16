@@ -3,11 +3,11 @@
  */
 
 /* External dependencies */
+import 'dotenv/config'
 import express from 'express'
 import type { NextFunction, Request, Response } from 'express'
 import expressSession from 'express-session'
 import connectPgSimple from 'connect-pg-simple'
-import dotenv from 'dotenv'
 
 /* Internal modules */
 import { connect, pool } from './database'
@@ -27,8 +27,9 @@ import shippingRouter from './routes/shipping.routes'
 import supplierRouter from './routes/supplier.routes'
 import usersRouter from './routes/user.routes'
 
-/* Load environment variables from .env file */
-dotenv.config()
+/* Validate environment variables from .env file */
+const sessionSecret = process.env.SESSION_SECRET
+if (!sessionSecret) throw new Error('SESSION_SECRET saknas i miljövariablerna.')
 
 /* Initialize Express app */
 const app = express()
@@ -52,7 +53,7 @@ app.use(
     store: new PgSession({
       pool
     }),
-    secret: process.env.SECRET_KEY || 'secret-key',
+    secret: sessionSecret,
     resave: false,
     saveUninitialized: false,
     cookie: {

@@ -38,3 +38,20 @@ export function regenerateSession(req: Request): Promise<void> {
     })
   })
 }
+
+export async function establishSession(req: Request, userId: number): Promise<void> {
+  await regenerateSession(req)
+
+  setSessionUserId(req, userId)
+
+  await new Promise<void>((resolve, reject) => {
+    req.session.save((error) => {
+      if (error) {
+        reject(error)
+        return
+      }
+
+      resolve()
+    })
+  })
+}

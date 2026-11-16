@@ -44,8 +44,6 @@ export async function createUser(
 ) {
   const passwordHash = await hashPassword(password)
 
-  console.log('Creating user with hashed password:', passwordHash) // Debugging line to check the hashed password
-
   const { rows } = await pool.query<PublicUser>(
     `INSERT INTO users (fname, lname, email, password_hash, role) 
         VALUES ($1, $2, $3, $4, $5) 

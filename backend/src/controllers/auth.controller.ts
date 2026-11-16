@@ -7,29 +7,35 @@ import { loginUser } from '../services/auth.service'
 import { getUser } from '../services/user.service'
 import {
   clearSession,
-  setSessionUserId,
-  getSessionUserId
+  getSessionUserId,
+  establishSession
 } from '../services/session.service'
 
 export async function login(req: Request, res: Response) {
   const { email, password } = req.body
 
-  if (!email || !password) {
+  if (typeof email !== 'string' || typeof password !== 'string' ||
+      !email.trim() || !password) {
     res.status(400).json({ error: 'E-post och lösenord krävs.' })
     return
   }
 
-  try {
-    const loginResult = await loginUser(email, password)
+  let loginResult
 
-    setSessionUserId(req, loginResult.user.id) // Store the user ID in the session to keep the user logged in
+  try {
+    loginResult = await loginUser(email, password)
+  } catch {
+    res.status(401).json({ error: 'Felaktig e-post eller lösenord.' })
+    return
+  }
+
+  try {
+    await establishSession(req, loginResult.user.id)
 
     res.json(loginResult)
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : 'Inloggningen misslyckades.'
-
-    res.status(401).json({ error: message })
+    console.error('Kunde inte skapa session:', error)
+    res.status(500).json({ error: 'Kunde inte skapa session.' })
   }
 }
 
