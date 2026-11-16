@@ -33,6 +33,9 @@ if (!sessionSecret) throw new Error('SESSION_SECRET saknas i miljövariablerna.'
 
 /* Initialize Express app */
 const app = express()
+if (process.env.NODE_ENV === 'production') {
+  app.set('trust proxy', 1)
+}
 const port = process.env.PORT || 3000
 
 const PgSession = connectPgSimple(expressSession)
@@ -58,6 +61,8 @@ app.use(
     saveUninitialized: false,
     cookie: {
       httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
       maxAge: 60 * 60 * 1000
     }
   })

@@ -1,16 +1,30 @@
 import { useState } from 'react'
-import type { ChangeEvent, SubmitEvent } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
+import { GithubLogoIcon, GoogleLogoIcon } from '@phosphor-icons/react'
+
+import type { ChangeEvent, SubmitEvent } from 'react'
+
+const GOOGLE_ERRORS: Record<string, string> = {
+  cancelled: 'Google-inloggningen avbröts.',
+  state: 'Inloggningen kunde inte verifieras. Försök igen.',
+  google: 'Inloggningen med Google misslyckades. Försök igen.',
+  'not-verified': 'E-postadressen är inte verifierad hos Google.',
+  'email-conflict': 'Det finns redan ett konto med den här e-postadressen. Logga in med lösenord.'
+}
 
 export default function PageLogin() {
+  const [credentials, setCredentials] = useState({ email: '', password: '' })
+
   const navigate = useNavigate()
   const { login, loginError } = useAuth()
 
-  const [credentials, setCredentials] = useState({
-    email: '',
-    password: ''
-  })
+  const [searchParams, setSearchParams] = useSearchParams()
+
+  const googleError = searchParams.get('error')
+  const googleErrorMessage = googleError
+    ? GOOGLE_ERRORS[googleError] ?? 'Ett okänt fel inträffade vid Google-inloggningen.'
+    : null
 
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target
@@ -23,6 +37,7 @@ export default function PageLogin() {
 
   const handleSubmit = async (event: SubmitEvent) => {
     event.preventDefault()
+    setSearchParams({}, { replace: true })
 
     const user = await login({
       email: credentials.email.trim(),
@@ -37,6 +52,7 @@ export default function PageLogin() {
   return (
     <div className="loginPage">
       <h1 className="headingSize1">Logga in</h1>
+
 
       <form className="admin-login-form" onSubmit={handleSubmit}>
         <div className="inputGroup">
@@ -63,9 +79,28 @@ export default function PageLogin() {
           />
         </div>
 
+        {(loginError || googleErrorMessage) && (
+          <p className="errorMessage" role="alert">
+            {loginError || googleErrorMessage}
+          </p>
+        )}
+
         <button type="submit">Logga in</button>
 
-        {loginError && <p className="errorMessage">{loginError}</p>}
+        <ul className="alternative-login">
+          <li>
+            <a href="/api/auth/google" className="link-google">
+              <GoogleLogoIcon />
+              <span>Logga in med Google</span>
+            </a>
+          </li>
+          <li>
+            <a href="/api/auth/github" className="link-github">
+              <GithubLogoIcon />
+              <span>Logga in med GitHub</span>
+            </a>
+          </li>
+        </ul>
       </form>
     </div>
   )

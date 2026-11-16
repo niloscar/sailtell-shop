@@ -70,10 +70,22 @@ ul {
     gap: 0.5rem;
   }
 
+  & .inputGroup input {
+    width: auto;
+  }
+
   & .errorMessage {
+    width: 0;
+    min-width: 100%;
     color: var(--alert);
-    font-size: 0.875rem;
-    margin-bottom: 0.5rem;
+    font-size: var(--font-small);
+    text-align: center;
+    margin-top: .5rem;
+    line-height: 1.42;
+
+    & + button {
+      margin-top: .5rem;
+    }
   }
 
   button {
@@ -81,13 +93,45 @@ ul {
     background-color: var(--success);
     color: #fff;
     border: none;
-    padding: 0.25rem 1rem;
+    padding: .25rem 1rem;
     border-radius: 4px;
     cursor: pointer;
     margin-top: 1rem;
 
     &:hover {
       opacity: 0.9;
+    }
+  }
+
+  .alternative-login {
+    list-style: none;
+    margin: 1rem 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-self: center;
+    border: 1px solid var(--bg);
+    background-color: #f5f5f5;
+    border-radius: 4px;
+
+    & li {
+      display: grid;
+      grid-column: 1 / -1;
+      grid-template-columns: subgrid;
+
+      &:not(:last-child) {
+        border-bottom: 1px solid var(--bg);
+      }
+    }
+
+    & a {
+      display: grid;
+      grid-column: 1 / -1;
+      grid-template-columns: subgrid;
+      align-items: center;
+      gap: .25rem;
+      font-size: var(--font-small);
+      padding: .25rem 1rem;
     }
   }
 }
