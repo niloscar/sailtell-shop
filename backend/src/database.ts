@@ -12,7 +12,10 @@ export const pool = new Pool({
   database: process.env.DB_NAME,
   ssl: {
     rejectUnauthorized: false
-  }
+  },
+  max: 2,
+  idleTimeoutMillis: 5000,
+  connectionTimeoutMillis: 5000
 })
 
 export async function connect() {
