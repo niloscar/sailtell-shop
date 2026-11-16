@@ -17,3 +17,9 @@ export type {
   AddCartItem,
   UpdateCartItem
 } from './cart.types'
+
+export type {
+  User,
+  UserRole,
+  UserCredentials
+} from './user.types'

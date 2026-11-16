@@ -4,7 +4,19 @@
 
 import bcrypt from 'bcrypt'
 import pool from '../database'
+import {
+  createGoogleUser,
+  findUserByEmail,
+  findUserByGoogleSub
+} from '../repositories/user.repository'
 import type { PublicUser, User, UpdateUser } from '../types/user.types'
+
+type GoogleProfile = {
+  sub: string
+  email: string
+  fname: string | null
+  lname: string | null
+}
 
 export function hashPassword(password: string): Promise<string> {
   const saltRounds = 10
@@ -44,8 +56,6 @@ export async function createUser(
 ) {
   const passwordHash = await hashPassword(password)
 
-  console.log('Creating user with hashed password:', passwordHash) // Debugging line to check the hashed password
-
   const { rows } = await pool.query<PublicUser>(
     `INSERT INTO users (fname, lname, email, password_hash, role) 
         VALUES ($1, $2, $3, $4, $5) 
@@ -63,3 +73,33 @@ const columnMap = {
   role: 'role',
   password: 'password_hash'
 } as const
+
+export async function findOrCreateGoogleUser(profile: GoogleProfile) {
+  const user = await findUserByGoogleSub(profile.sub)
+
+  if (user) return user
+
+  if (await findUserByEmail(profile.email))
+    throw new Error('GOOGLE_EMAIL_CONFLICT')
+
+  try {
+    return await createGoogleUser(
+      profile.sub,
+      profile.email,
+      profile.fname,
+      profile.lname
+    )
+  } catch (error) {
+    if (error instanceof Error && 'code' in error && error.code === '23505') {
+      const user = await findUserByGoogleSub(profile.sub)
+
+      if (user) return user
+
+      if ('constraint' in error && error.constraint === 'users_email_key') {
+        throw new Error('GOOGLE_EMAIL_CONFLICT')
+      }
+    }
+
+    throw error
+  }
+}

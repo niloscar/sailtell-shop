@@ -1,20 +1,14 @@
-export type UserRole = 'admin' | 'editor' | 'user'
+import type { User as SharedUser, UserRole } from '@shop/shared'
 
-export interface UserCredentials {
-  email: string
-  password: string
+export type {
+  UserRole,
+  UserCredentials,
+  User as PublicUser
+} from '@shop/shared'
+
+export interface User extends SharedUser {
+  password_hash: string | null
 }
-
-export interface User {
-  id: number
-  fname: string
-  lname: string
-  email: string
-  role: UserRole
-  password_hash: string
-}
-
-export type PublicUser = Omit<User, 'password_hash'>
 
 export interface UpdateUser {
   fname?: string

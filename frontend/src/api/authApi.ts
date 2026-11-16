@@ -1,12 +1,14 @@
 import api from './apiClient'
-import type { UserCredentials } from '../types/userTypes'
+import type { UserCredentials, User } from '@shop/shared'
 
-export function loginUser(credentials: UserCredentials) {
-  return api.post('/auth/login', credentials)
+export async function loginUser(credentials: UserCredentials) {
+  const response = await api.post<{ user: User }>('/auth/login', credentials)
+  return response.data
 }
 
-export function getSession() {
-  return api.get('/auth/session')
+export async function getSession() {
+  const response = await api.get<{ user: User }>('/auth/session')
+  return response.data
 }
 
 export function logoutUser() {
