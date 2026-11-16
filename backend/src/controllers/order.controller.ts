@@ -82,11 +82,20 @@ export async function updateOrderHandler(req: Request, res: Response) {
   }
 }
 
-export async function deleteOrderHandler(
-  req: Request<OrderParams>,
-  res: Response
-) {
+export async function deleteOrderHandler(req: Request<OrderParams>, res: Response) {
   const orderId = parseInt(req.params.id)
   await deleteOrder(orderId)
   res.status(204).send()
+}
+
+export async function getMyOrdersHandler(req: Request, res: Response) {
+  const userId = getSessionUserId(req)
+
+  if (userId === null) {
+    res.status(401).json({ error: 'Du måste vara inloggad.' })
+    return
+  }
+
+  const orders = await getOrders(userId)
+  res.json(orders)
 }

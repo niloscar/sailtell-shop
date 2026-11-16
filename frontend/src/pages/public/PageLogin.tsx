@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
-import { GithubLogoIcon, GoogleLogoIcon } from '@phosphor-icons/react'
+import { GoogleLogoIcon } from '@phosphor-icons/react'
 
 import type { ChangeEvent, SubmitEvent } from 'react'
 
@@ -94,12 +94,12 @@ export default function PageLogin() {
               <span>Logga in med Google</span>
             </a>
           </li>
-          <li>
+          {/* <li>
             <a href="/api/auth/github" className="link-github">
               <GithubLogoIcon />
               <span>Logga in med GitHub</span>
             </a>
-          </li>
+          </li> */}
         </ul>
       </form>
     </div>

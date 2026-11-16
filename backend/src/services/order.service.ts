@@ -74,7 +74,7 @@ export async function getOrderOptions() {
   return rows[0]
 }
 
-export async function getOrders() {
+export async function getOrders(userId: number | null = null) {
   const { rows } = await pool.query<Order>(
     `SELECT
       orders.id,
@@ -117,10 +117,10 @@ export async function getOrders() {
     ) AS current_status ON true
 
     WHERE orders.deleted_at IS NULL
-    ORDER BY orders.id`
+      AND ($1::integer IS NULL OR orders.user_id = $1)
+    ORDER BY orders.id DESC`,
+    [userId]
   )
-
-  if (rows.length === 0) throw new Error('Inga beställningar kunde hittas.')
 
   return rows.map((order) => ({
     ...order,
@@ -400,7 +400,8 @@ export async function createOrder(order: CreateOrder, userId: number | null = nu
           ? order.servicePointId
           : null,
         servicePointName,
-        order.ordered_at ?? new Date()
+        order.ordered_at ?? new Date(),
+        userId
       ]
     )
 
