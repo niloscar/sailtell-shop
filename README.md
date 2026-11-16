@@ -1,4 +1,3 @@
-
 # E-handel – Integration med tredjepartssystem (FSU25D)
 
 **Uppgiftsbeskrivningar**  
@@ -114,7 +113,11 @@ En risk är att förändringar i PostNords API, tjänsteutbud eller svarformat k
 
 ### Labb 6 – Kundinloggning med Google
 
-*Dokumenteras efter implementation.*
+Kundinloggningen använder Google OAuth 2.0 och OpenID Connect. Integrationen hanteras i Express-backend, medan React ansvarar för inloggningslänken och användargränssnittet.
+
+Användaren identifieras genom Googles unika `sub`, som sparas i databasen. Vid första inloggningen skapas ett kundkonto och vid efterföljande inloggningar används samma konto. Om e-postadressen redan finns på ett konto med lösenordsinloggning avvisas Google-inloggningen med ett felmeddelande. Kontona kopplas inte ihop automatiskt eftersom e-postadressen inte används som identitetsnyckel.
+
+Inloggade kunders beställningar kopplas till deras användar-ID. Mina sidor visar endast kundens egna ordrar genom en skyddad endpoint som kontrollerar sessionen på servern och returnerar `401` utan inloggning. Gästköp fungerar fortfarande utan användarkoppling.
 
 ### Labb 7 – Admininloggning med GitHub
 
@@ -126,12 +129,33 @@ En risk är att förändringar i PostNords API, tjänsteutbud eller svarformat k
 
 ### Redogörelse för autentisering
 
-*Kompletteras löpande med följande delar:*
+#### Inloggningsflöde
 
-- **Inloggningsflödet:** Hur OAuth-inloggningen fungerar från att användaren klickar på inloggningsknappen tills shoppen identifierar användaren. Vilka skydd som används (state och/eller PKCE) och varför.
-- **Tokens:** Vilka tokens som erhålls från Google och GitHub, vad de används till, var de lagras och hur länge de gäller.
-- **Session eller JWT:** Hur shoppen håller användaren inloggad och varför den valda metoden passar applikationen.
-- **Säkerhet (VG):** Risker vid tokenstöld, hur tokens kan återkallas och när session respektive JWT är lämpligt.
+När användaren väljer Google-inloggning skapar backend ett slumpmässigt `state` och en PKCE `code_verifier`, som sparas i sessionen. Användaren skickas sedan till Google med `state` och en `code_challenge`.
+
+Efter inloggningen skickar Google tillbaka en auktoriseringskod. Backend kontrollerar att `state` matchar och inte har gått ut, innan koden växlas mot tokens med hjälp av `code_verifier` och klientens hemliga nyckel.
+
+`state` skyddar mot att obehöriga autentiseringsflöden kopplas till användarens session, medan PKCE försvårar användning av en uppfångad auktoriseringskod utan tillhörande verifieringsvärde. Jag valde att använda båda för ett starkare skydd.
+
+#### Tokens
+
+Google returnerar bland annat en ID-token och en access token. Shoppen använder ID-token för att identifiera användaren och kontrollerar `iss`, `aud`, `exp` samt nödvändiga användaruppgifter. Tokenens giltighetstid bestäms av Google och kontrolleras via `exp`.
+
+ID-token avkodas men signaturen verifieras inte kryptografiskt. Eftersom tokenen hämtas direkt från Googles HTTPS-endpoint begränsas risken, men signaturverifiering skulle ge ett ytterligare skydd.
+
+Googles tokens används inte efter att användaren identifierats och sparas inte. Ingen refresh token begärs. Client secret finns endast på servern.
+
+#### Session eller JWT
+
+Jag valde att fortsätta använda `express-session` med PostgreSQL som sessionslager, eftersom sessionshantering redan fanns implementerad i applikationen. Efter inloggningen sparas användar-ID i sessionen och webbläsaren får en `httpOnly`-cookie med `sameSite: 'lax'` och en timmes giltighetstid. I produktion används även `secure`.
+
+Om jag hade förväntat mig så mycket trafik att sessionshanteringen riskerade att belasta databasen hade jag övervägt JWT med access- och refresh tokens. Då skulle vanliga API-anrop kunna autentiseras utan databasuppslag för varje session. Det skulle däremot innebära en mer komplex lösning.
+
+#### Säkerhet och avvägningar
+
+Om någon får tag på en giltig sessionscookie kan den användas för att komma åt användarens konto tills sessionen avslutas. Cookieinställningarna minskar risken, men eliminerar den inte. Vid inloggning skapas också ett nytt sessions-ID för att minska risken för session fixation.
+
+En fördel med sessionshantering är att en session kan avslutas direkt på servern. Med JWT är återkallning svårare eftersom en utfärdad access token normalt är giltig tills den löper ut. Det kan hanteras med kortlivade access tokens och refresh tokens, men kräver ytterligare logik för förnyelse och återkallning.
 
 ## AI-användning – Labb 5
 
