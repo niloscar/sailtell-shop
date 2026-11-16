@@ -11,6 +11,7 @@ import {
   deleteOrder
 } from '../services/order.service'
 import { updateOrderStatus } from '../services/orderStatus.service'
+import { getSessionUserId } from '../services/session.service'
 
 type OrderParams = {
   id: string
@@ -41,7 +42,9 @@ export async function getOrderHandler(
 }
 
 export async function createOrderHandler(req: Request, res: Response) {
-  const newOrder = await createOrder(req.body)
+  const userId = getSessionUserId(req)
+  const newOrder = await createOrder(req.body, userId)
+
   res.status(201).json(newOrder)
 }
 

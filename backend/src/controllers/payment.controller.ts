@@ -1,9 +1,12 @@
 import { Request, Response } from 'express'
 import { createPayment, handlePaymentEvent, getPaymentConfirmation } from '../services/payment.service'
 import { verifyPaymentWebhook } from '../integrations/payment.adapter'
+import { getSessionUserId } from '../services/session.service'
 
 export async function createPaymentHandler(req: Request, res: Response) {
-  const payment = await createPayment(req.body)
+  const userId = getSessionUserId(req)
+  const payment = await createPayment(req.body, userId)
+
   res.status(201).json(payment)
 }
 

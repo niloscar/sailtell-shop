@@ -3,24 +3,22 @@
  */
 
 import pool, { withTransaction } from '../database'
-import type { Pool, PoolClient } from 'pg'
-import type { Order, UpdateOrder, CreateOrder } from '../types/order.types'
 
 import { getOrCreateCustomer } from './customer.service'
 import { createShippingAddress } from './shippingAddress.service'
-import {
-  createOrderItems,
-  type OrderItemWithPrice
-} from './orderItem.service'
+import { createOrderItems } from './orderItem.service'
 import { createOrderStatus } from './orderStatus.service'
-import {
-  calculateShippingPrice,
-  HOME_DELIVERY_METHOD_ID,
-  PICKUP_DELIVERY_METHOD_ID,
-  validateServicePoint
+import { 
+  calculateShippingPrice, 
+  HOME_DELIVERY_METHOD_ID, 
+  PICKUP_DELIVERY_METHOD_ID, 
+  validateServicePoint 
 } from './shipping.service'
-
 import HttpError from '../utilities/HttpError'
+
+import type { Pool, PoolClient } from 'pg'
+import type { Order, UpdateOrder, CreateOrder } from '../types/order.types'
+import type { OrderItemWithPrice } from './orderItem.service'
 
 export async function getOrderOptions() {
   const { rows } = await pool.query(
@@ -238,7 +236,7 @@ export async function getOrder(id: number, db: Pool | PoolClient = pool) {
   }
 }
 
-export async function createOrder(order: CreateOrder) {
+export async function createOrder(order: CreateOrder, userId: number | null = null) {
   const postalCode = order.shipping_address.zipcode.replace(/\s/g, '')
 
   if (!/^\d{5}$/.test(postalCode)) {
@@ -388,9 +386,10 @@ export async function createOrder(order: CreateOrder) {
         shipping_price,
         service_point_id,
         service_point_name,
-        ordered_at
+        ordered_at,
+        user_id
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
       RETURNING id`,
       [
         customerId,
