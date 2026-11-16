@@ -6,11 +6,11 @@ import { withTransaction } from '../database'
 import type { CreateOrder } from '../types/order.types'
 import type { PaymentEvent } from '../integrations/payment.adapter'
 
-export async function createPayment(orderData: CreateOrder) {
-  const order = await createOrder({
-    ...orderData,
-    payment_method_id: 1 // Force payment method to Stripe for now
-  })
+export async function createPayment(orderData: CreateOrder, userId: number | null) {
+  const order = await createOrder(
+    { ...orderData, payment_method_id: 1},
+    userId
+  )
 
   const items = order.order_items.map((item) => ({
     name: item.name,

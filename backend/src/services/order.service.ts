@@ -3,24 +3,22 @@
  */
 
 import pool, { withTransaction } from '../database'
-import type { Pool, PoolClient } from 'pg'
-import type { Order, UpdateOrder, CreateOrder } from '../types/order.types'
 
 import { getOrCreateCustomer } from './customer.service'
 import { createShippingAddress } from './shippingAddress.service'
-import {
-  createOrderItems,
-  type OrderItemWithPrice
-} from './orderItem.service'
+import { createOrderItems } from './orderItem.service'
 import { createOrderStatus } from './orderStatus.service'
-import {
-  calculateShippingPrice,
-  HOME_DELIVERY_METHOD_ID,
-  PICKUP_DELIVERY_METHOD_ID,
-  validateServicePoint
+import { 
+  calculateShippingPrice, 
+  HOME_DELIVERY_METHOD_ID, 
+  PICKUP_DELIVERY_METHOD_ID, 
+  validateServicePoint 
 } from './shipping.service'
-
 import HttpError from '../utilities/HttpError'
+
+import type { Pool, PoolClient } from 'pg'
+import type { Order, UpdateOrder, CreateOrder } from '../types/order.types'
+import type { OrderItemWithPrice } from './orderItem.service'
 
 export async function getOrderOptions() {
   const { rows } = await pool.query(
@@ -76,7 +74,7 @@ export async function getOrderOptions() {
   return rows[0]
 }
 
-export async function getOrders() {
+export async function getOrders(userId: number | null = null) {
   const { rows } = await pool.query<Order>(
     `SELECT
       orders.id,
@@ -119,10 +117,10 @@ export async function getOrders() {
     ) AS current_status ON true
 
     WHERE orders.deleted_at IS NULL
-    ORDER BY orders.id`
+      AND ($1::integer IS NULL OR orders.user_id = $1)
+    ORDER BY orders.id DESC`,
+    [userId]
   )
-
-  if (rows.length === 0) throw new Error('Inga beställningar kunde hittas.')
 
   return rows.map((order) => ({
     ...order,
@@ -238,7 +236,7 @@ export async function getOrder(id: number, db: Pool | PoolClient = pool) {
   }
 }
 
-export async function createOrder(order: CreateOrder) {
+export async function createOrder(order: CreateOrder, userId: number | null = null) {
   const postalCode = order.shipping_address.zipcode.replace(/\s/g, '')
 
   if (!/^\d{5}$/.test(postalCode)) {
@@ -388,9 +386,10 @@ export async function createOrder(order: CreateOrder) {
         shipping_price,
         service_point_id,
         service_point_name,
-        ordered_at
+        ordered_at,
+        user_id
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
       RETURNING id`,
       [
         customerId,
@@ -401,7 +400,8 @@ export async function createOrder(order: CreateOrder) {
           ? order.servicePointId
           : null,
         servicePointName,
-        order.ordered_at ?? new Date()
+        order.ordered_at ?? new Date(),
+        userId
       ]
     )
 

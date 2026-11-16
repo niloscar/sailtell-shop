@@ -11,6 +11,7 @@ import {
   deleteOrder
 } from '../services/order.service'
 import { updateOrderStatus } from '../services/orderStatus.service'
+import { getSessionUserId } from '../services/session.service'
 
 type OrderParams = {
   id: string
@@ -41,7 +42,9 @@ export async function getOrderHandler(
 }
 
 export async function createOrderHandler(req: Request, res: Response) {
-  const newOrder = await createOrder(req.body)
+  const userId = getSessionUserId(req)
+  const newOrder = await createOrder(req.body, userId)
+
   res.status(201).json(newOrder)
 }
 
@@ -79,11 +82,20 @@ export async function updateOrderHandler(req: Request, res: Response) {
   }
 }
 
-export async function deleteOrderHandler(
-  req: Request<OrderParams>,
-  res: Response
-) {
+export async function deleteOrderHandler(req: Request<OrderParams>, res: Response) {
   const orderId = parseInt(req.params.id)
   await deleteOrder(orderId)
   res.status(204).send()
+}
+
+export async function getMyOrdersHandler(req: Request, res: Response) {
+  const userId = getSessionUserId(req)
+
+  if (userId === null) {
+    res.status(401).json({ error: 'Du måste vara inloggad.' })
+    return
+  }
+
+  const orders = await getOrders(userId)
+  res.json(orders)
 }

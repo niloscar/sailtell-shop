@@ -3,20 +3,22 @@
  */
 
 import { Router } from 'express'
-import { requireAdmin } from '../middleware/auth.middleware'
+import { requireAdmin, requireAuth } from '../middleware/auth.middleware'
 import {
   getOrderOptionsHandler,
   getOrdersHandler,
   getOrderHandler,
   createOrderHandler,
   updateOrderHandler,
-  deleteOrderHandler
+  deleteOrderHandler,
+  getMyOrdersHandler
 } from '../controllers/order.controller'
 
 const orderRouter = Router()
 
 orderRouter.get('/', requireAdmin, getOrdersHandler)
 orderRouter.get('/options', getOrderOptionsHandler)
+orderRouter.get('/mine', requireAuth, getMyOrdersHandler)
 orderRouter.get('/:id', requireAdmin, getOrderHandler)
 orderRouter.post('/', createOrderHandler)
 orderRouter.patch('/:id', requireAdmin, updateOrderHandler)
