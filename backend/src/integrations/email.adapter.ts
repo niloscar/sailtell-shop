@@ -1,8 +1,10 @@
 
 import { z } from 'zod'
 
-const API_URL = 'https://api.resend.com/emails'
-const TIMEOUT_MS = 5000
+const API_URL = process.env.RESEND_API_URL
+const API_KEY = process.env.RESEND_API_KEY
+const EMAIL_FROM = process.env.RESEND_EMAIL_FROM
+const TIMEOUT_MS = Number(process.env.RESEND_API_TIMEOUT_MS)
 
 const sendEmailResponseSchema = z.object({ id: z.string() })
 
@@ -21,10 +23,8 @@ export async function sendEmail({
   text,
   orderId
 }: SendEmailOptions) {
-  const apiKey = process.env.RESEND_API_KEY
-  const from = process.env.EMAIL_FROM
-
-  if (!apiKey || !from) throw new Error('Resend är inte konfigurerat.')
+  if (!API_URL || !API_KEY || !EMAIL_FROM) throw new Error('Resend är inte konfigurerat.')
+  if (!Number.isFinite(TIMEOUT_MS) || TIMEOUT_MS <= 0) throw new Error('Ogiltig timeout för Resend.')
 
   let response: Response
 
@@ -32,12 +32,12 @@ export async function sendEmail({
     response = await fetch(API_URL, {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${apiKey}`,
+        Authorization: `Bearer ${API_KEY}`,
         'Content-Type': 'application/json',
         'Idempotency-Key': `order-confirmation/${orderId}`
       },
       body: JSON.stringify({
-        from,
+        from: EMAIL_FROM,
         to,
         subject,
         html,
@@ -46,6 +46,10 @@ export async function sendEmail({
       signal: AbortSignal.timeout(TIMEOUT_MS)
     })
   } catch (error) {
+    if (error instanceof Error && error.name === 'TimeoutError') {
+      throw new Error(`Resends API svarade inte inom ${TIMEOUT_MS / 1000} sekunder.`)
+    }
+
     throw new Error('Kunde inte nå Resends API.', { cause: error })
   }
 
