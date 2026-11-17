@@ -51,8 +51,6 @@ export default function PageLogin() {
 
   return (
     <div className="loginPage">
-      <h1 className="headingSize1">Logga in</h1>
-
 
       <form className="admin-login-form" onSubmit={handleSubmit}>
         <div className="inputGroup">

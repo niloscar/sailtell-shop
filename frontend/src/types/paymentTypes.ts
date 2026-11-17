@@ -5,6 +5,7 @@ export type PaymentResponse = {
 
 export type PaymentConfirmation = {
   orderId: number
+  email: string
   status: string
   statusId: number
   items: {

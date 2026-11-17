@@ -1,0 +1,20 @@
+.orderItemsList {
+  align-self: start;
+  display: grid;
+  grid-template-columns: repeat(4, auto);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  gap: .25rem;
+}
+
+.orderItem {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  gap: 1rem;
+
+  @media (max-width: 768px) {
+    gap: .5rem;
+  }
+}
