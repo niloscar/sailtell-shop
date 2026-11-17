@@ -6,6 +6,8 @@ import getApiErrorMessage from '../../utilities/apiError'
 
 import type { Order } from '../../types/orderTypes'
 
+import styles from './PageMyAccount.module.css'
+
 export default function PageMyAccount() {
   const { user, logout } = useAuth()
 
@@ -46,13 +48,16 @@ export default function PageMyAccount() {
       ) : orders.length === 0 ? (
         <p>Du har inga tidigare beställningar.</p>
       ) : (
-        <ul>
+        <ul className={styles.ordersList}>
           {orders.map((order) => (
-            <li key={order.id}>
-              Order #{order.id} –{' '}
-              {new Date(order.ordered_at).toLocaleDateString('sv-SE')} –{' '}
-              {formatPrice(order.sum)} –{' '}
-              {order.order_status.name}
+            <li 
+              key={order.id} 
+              className={styles.order}
+            >
+              <span className={styles.orderDate}>{new Date(order.ordered_at).toLocaleDateString('sv-SE')}</span>
+              <span className={styles.orderId}>Order #{order.id}</span>
+              <span className={styles.orderSum}>{formatPrice(order.sum)}</span>
+              <span className={styles.orderStatus}>{order.order_status.name}</span>
             </li>
           ))}
         </ul>

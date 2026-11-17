@@ -1,3 +1,4 @@
+import { getCustomer } from './customer.service'
 import { createOrder, getOrder } from './order.service'
 import { createOrderStatus } from './orderStatus.service'
 import { sendOrderConfirmation } from './orderConfirmation.service'
@@ -57,9 +58,11 @@ export async function getPaymentConfirmation(sessionId: string) {
   }
 
   const order = await getOrder(orderId)
+  const customer = await getCustomer(order.customer_id)
 
   return {
     orderId: order.id,
+    email: customer.email,
     status: order.order_status.name,
     statusId: order.order_status.id,
     items: order.order_items.map((item) => ({

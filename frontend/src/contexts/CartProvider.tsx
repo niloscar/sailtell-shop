@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef, useCallback } from 'react'
 import { CartContext } from './CartContext'
 import {
   createCart,
@@ -24,6 +24,8 @@ export default function CartProvider({ children }: { children: ReactNode }) {
   const [cartActionState, setCartActionState] = useState<
     Record<number, CartActionState>
   >({})
+
+  const resetCartInProgress = useRef(false)
 
   const cartCount =
     cart?.items.reduce((total, item) => total + item.quantity, 0) ?? 0
@@ -182,21 +184,23 @@ export default function CartProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  const resetCart = async () => {
-    const cartUuid = localStorage.getItem('cart_uuid')
+  const resetCart = useCallback(async () => {
+    if (resetCartInProgress.current) return
 
-    if (!cartUuid) {
-      setCart(null)
-      return
-    }
+    resetCartInProgress.current = true
 
     try {
+      const cartUuid = localStorage.getItem('cart_uuid')
+
+      if (!cartUuid) {
+        setCart(null)
+        return
+      }
+
       const { data } = await getCart(cartUuid)
 
       await Promise.all(
-        data.items.map((item) =>
-          deleteCartItem(cartUuid, item.product_id)
-        )
+        data.items.map((item) => deleteCartItem(cartUuid, item.product_id))
       )
 
       localStorage.removeItem('cart_uuid')
@@ -204,8 +208,10 @@ export default function CartProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       console.error('Varukorgen kunde inte tömmas.', error)
       throw error
+    } finally {
+      resetCartInProgress.current = false
     }
-  }
+  }, [])
 
   const value = {
     cart,

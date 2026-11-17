@@ -78,9 +78,18 @@ export default function MainNav() {
             </li>
           )
         })}
-        {user && (
+        {user ? (
           <li>
             <MyAccountLink />
+          </li>
+        ) : (
+          <li>
+            <NavLink
+              to="/login"
+              className={({ isActive }) => (isActive ? styles.active : '')}
+            >
+              Logga in
+            </NavLink>
           </li>
         )}
       </ul>

@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { getPaymentConfirmation } from '../../api/paymentApi'
@@ -8,6 +7,9 @@ import Spinner from '../../components/ui/Spinner'
 import BackLink from '../../components/BackLink'
 
 import type { PaymentConfirmation } from '../../types/paymentTypes'
+
+import styles from './PageConfirm.module.css'
+import formatPrice from '../../utilities/formatPrice'
 
 export default function PageConfirm() {
   const [searchParams] = useSearchParams()
@@ -31,7 +33,14 @@ export default function PageConfirm() {
         setOrder(data)
 
         if (data.statusId === 8) {
-          await resetCart()
+          try {
+            await resetCart()
+          } catch (error) {
+            console.error(
+              'Kunde inte tömma varukorgen efter betalningen.',
+              error
+            )
+          }
         }
       } catch (error) {
         setError(getApiErrorMessage(error))
@@ -58,14 +67,13 @@ export default function PageConfirm() {
       {order.statusId === 8 ? (
         <>
           <h1 className="headingSize1">Tack för ditt köp!</h1>
-          <p>Din betalning har genomförts.</p>
+          <p>En orderbekräftelse skickas till <strong>{order.email}</strong>.</p>
         </>
       ) : order.statusId === 7 ? (
         <>
           <h1 className="headingSize1">Inväntar betalning</h1>
           <p>
-            Vi har tagit emot din beställning men betalningen
-            har ännu inte bekräftats.
+            Vi har tagit emot din beställning men betalningen har ännu inte bekräftats.
           </p>
           <button onClick={() => window.location.reload()}>
             Uppdatera status
@@ -78,17 +86,27 @@ export default function PageConfirm() {
         </>
       )}
 
-      <p>Ordernummer: {order.orderId}</p>
-
       <h2 className="headingSize2">Din beställning</h2>
 
-      <ul>
+      <ul className={styles.orderItemsList}>
         {order.items.map((item) => (
-          <li key={item.productId}>
-            {item.name} – {item.quantity} st
+          <li 
+            key={item.productId}
+            className={styles.orderItem}
+          >
+            <span className={styles.orderItemName}>{item.name}</span>
+            <span className={styles.orderItemQuantity}>{item.quantity} st</span>
+            <span className={styles.orderItemUnitPrice}>{formatPrice(item.unitPrice)}/st</span>
+            <span className={styles.orderItemTotal}>{formatPrice(item.unitPrice * item.quantity)}</span>
           </li>
         ))}
       </ul>
+
+      {order.items.length > 0 && (
+        <p className={styles.orderTotal}>
+          <strong>Totalt: {formatPrice(order.total)}</strong>
+        </p>
+      )}
 
       <BackLink to="/" label="Tillbaka till startsidan" />
     </>
