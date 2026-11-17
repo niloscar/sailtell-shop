@@ -1,5 +1,6 @@
 import { createOrder, getOrder } from './order.service'
 import { createOrderStatus } from './orderStatus.service'
+import { sendOrderConfirmation } from './orderConfirmation.service'
 import { createCheckoutSession, getCheckoutSession } from '../integrations/payment.adapter'
 import { withTransaction } from '../database'
 
@@ -72,7 +73,7 @@ export async function getPaymentConfirmation(sessionId: string) {
 }
 
 export async function handlePaymentEvent(event: NonNullable<PaymentEvent>) {
-  await withTransaction(async (client) => {
+  const wasPaid = await withTransaction(async (client) => {
     // Lock the order to prevent concurrent webhook processing
     const { rows: orders } = await client.query(
       `SELECT id
@@ -100,12 +101,12 @@ export async function handlePaymentEvent(event: NonNullable<PaymentEvent>) {
 
     // Only pending orders can be updated
     if (currentStatus !== 7) {
-      return
+      return false
     }
 
     if (event.type === 'expired') {
       await createOrderStatus(event.orderId, 6, client)
-      return
+      return false
     }
 
     if (event.type === 'paid') {
@@ -145,6 +146,15 @@ export async function handlePaymentEvent(event: NonNullable<PaymentEvent>) {
 
       // Mark the order as paid
       await createOrderStatus(event.orderId, 8, client)
+      return true
     }
   })
+
+  if (wasPaid) {
+    try {
+      await sendOrderConfirmation(event.orderId)
+    } catch (error) {
+      console.error(`Kunde inte skicka orderbekräftelse för order ${event.orderId}:`, error)
+    }
+  }
 }
