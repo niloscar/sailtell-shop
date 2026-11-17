@@ -121,11 +121,15 @@ Inloggade kunders beställningar kopplas till deras användar-ID. Mina sidor vis
 
 ### Labb 7 – Admininloggning med GitHub
 
-*Dokumenteras efter implementation.*
+*VG-uppgift – dokumenteras efter implementation.*
 
 ### Labb 8 – E-post
 
-*Dokumenteras efter implementation.*
+Orderbekräftelser skickas via Resend när Stripe-webhooken har markerat ordern som betald. Backend hämtar order- och kunduppgifter och bygger ett mail med ordernummer, kundens namn, produkter med antal och priser, frakt och totalsumma. Mailet innehåller både HTML och ren text. Kundens namn och produktnamn escapas innan de används i HTML.
+
+Resend-anropet hanteras i en separat adapter med API-nyckel och avsändarmail i miljövariabler, timeout och Zod-validering av svaret. För att undvika dubbla utskick behandlas bara ordrar som väntar på betalning, och varje mail får en nyckel knuten till ordernumret. Fel från Resend loggas utan att påverka orderstatusen eller få webhooken att svara med 500.
+
+Integrationen har testats i den deployade shoppen med lyckade utskick och omsändning av samma Stripe-webhook utan ytterligare mail.
 
 ### Redogörelse för autentisering
 
@@ -175,7 +179,7 @@ Integrationen testades mot PostNords sandbox. Agentens åtkomst begränsades och
 - **Backend:** Node.js, Express, TypeScript
 - **Databas:** PostgreSQL
 - **Integrationer (uppgift 1):** Sibars special-API, Algolia, Stripe, Supabase Storage, PostNord
-- **Integrationer (uppgift 2, pågår):** Google OAuth, GitHub OAuth, e-posttjänst
+- **Integrationer (uppgift 2):** Google OAuth och Resend (e-post). GitHub OAuth och issues planeras för VG.
 - **Verktyg:** npm, Git, GitHub, Zod, ESLint, Prettier, GitHub Copilot
 
 ## Projektstruktur
