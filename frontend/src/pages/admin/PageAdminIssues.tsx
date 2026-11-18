@@ -30,17 +30,12 @@ export default function PageAdminIssues() {
     setSuccess(false)
 
     try {
-      await createIssue(title.trim(), description.trim())
+      const newIssue = await createIssue(title.trim(), description.trim())
 
+      setIssues((prevIssues) => [newIssue, ...(prevIssues ?? [])])
       setTitle('')
       setDescription('')
       setSuccess(true)
-
-      try {
-        setIssues(await getIssues())
-      } catch {
-        setError('Ärendet skapades, men listan kunde inte uppdateras.')
-      }
     } catch {
       setError('Kunde inte skapa ärende på GitHub.')
     } finally {

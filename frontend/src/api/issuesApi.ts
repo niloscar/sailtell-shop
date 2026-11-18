@@ -13,6 +13,6 @@ export async function getIssues() {
 }
 
 export async function createIssue(title: string, description: string) {
-  const response = await api.post('/issues', { title, description })
+  const response = await api.post<Issue>('/issues', { title, description })
   return response.data
 }
