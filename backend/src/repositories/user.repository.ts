@@ -43,3 +43,14 @@ export async function createGoogleUser(googleSub: string, email: string, fname: 
 
   return user
 }
+
+export async function findUserByGitHubId(githubId: number): Promise<PublicUser | null> {
+  const { rows } = await pool.query<PublicUser>(
+    `SELECT id, fname, lname, email, role
+     FROM users
+     WHERE github_id = $1`,
+    [githubId]
+  )
+
+  return rows[0] ?? null
+}

@@ -1,14 +1,16 @@
 import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
-import { GoogleLogoIcon } from '@phosphor-icons/react'
+import { GithubLogoIcon, GoogleLogoIcon } from '@phosphor-icons/react'
 
 import type { ChangeEvent, SubmitEvent } from 'react'
 
-const GOOGLE_ERRORS: Record<string, string> = {
-  cancelled: 'Google-inloggningen avbröts.',
+const AUTH_ERRORS: Record<string, string> = {
+  cancelled: 'Inloggningen avbröts.',
   state: 'Inloggningen kunde inte verifieras. Försök igen.',
   google: 'Inloggningen med Google misslyckades. Försök igen.',
+  github: 'Inloggningen med GitHub misslyckades. Försök igen.',
+  'github-not-admin': 'Ditt GitHub-konto saknar administratörsbehörighet.',
   'not-verified': 'E-postadressen är inte verifierad hos Google.',
   'email-conflict': 'Det finns redan ett konto med den här e-postadressen. Logga in med lösenord.'
 }
@@ -21,9 +23,9 @@ export default function PageLogin() {
 
   const [searchParams, setSearchParams] = useSearchParams()
 
-  const googleError = searchParams.get('error')
-  const googleErrorMessage = googleError
-    ? GOOGLE_ERRORS[googleError] ?? 'Ett okänt fel inträffade vid Google-inloggningen.'
+  const authError = searchParams.get('error')
+  const authErrorMessage = authError
+    ? AUTH_ERRORS[authError] ?? 'Ett okänt fel inträffade vid inloggningen.'
     : null
 
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -77,9 +79,9 @@ export default function PageLogin() {
           />
         </div>
 
-        {(loginError || googleErrorMessage) && (
+        {(loginError || authErrorMessage) && (
           <p className="errorMessage" role="alert">
-            {loginError || googleErrorMessage}
+            {loginError || authErrorMessage}
           </p>
         )}
 
@@ -92,12 +94,12 @@ export default function PageLogin() {
               <span>Logga in med Google</span>
             </a>
           </li>
-          {/* <li>
+          <li>
             <a href="/api/auth/github" className="link-github">
               <GithubLogoIcon />
               <span>Logga in med GitHub</span>
             </a>
-          </li> */}
+          </li>
         </ul>
       </form>
     </div>
