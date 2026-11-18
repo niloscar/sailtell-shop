@@ -120,7 +120,8 @@ export async function createIssue(title: string, body: string) {
   return {
     number: issue.number,
     title: issue.title,
-    url: issue.html_url
+    url: issue.html_url,
+    author: issue.user?.login ?? 'Unknown'
   }
 }
 
