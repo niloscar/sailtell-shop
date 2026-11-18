@@ -15,13 +15,15 @@
 
 Projektet bygger vidare på en befintlig e-handelsapplikation och omfattar två inlämningsuppgifter i kursen Integration med tredjepartssystem.
 
+Samtliga externa integrationer hanteras i Express-backend, medan React ansvarar för användargränssnittet. API-nycklar och andra hemligheter hålls på servern, där externa svar valideras och fel hanteras. Separata adaptrar begränsar beroendet av respektive tjänsts API.
+
 ### Uppgift 1 – Integrera shoppen med omvärlden
 
 Den första uppgiften omfattar fem integrationer: produktimport via Sibars special-API, sökning med Algolia, betalning med Stripe, bildlagring i Supabase Storage och fraktinformation från PostNord.
 
 ### Uppgift 2 – Konton och autentisering
 
-Den andra uppgiften utökar shoppen med kundinloggning via Google, admininloggning via GitHub och orderbekräftelser via e-post. För VG tillkommer möjligheten att skapa GitHub-issues från adminsidan med administratörens egen token.
+Den andra uppgiften utökar shoppen med kundinloggning via Google, admininloggning via GitHub och orderbekräftelser via e-post. För VG tillkommer möjligheten att skapa och visa GitHub-issues från adminsidan med en separat token för shoppens repository.
 
 **Status:** Pågående. Inlämning 22 november 2026.
 
@@ -51,119 +53,47 @@ Integrationerna kan testas i den [driftsatta applikationen](https://sailtell-sho
 
 **Administration:** https://sailtell-shop.vercel.app/admin
 
-Uppgifter till eventuella testkonton lämnas separat till läraren vid inlämning.
+Uppgifter till testkonton och administratörsåtkomst lämnas vid inlämning.
 
 ## Uppgift 1 – Reflektion
 
-### Backend kontra frontend
-
-Samtliga externa integrationer hanteras genom Express i stället för direkt från React. Det gör att API-nycklar kan hållas på servern och att extern data kan valideras och anpassas innan den skickas till klienten. Backend ansvarar även för felhantering och affärslogik, exempelvis beräkning av priser och uppdatering av orderstatus. Genom att använda separata adaptrar begränsas också beroendet av varje tjänsts API-struktur.
-
 ### Labb 1 – Import av produktdata (Sibars special-API)
 
-Produktimporten kombinerar REST med filbaserad integration. Leverantörens CSV- och XML-filer hämtas via API:et, tolkas och valideras med Zod innan produkterna sparas i PostgreSQL. Modellen passar eftersom många produkter kan importeras samtidigt. Upsert används för att uppdatera befintliga produkter utan att skapa dubbletter.
+Produktimporten kombinerar REST och filbaserad integration. Leverantörens CSV- och XML-filer hämtas via API:et, valideras med Zod och sparas i PostgreSQL. Upsert används för att uppdatera befintliga produkter utan att skapa dubbletter.
 
-Integrationen ersätter manuell registrering och uppdatering av produktinformation. Att hantera detta själv skulle kräva mer administration och egna rutiner för att hålla sortimentet aktuellt.
-
-Om leverantörens API är otillgängligt kan importen inte genomföras, men redan importerade produkter finns kvar. Anropen har timeout och ogiltiga produkter hoppas över och redovisas i en importrapport.
-
-En risk är att ändringar i leverantörens filformat kan kräva anpassningar av adaptern.
+Integrationen ersätter manuell registrering och uppdatering av produktinformation. Om leverantörens API är otillgängligt kan ingen import genomföras, men befintliga produkter finns kvar. Ogiltiga produkter hoppas över och redovisas i en importrapport.
 
 ### Labb 2 – Sök-API (Algolia)
 
-Sökfunktionen använder Algolias API och SDK för indexering och sökning. Produkterna skickas till ett separat sökindex, medan PostgreSQL fortsätter vara den huvudsakliga datakällan. Modellen passar eftersom Algolia är utvecklat för snabba sökningar med bland annat relevansrankning och stavfelstolerans.
+Sökfunktionen använder Algolias API och SDK för indexering och sökning. Produkterna skickas till ett separat sökindex, medan PostgreSQL är den huvudsakliga datakällan. Algolia erbjuder bland annat relevansrankning och stavfelstolerans, vilket skulle kräva betydligt mer arbete att bygga själv.
 
-Att bygga motsvarande funktionalitet själv skulle kräva egen indexering, söklogik och prestandaoptimering. Integrationen gör att dessa funktioner kan användas utan att utvecklas från grunden.
-
-Om Algolia inte är tillgängligt fungerar inte den externa sökningen. Produkterna finns däremot kvar i databasen och kan fortfarande visas genom shoppens ordinarie produktlistor. Fel hanteras separat så att övriga funktioner inte påverkas.
-
-En risk är beroendet av Algolias tillgänglighet, eventuell förändring av deras priser och användningsvillkor.
+Om Algolia är otillgängligt fungerar inte den externa sökningen, men produkterna finns kvar i databasen och kan fortfarande visas genom shoppens ordinarie produktlistor.
 
 ### Labb 3 – Betalning (Stripe)
 
-Betalningen kombinerar REST, redirect och webhook. Express skapar en Stripe Checkout-session och kunden skickas vidare till Stripes betalningssida. Därefter bekräftas betalningen genom en signerad webhook som uppdaterar orderstatus och lagersaldo. Webhooken är särskilt viktig eftersom betalningen måste kunna registreras även om kunden inte återvänder till shoppen.
+Betalningen kombinerar REST, redirect och webhook. Express skapar en Stripe Checkout-session och kunden skickas vidare till Stripes betalningssida. En signerad webhook bekräftar betalningen och uppdaterar orderstatus och lagersaldo, även om kunden inte återvänder till shoppen.
 
-Stripe innebär att shoppen slipper hantera kortuppgifter och utveckla ett eget betalningssystem. En egen lösning skulle innebära betydligt större ansvar för säkerhet, betalningstransaktioner och regelefterlevnad.
+Stripe innebär att shoppen slipper hantera kortuppgifter och utveckla ett eget betalningssystem, med de säkerhetskrav det skulle medföra.
 
-Beloppen beräknas i backend. Om Stripe är otillgängligt kan betalningen inte slutföras, men orderuppgifterna finns kvar. Ordern markeras inte som betald förrän en verifierad betalningsbekräftelse har mottagits.
-
-Riskerna omfattar driftstörningar, avgifter och förändrade villkor.
+Beloppen beräknas i backend och ordern markeras inte som betald förrän en verifierad betalningsbekräftelse har mottagits. Om Stripe är otillgängligt kan betalningen inte slutföras, men orderuppgifterna finns kvar.
 
 ### Labb 4 – Produktbilder i molnlagring (Supabase Storage)
 
-Produktbilder hanteras genom Supabases SDK och API. Filerna laddas upp via backend och lagras i Supabase Storage, medan PostgreSQL innehåller referenser till bilderna. Modellen passar eftersom själva fillagringen kan hanteras separat från produktinformationen.
+Produktbilder lagras i Supabase Storage, medan PostgreSQL innehåller referenser till bilderna. Integrationen separerar fillagringen från produktinformationen och ersätter behovet av egen filserver och lagringsinfrastruktur.
 
-Integrationen ersätter behovet av egen filserver och lagringsinfrastruktur. En egen lösning skulle bland annat kräva hantering av filåtkomst, lagringsutrymme och säkerhet.
-
-Om Supabase är otillgängligt kan uppladdning och byte av bilder misslyckas. Även visning av befintliga bilder kan påverkas, men produktinformationen finns kvar i databasen. Fel vid uppladdning hanteras utan att hela applikationen slutar fungera.
-
-En risk är beroendet av tjänstens tillgänglighet och ökade kostnader allteftersom mängden data och trafik ökar.
+Om Supabase är otillgängligt kan uppladdning, byte och visning av bilder påverkas, men produktinformationen finns kvar i databasen. En långsiktig risk är ökade lagringskostnader när mängden bilder växer.
 
 ### Labb 5 – Frakt (PostNord)
 
-Fraktintegrationen använder REST för att hämta närliggande ombud och beräknade leveranstider utifrån kundens postnummer. Modellen passar eftersom informationen behöver hämtas utifrån den aktuella leveransadressen. Svaren valideras med Zod och omvandlas till interna datamodeller.
+Fraktintegrationen använder REST för att hämta närliggande ombud och beräknade leveranstider utifrån kundens postnummer. Svaren valideras med Zod och omvandlas till interna datamodeller.
 
-PostNord tillhandahåller information som annars skulle kräva ett eget och kontinuerligt uppdaterat register över ombud och leveransförutsättningar. Fraktpriserna hanteras däremot i shoppens backend, med fasta priser och fri frakt från 500 kr. Vald leveransmetod, kostnad och eventuellt ombud sparas på ordern och inkluderas i Stripe Checkout.
+PostNord tillhandahåller information som annars skulle kräva ett eget, kontinuerligt uppdaterat register. Fraktpriserna hanteras däremot i shoppens backend, med fasta priser och fri frakt från 500 kr. Vald leveransmetod, kostnad och eventuellt ombud sparas på ordern och inkluderas i Stripe Checkout.
 
-Om PostNords API inte svarar kan kunden fortfarande välja hemleverans och genomföra köpet. Timeout och felhantering begränsar påverkan på kassan.
+Om PostNords API inte svarar kan kunden fortfarande välja hemleverans och genomföra köpet.
 
-En risk är att förändringar i PostNords API, tjänsteutbud eller svarformat kräver uppdateringar av adaptern.
+#### AI-användning
 
-## Uppgift 2 – Konton och autentisering
-
-### Labb 6 – Kundinloggning med Google
-
-Kundinloggningen använder Google OAuth 2.0 och OpenID Connect. Integrationen hanteras i Express-backend, medan React ansvarar för inloggningslänken och användargränssnittet.
-
-Användaren identifieras genom Googles unika `sub`, som sparas i databasen. Vid första inloggningen skapas ett kundkonto och vid efterföljande inloggningar används samma konto. Om e-postadressen redan finns på ett konto med lösenordsinloggning avvisas Google-inloggningen med ett felmeddelande. Kontona kopplas inte ihop automatiskt eftersom e-postadressen inte används som identitetsnyckel.
-
-Inloggade kunders beställningar kopplas till deras användar-ID. Mina sidor visar endast kundens egna ordrar genom en skyddad endpoint som kontrollerar sessionen på servern och returnerar `401` utan inloggning. Gästköp fungerar fortfarande utan användarkoppling.
-
-### Labb 7 – Admininloggning med GitHub
-
-*VG-uppgift – dokumenteras efter implementation.*
-
-### Labb 8 – E-post
-
-Orderbekräftelser skickas via Resend när Stripe-webhooken har markerat ordern som betald. Backend hämtar order- och kunduppgifter och bygger ett mail med ordernummer, kundens namn, produkter med antal och priser, frakt och totalsumma. Mailet innehåller både HTML och ren text. Kundens namn och produktnamn escapas innan de används i HTML.
-
-Resend-anropet hanteras i en separat adapter med API-nyckel och avsändarmail i miljövariabler, timeout och Zod-validering av svaret. För att undvika dubbla utskick behandlas bara ordrar som väntar på betalning, och varje mail får en nyckel knuten till ordernumret. Fel från Resend loggas utan att påverka orderstatusen eller få webhooken att svara med 500.
-
-Integrationen har testats i den deployade shoppen med lyckade utskick och omsändning av samma Stripe-webhook utan ytterligare mail.
-
-### Redogörelse för autentisering
-
-#### Inloggningsflöde
-
-När användaren väljer Google-inloggning skapar backend ett slumpmässigt `state` och en PKCE `code_verifier`, som sparas i sessionen. Användaren skickas sedan till Google med `state` och en `code_challenge`.
-
-Efter inloggningen skickar Google tillbaka en auktoriseringskod. Backend kontrollerar att `state` matchar och inte har gått ut, innan koden växlas mot tokens med hjälp av `code_verifier` och klientens hemliga nyckel.
-
-`state` skyddar mot att obehöriga autentiseringsflöden kopplas till användarens session, medan PKCE försvårar användning av en uppfångad auktoriseringskod utan tillhörande verifieringsvärde. Jag valde att använda båda för ett starkare skydd.
-
-#### Tokens
-
-Google returnerar bland annat en ID-token och en access token. Shoppen använder ID-token för att identifiera användaren och kontrollerar `iss`, `aud`, `exp` samt nödvändiga användaruppgifter. Tokenens giltighetstid bestäms av Google och kontrolleras via `exp`.
-
-ID-token avkodas men signaturen verifieras inte kryptografiskt. Eftersom tokenen hämtas direkt från Googles HTTPS-endpoint begränsas risken, men signaturverifiering skulle ge ett ytterligare skydd.
-
-Googles tokens används inte efter att användaren identifierats och sparas inte. Ingen refresh token begärs. Client secret finns endast på servern.
-
-#### Session eller JWT
-
-Jag valde att fortsätta använda `express-session` med PostgreSQL som sessionslager, eftersom sessionshantering redan fanns implementerad i applikationen. Efter inloggningen sparas användar-ID i sessionen och webbläsaren får en `httpOnly`-cookie med `sameSite: 'lax'` och en timmes giltighetstid. I produktion används även `secure`.
-
-Om jag hade förväntat mig så mycket trafik att sessionshanteringen riskerade att belasta databasen hade jag övervägt JWT med access- och refresh tokens. Då skulle vanliga API-anrop kunna autentiseras utan databasuppslag för varje session. Det skulle däremot innebära en mer komplex lösning.
-
-#### Säkerhet och avvägningar
-
-Om någon får tag på en giltig sessionscookie kan den användas för att komma åt användarens konto tills sessionen avslutas. Cookieinställningarna minskar risken, men eliminerar den inte. Vid inloggning skapas också ett nytt sessions-ID för att minska risken för session fixation.
-
-En fördel med sessionshantering är att en session kan avslutas direkt på servern. Med JWT är återkallning svårare eftersom en utfärdad access token normalt är giltig tills den löper ut. Det kan hanteras med kortlivade access tokens och refresh tokens, men kräver ytterligare logik för förnyelse och återkallning.
-
-## AI-användning – Labb 5
-
-Jag använde GitHub Copilot i VS Code för PostNord-integrationen, bland annat för API-anrop, Zod-validering och kopplingen till checkout.
+Jag använde GitHub Copilot i VS Code för den här labben, bland annat för API-anrop, Zod-validering och kopplingen till checkout.
 
 Exempel på prompt:
 
@@ -171,7 +101,73 @@ Exempel på prompt:
 
 Copilot föreslog först en felaktig endpoint för leveranstider. Efter kontroll mot PostNords dokumentation ändrades den till `/transport/v2/transittime/addresstoaddress`.
 
-Integrationen testades mot PostNords sandbox. Agentens åtkomst begränsades och `.env` skyddades.
+Integrationen testades mot PostNords sandbox.
+
+## Uppgift 2 – Konton och autentisering
+
+### Labb 6 – Kundinloggning (Google)
+
+Kundinloggningen använder Google OAuth 2.0 och OpenID Connect.
+
+Användaren identifieras genom Googles unika `sub`, som sparas i databasen. Vid första inloggningen skapas ett kundkonto och vid efterföljande inloggningar används samma konto. Om e-postadressen redan tillhör ett konto med lösenordsinloggning avvisas Google-inloggningen. Kontona kopplas inte ihop automatiskt eftersom e-postadressen inte används som identitetsnyckel.
+
+Inloggade kunders beställningar kopplas till deras användar-ID. Mina sidor visar endast kundens egna ordrar genom en skyddad endpoint. Gästköp fungerar fortfarande utan användarkoppling.
+
+### Labb 7 – Admininloggning och ärenden (GitHub)
+
+Admininloggningen använder GitHub OAuth 2.0. Endast användare i `ADMIN_GITHUB_LOGINS` med ett kopplat adminkonto i PostgreSQL får logga in. Kontot identifieras genom GitHubs numeriska användar-ID och shoppens befintliga sessionshantering används. Adminroutes skyddas med behörighetskontroll på servern.
+
+Administratören kan skapa och lista GitHub-issues från adminpanelen. Ärendena skapas med en separat token med begränsade behörigheter och innehåller administratörens GitHub-användarnamn i beskrivningen. API-routes kräver adminbehörighet, och fel från GitHub hanteras med begripliga felmeddelanden.
+
+### Labb 8 – E-post (Resend)
+
+Orderbekräftelser skickas via Resend när Stripe-webhooken har markerat ordern som betald. Backend hämtar order- och kunduppgifter och bygger ett mail med ordernummer, kundens namn, produkter med antal och priser, frakt och totalsumma. Mailet innehåller både HTML och ren text, där användargenererat innehåll escapas för HTML.
+
+För att undvika dubbla utskick behandlas bara ordrar som väntar på betalning, och varje mail får en idempotensnyckel knuten till ordernumret. Fel från Resend loggas utan att påverka orderstatusen eller få webhooken att svara med `500`.
+
+Integrationen har testats i den deployade shoppen med lyckade utskick och omsändning av samma Stripe-webhook utan ytterligare mail.
+
+### Redogörelse för autentisering
+
+#### Inloggningsflöde
+
+Både Google- och GitHub-inloggningen använder OAuth 2.0 med `state` och PKCE. När användaren påbörjar inloggningen skapar backend ett slumpmässigt `state` och en `code_verifier`, som sparas i sessionen. Användaren skickas sedan till respektive tjänst med `state` och en `code_challenge`.
+
+Efter inloggningen kontrollerar backend att `state` matchar och inte har gått ut innan auktoriseringskoden byts mot tokens med hjälp av `code_verifier`. `state` skyddar mot att obehöriga autentiseringsflöden kopplas till sessionen, medan PKCE försvårar användning av en uppfångad auktoriseringskod.
+
+Google-användaren identifieras genom ID-tokenen, medan GitHub-användaren hämtas via GitHubs API. Vid GitHub-inloggning kontrolleras även tillåtelselistan och administratörsbehörigheten innan en session skapas.
+
+#### Tokens
+
+Google returnerar bland annat en ID-token och en access token. Shoppen använder ID-token för att identifiera användaren och kontrollerar `iss`, `aud`, `exp` samt nödvändiga användaruppgifter. Tokenens giltighetstid bestäms av Google och kontrolleras via `exp`.
+
+ID-token avkodas men signaturen verifieras inte kryptografiskt. Eftersom tokenen hämtas direkt från Googles HTTPS-endpoint begränsas risken, men signaturverifiering skulle ge ett ytterligare skydd.
+
+GitHub returnerar en access token som används för att hämta användarens profil med behörigheten `read:user`. Tokenen sparas inte efter inloggningen.
+
+För GitHub Issues används en separat fine-grained personal access token, begränsad till `Issues: Read and write` i shoppens repository. Den lagras på servern och behöver förnyas manuellt när den löper ut.
+
+OAuth-tokens används inte efter att användaren identifierats och ingen refresh token begärs. Client secrets finns endast på servern.
+
+#### Session eller JWT
+
+Jag valde att fortsätta använda `express-session` med PostgreSQL som sessionslager, eftersom sessionshantering redan fanns implementerad i applikationen. Samma lösning används för både Google- och GitHub-inloggning.
+
+Efter inloggningen sparas användar-ID i sessionen och webbläsaren får en `httpOnly`-cookie med `sameSite: 'lax'` och en timmes giltighetstid. I produktion används även `secure`. Vid GitHub-inloggning sparas också användarnamnet i sessionen för att identifiera administratören som skapar ett ärende.
+
+När sessionen inte längre är giltig hanterar frontend `401` från skyddade API-anrop och skickar användaren till inloggningssidan.
+
+En JWT-lösning med access- och refresh tokens skulle kunna minska behovet av databasuppslag vid hög trafik, men hade inneburit mer komplexitet utan någon tydlig fördel för den här applikationen.
+
+#### Säkerhet och avvägningar
+
+Om någon får tag på en giltig sessionscookie kan den användas för att komma åt användarens konto tills sessionen avslutas. Cookieinställningarna minskar risken, men eliminerar den inte. Vid inloggning skapas också ett nytt sessions-ID för att minska risken för session fixation.
+
+En fördel med sessionshantering är att en session kan avslutas direkt på servern. Med JWT är återkallning svårare eftersom en utfärdad access token normalt är giltig tills den löper ut.
+
+Om GitHubs OAuth-token skulle komma på avvägar kan den användas inom de behörigheter som användaren godkänt tills den spärras eller upphör att gälla. Shoppen begär därför endast `read:user` och behåller inte tokenen efter inloggningen.
+
+Issues-tokenen innebär en annan risk eftersom den lagras på servern och ger skrivbehörighet till repositoryts ärenden. Vid en läcka behöver den återkallas via GitHub och ersättas i serverns miljövariabler. Behörigheten är därför begränsad till Issues i ett enda repository.
 
 ## Tech stack
 
@@ -179,7 +175,7 @@ Integrationen testades mot PostNords sandbox. Agentens åtkomst begränsades och
 - **Backend:** Node.js, Express, TypeScript
 - **Databas:** PostgreSQL
 - **Integrationer (uppgift 1):** Sibars special-API, Algolia, Stripe, Supabase Storage, PostNord
-- **Integrationer (uppgift 2):** Google OAuth och Resend (e-post). GitHub OAuth och issues planeras för VG.
+- **Integrationer (uppgift 2):** Google OAuth, GitHub OAuth, GitHub Issues och Resend (e-post)
 - **Verktyg:** npm, Git, GitHub, Zod, ESLint, Prettier, GitHub Copilot
 
 ## Projektstruktur

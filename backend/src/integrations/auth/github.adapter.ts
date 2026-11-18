@@ -98,6 +98,7 @@ function getIssuesConfig() {
   }
 }
 
+// https://docs.github.com/en/rest/issues/issues#create-an-issue
 export async function createIssue(title: string, body: string) {
   const { url, headers } = getIssuesConfig()
 
@@ -123,6 +124,7 @@ export async function createIssue(title: string, body: string) {
   }
 }
 
+// https://docs.github.com/en/rest/issues/issues#list-repository-issues
 export async function listOpenIssues() {
   const { url, headers } = getIssuesConfig()
 
