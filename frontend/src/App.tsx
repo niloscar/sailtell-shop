@@ -9,6 +9,7 @@ import ProtectedRoute from './components/ProtectedRoute'
 import PageLogin from './pages/public/PageLogin'
 
 import PageAdmin from './pages/admin/PageAdminStart'
+import PageAdminIssues from './pages/admin/PageAdminIssues'
 import PageAdminOrders from './pages/admin/PageAdminOrders'
 import PageAdminSingleOrder from './pages/admin/PageAdminSingleOrder'
 import PageAdminProducts from './pages/admin/PageAdminProducts'
@@ -53,6 +54,7 @@ function App() {
         <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
           <Route element={<LayoutAdmin />}>
             <Route path="/admin" element={<PageAdmin />} />
+            <Route path="/admin/issues" element={<PageAdminIssues />} />
             <Route path="/admin/orders" element={<PageAdminOrders />} />
             <Route path="/admin/order/:id" element={<PageAdminSingleOrder />} />
             <Route path="/admin/products" element={<PageAdminProducts />} />

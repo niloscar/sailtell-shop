@@ -1,3 +1,6 @@
+/**
+ * Adapter for interacting with the Resend email service.
+ */
 
 import { z } from 'zod'
 

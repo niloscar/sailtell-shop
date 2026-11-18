@@ -1,3 +1,7 @@
+/**
+ * Controller functions for handling GitHub OAuth authentication and callback.
+ */
+
 import { Request, Response, NextFunction } from 'express'
 import { findUserByGitHubId } from '../repositories/user.repository'
 import { establishSession } from '../services/session.service'

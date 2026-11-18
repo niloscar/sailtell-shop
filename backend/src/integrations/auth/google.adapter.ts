@@ -1,3 +1,6 @@
+/**
+ * Adapter for interacting with the Google OAuth service.
+ */
 
 import jwt from 'jsonwebtoken'
 

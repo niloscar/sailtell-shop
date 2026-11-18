@@ -13,7 +13,8 @@ import styles from './AdminNav.module.css'
 const navItems = [
   { name: 'Översikt', path: '/admin', end: true },
   { name: 'Ordrar', path: '/admin/orders' },
-  { name: 'Produkter', path: '/admin/products' }
+  { name: 'Produkter', path: '/admin/products' },
+  { name: 'Ärenden', path: '/admin/issues' }
 ]
 
 export default function AdminNav() {

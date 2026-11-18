@@ -1,12 +1,16 @@
+/**
+ * Adapter for interacting with the GitHub OAuth and Issues API.
+ */
+
 import { z } from 'zod'
 
 const CLIENT_ID = process.env.GITHUB_OAUTH_CLIENT_ID ?? ''
 const CLIENT_SECRET = process.env.GITHUB_OAUTH_CLIENT_SECRET ?? ''
 const CALLBACK_URL = process.env.GITHUB_OAUTH_CALLBACK_URL ?? ''
+const REPO = process.env.GITHUB_REPO ?? ''
+const ISSUES_TOKEN = process.env.GITHUB_ISSUES_TOKEN ?? ''
 
-if (!CLIENT_ID || !CLIENT_SECRET || !CALLBACK_URL) {
-  throw new Error('Missing GitHub OAuth configuration in environment variables.')
-}
+if (!CLIENT_ID || !CLIENT_SECRET || !CALLBACK_URL) throw new Error('Missing GitHub OAuth configuration in environment variables.')
 
 const tokenSchema = z.object({
   access_token: z.string().min(1)
@@ -15,6 +19,16 @@ const tokenSchema = z.object({
 const userSchema = z.object({
   id: z.number().int().positive(),
   login: z.string().min(1)
+})
+
+const issueSchema = z.object({
+  number: z.number().int(),
+  title: z.string(),
+  html_url: z.url(),
+  user: z.object({
+    login: z.string()
+  }).nullable(),
+  pull_request: z.unknown().optional()
 })
 
 export function getAuthorizeUrl(state: string, codeChallenge: string) {
@@ -65,11 +79,70 @@ export async function getUser(accessToken: string) {
     signal: AbortSignal.timeout(5_000)
   })
 
-  if (!response.ok) {
-    throw new Error(`Failed to fetch GitHub user (${response.status}).`)
-  }
+  if (!response.ok) throw new Error(`Failed to fetch GitHub user (${response.status}).`)
 
   const answer: unknown = await response.json()
 
   return userSchema.parse(answer)
 }
+
+function getIssuesConfig() {
+  if (!REPO || !ISSUES_TOKEN) throw new Error('Missing GitHub Issues configuration.')
+
+  return {
+    url: `https://api.github.com/repos/${REPO}/issues`,
+    headers: {
+      Authorization: `Bearer ${ISSUES_TOKEN}`,
+      Accept: 'application/vnd.github+json'
+    }
+  }
+}
+
+export async function createIssue(title: string, body: string) {
+  const { url, headers } = getIssuesConfig()
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      ...headers,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ title, body }),
+    signal: AbortSignal.timeout(5_000)
+  })
+
+  if (!response.ok) throw new Error(`Failed to create GitHub issue (${response.status}).`)
+
+  const answer: unknown = await response.json()
+  const issue = issueSchema.parse(answer)
+
+  return {
+    number: issue.number,
+    title: issue.title,
+    url: issue.html_url
+  }
+}
+
+export async function listOpenIssues() {
+  const { url, headers } = getIssuesConfig()
+
+  const response = await fetch(`${url}?state=open&per_page=100`, {
+    headers,
+    signal: AbortSignal.timeout(5_000)
+  })
+
+  if (!response.ok) throw new Error(`Failed to fetch GitHub issues (${response.status}).`)
+
+  const answer: unknown = await response.json()
+  const issues = z.array(issueSchema).parse(answer)
+
+  return issues
+    .filter((issue) => !issue.pull_request)
+    .map((issue) => ({
+      number: issue.number,
+      title: issue.title,
+      url: issue.html_url,
+      author: issue.user?.login ?? 'Unknown'
+    }))
+}
+

@@ -19,6 +19,7 @@ import authRouter from './routes/auth.routes'
 import cartRouter from './routes/cart.routes'
 import categoryRouter from './routes/category.routes'
 import customerRouter from './routes/customer.routes'
+import githubIssuesRouter from './routes/githubIssues.routes'
 import orderRouter from './routes/order.routes'
 import paymentRouter from './routes/payment.routes'
 import productRouter from './routes/product.routes'
@@ -73,6 +74,7 @@ app.use('/api/auth', authRouter)
 app.use('/api/carts', cartRouter)
 app.use('/api/categories', categoryRouter)
 app.use('/api/customers', customerRouter)
+app.use('/api/issues', githubIssuesRouter)
 app.use('/api/orders', orderRouter)
 app.use('/api/payment', paymentRouter)
 app.use('/api/products', productRouter)

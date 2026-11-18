@@ -1,3 +1,7 @@
+/**
+ * Adapter for interacting with the PostNord shipping service.
+ */
+
 import { z } from 'zod'
 
 const BASE_URL = process.env.POSTNORD_API_URL

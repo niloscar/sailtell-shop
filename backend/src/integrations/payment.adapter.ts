@@ -1,3 +1,7 @@
+/**
+ * Adapter for interacting with the Stripe payment service.
+ */
+
 import Stripe from 'stripe'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
