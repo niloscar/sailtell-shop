@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useAuth } from '../../contexts/AuthContext'
 import { useCart } from '../../contexts/CartContext'
 import { createPayment } from '../../api/paymentApi'
 import {
@@ -21,113 +22,56 @@ import type { CreateOrder } from '../../types/orderTypes'
 
 import styles from './PageCheckout.module.css'
 
-function formatEstimatedDeliveryTime(
-  estimate: DeliveryEstimate
-): string | null {
-  const parseDate = (value: string): number | null => {
-    const match = /^(\d{4})-(\d{2})-(\d{2})T/.exec(value)
-
-    if (!match) return null
-
-    const year = Number(match[1])
-    const month = Number(match[2])
-    const day = Number(match[3])
-    const date = new Date(Date.UTC(year, month - 1, day))
-
-    if (
-      date.getUTCFullYear() !== year ||
-      date.getUTCMonth() !== month - 1 ||
-      date.getUTCDate() !== day
-    ) {
-      return null
-    }
-
-    return date.getTime()
-  }
-
-  const arrival = estimate.estimatedTimeOfArrival
-  const range = arrival?.dayRangeOfArrival
-
-  if (
-    range &&
-    Number.isInteger(range.daysMinimum) &&
-    Number.isInteger(range.daysMaximum) &&
-    range.daysMinimum >= 0 &&
-    range.daysMaximum >= range.daysMinimum
-  ) {
-    return range.daysMinimum === range.daysMaximum
-      ? `${range.daysMinimum} dagar`
-      : `${range.daysMinimum}–${range.daysMaximum} dagar`
-  }
-
-  if (!arrival?.timeOfArrival) return null
-
-  const startDate = parseDate(estimate.startTime)
-  const arrivalDate = parseDate(arrival.timeOfArrival)
-
-  if (startDate === null || arrivalDate === null) return null
-
-  const days = (arrivalDate - startDate) / (24 * 60 * 60 * 1000)
-
-  return Number.isInteger(days) && days >= 0 ? `${days} dagar` : null
-}
-
 export default function PageCheckout() {
   const { cartCount, cart } = useCart()
+  const { user } = useAuth()
 
-  const [orderDetails, setOrderDetails] = useState({
-    fname: '',
-    lname: '',
-    email: '',
+  const [enteredDetails, setEnteredDetails] = useState({
+    fname: null as string | null,
+    lname: null as string | null,
+    email: null as string | null,
     phone: '',
     street: '',
     zipcode: '',
     city: '',
     country: 'Sverige'
   })
-
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [deliveryMethodId, setDeliveryMethodId] = useState(1)
   const [servicePoints, setServicePoints] = useState<ServicePoint[]>([])
   const [servicePointId, setServicePointId] = useState('')
   const [servicePointsLoading, setServicePointsLoading] = useState(false)
-  const [servicePointsError, setServicePointsError] = useState<string | null>(
-    null
-  )
-  const [shippingPrices, setShippingPrices] = useState<ShippingPrices | null>(
-    null
-  )
-  const [shippingPricesError, setShippingPricesError] = useState<string | null>(
-    null
-  )
-  const [deliveryEstimates, setDeliveryEstimates] = useState<
-    DeliveryEstimate[]
-  >([])
-  const [deliveryEstimatesError, setDeliveryEstimatesError] = useState<
-    string | null
-  >(null)
+  const [servicePointsError, setServicePointsError] = useState<string | null>(null)
+  const [shippingPrices, setShippingPrices] = useState<ShippingPrices | null>(null)
+  const [shippingPricesError, setShippingPricesError] = useState<string | null>(null)
+  const [deliveryEstimates, setDeliveryEstimates] = useState<DeliveryEstimate[]>([])
+  const [deliveryEstimatesError, setDeliveryEstimatesError] = useState<string | null>(null)
+
+  const orderDetails = {
+    ...enteredDetails,
+    fname: enteredDetails.fname ?? user?.fname ?? '',
+    lname: enteredDetails.lname ?? user?.lname ?? '',
+    email: enteredDetails.email ?? user?.email ?? ''
+  }
 
   const cartItems = cart?.items ?? []
   const postalCode = orderDetails.zipcode.replace(/\s/g, '')
-  const selectedShippingPrice =
-    shippingPrices === null
-      ? null
-      : deliveryMethodId === 1
-        ? shippingPrices.pickup
-        : shippingPrices.home
+  const selectedShippingPrice = shippingPrices === null
+    ? null
+    : deliveryMethodId === 1
+      ? shippingPrices.pickup
+      : shippingPrices.home
 
-  const totalPrice = cartItems.reduce(
-    (total, item) => total + item.price * item.quantity,
-    0
-  )
-  const totalWithShipping =
-    selectedShippingPrice === null ? null : totalPrice + selectedShippingPrice
-  const totalVat =
-    totalWithShipping === null ? null : Math.round(totalWithShipping / 5)
-  const selectedDeliveryEstimate = deliveryEstimates.find(
-    (estimate) => estimate.deliveryMethodId === deliveryMethodId
-  )
+  const totalPrice = cartItems.reduce((total, item) => total + item.price * item.quantity, 0)
+  const totalWithShipping = selectedShippingPrice === null 
+    ? null 
+    : totalPrice + selectedShippingPrice
+  const totalVat = totalWithShipping === null 
+    ? null 
+    : Math.round(totalWithShipping / 5)
+  const selectedDeliveryEstimate = deliveryEstimates
+    .find((estimate) => estimate.deliveryMethodId === deliveryMethodId)
   const estimatedDeliveryTime = selectedDeliveryEstimate
     ? formatEstimatedDeliveryTime(selectedDeliveryEstimate)
     : null
@@ -157,17 +101,11 @@ export default function PageCheckout() {
     const fetchServicePoints = async () => {
       try {
         const response = await getServicePoints(postalCode)
-        if (active) {
-          setServicePoints(response.data)
-        }
+        if (active) setServicePoints(response.data)
       } catch (error) {
-        if (active) {
-          setServicePointsError(getApiErrorMessage(error))
-        }
+        if (active) setServicePointsError(getApiErrorMessage(error))
       } finally {
-        if (active) {
-          setServicePointsLoading(false)
-        }
+        if (active) setServicePointsLoading(false)
       }
     }
 
@@ -186,13 +124,9 @@ export default function PageCheckout() {
     const fetchDeliveryEstimates = async () => {
       try {
         const response = await getDeliveryEstimates(postalCode)
-        if (active) {
-          setDeliveryEstimates(response.data)
-        }
+        if (active) setDeliveryEstimates(response.data)
       } catch (error) {
-        if (active) {
-          setDeliveryEstimatesError(getApiErrorMessage(error))
-        }
+        if (active) setDeliveryEstimatesError(getApiErrorMessage(error))
       }
     }
 
@@ -220,7 +154,7 @@ export default function PageCheckout() {
       setDeliveryEstimatesError(null)
     }
 
-    setOrderDetails((prevDetails) => ({
+    setEnteredDetails((prevDetails) => ({
       ...prevDetails,
       [name]: formattedValue
     }))
@@ -582,4 +516,53 @@ export default function PageCheckout() {
       </div>
     </>
   )
+}
+
+function formatEstimatedDeliveryTime(estimate: DeliveryEstimate): string | null {
+  const parseDate = (value: string): number | null => {
+    const match = /^(\d{4})-(\d{2})-(\d{2})T/.exec(value)
+
+    if (!match) return null
+
+    const year = Number(match[1])
+    const month = Number(match[2])
+    const day = Number(match[3])
+    const date = new Date(Date.UTC(year, month - 1, day))
+
+    if (
+      date.getUTCFullYear() !== year ||
+      date.getUTCMonth() !== month - 1 ||
+      date.getUTCDate() !== day
+    ) {
+      return null
+    }
+
+    return date.getTime()
+  }
+
+  const arrival = estimate.estimatedTimeOfArrival
+  const range = arrival?.dayRangeOfArrival
+
+  if (
+    range &&
+    Number.isInteger(range.daysMinimum) &&
+    Number.isInteger(range.daysMaximum) &&
+    range.daysMinimum >= 0 &&
+    range.daysMaximum >= range.daysMinimum
+  ) {
+    return range.daysMinimum === range.daysMaximum
+      ? `${range.daysMinimum} dagar`
+      : `${range.daysMinimum}–${range.daysMaximum} dagar`
+  }
+
+  if (!arrival?.timeOfArrival) return null
+
+  const startDate = parseDate(estimate.startTime)
+  const arrivalDate = parseDate(arrival.timeOfArrival)
+
+  if (startDate === null || arrivalDate === null) return null
+
+  const days = (arrivalDate - startDate) / (24 * 60 * 60 * 1000)
+
+  return Number.isInteger(days) && days >= 0 ? `${days} dagar` : null
 }
