@@ -1,3 +1,6 @@
+/**
+ * Adapter for interacting with the Supabase storage service.
+ */
 
 import { randomUUID } from 'node:crypto'
 import { createClient } from '@supabase/supabase-js'

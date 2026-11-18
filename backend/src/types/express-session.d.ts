@@ -6,5 +6,9 @@ declare module 'express-session' {
     oauthState?: string
     oauthStateExpiresAt?: number
     oauthCodeVerifier?: string
+    githubState?: string
+    githubStateExpiresAt?: number
+    githubCodeVerifier?: string
+    githubLogin?: string
   }
 }

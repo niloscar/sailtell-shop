@@ -1,0 +1,21 @@
+.issueList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  gap: .25rem;
+}
+
+.issueItem {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  gap: .5rem;
+  align-items: start;
+}
+
+.issueTitle {
+  font-weight: bold;
+  text-decoration: none;
+}

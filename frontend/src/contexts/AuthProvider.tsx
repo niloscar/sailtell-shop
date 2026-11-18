@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react'
 import { AuthContext } from './AuthContext'
+import { isAxiosError } from 'axios'
+import api from '../api/apiClient'
+import { loginUser, logoutUser, getSession } from '../api/authApi'
+
 import type { ReactNode } from 'react'
 import type { User, UserCredentials } from '@shop/shared'
-import { loginUser, logoutUser, getSession } from '../api/authApi'
 
 export default function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
@@ -22,6 +25,24 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     checkSession()
+  }, [])
+
+  useEffect(() => {
+    const interceptor = api.interceptors.response.use((response) => response, (error: unknown) => {
+        if (
+          isAxiosError(error) &&
+          error.response?.status === 401 &&
+          error.config?.url !== '/auth/login' &&
+          error.config?.url !== '/auth/session'
+        ) {
+          setUser(null)
+        }
+
+        return Promise.reject(error)
+      }
+    )
+
+    return () => api.interceptors.response.eject(interceptor)
   }, [])
 
   const login = async (credentials: UserCredentials): Promise<User | null> => {

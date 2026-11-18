@@ -1,3 +1,7 @@
+/**
+ * Controller functions for handling Google OAuth authentication and callback.
+ */
+
 import { Request, Response, NextFunction } from 'express'
 import { findOrCreateGoogleUser } from '../services/user.service'
 import { establishSession } from '../services/session.service'

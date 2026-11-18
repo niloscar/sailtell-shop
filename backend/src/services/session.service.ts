@@ -39,10 +39,11 @@ export function regenerateSession(req: Request): Promise<void> {
   })
 }
 
-export async function establishSession(req: Request, userId: number): Promise<void> {
+export async function establishSession(req: Request, userId: number, githubLogin?: string): Promise<void> {
   await regenerateSession(req)
 
   setSessionUserId(req, userId)
+  if (githubLogin) req.session.githubLogin = githubLogin
 
   await new Promise<void>((resolve, reject) => {
     req.session.save((error) => {
