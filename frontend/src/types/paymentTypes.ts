@@ -14,5 +14,6 @@ export type PaymentConfirmation = {
     quantity: number
     unitPrice: number
   }[]
+  shippingPrice: number
   total: number
 }

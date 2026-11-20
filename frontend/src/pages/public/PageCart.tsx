@@ -1,6 +1,6 @@
 import { useCart } from '../../contexts/CartContext'
 import { Link, useNavigate } from 'react-router-dom'
-import { TrashIcon } from '@phosphor-icons/react'
+import { ArrowRightIcon, TrashIcon } from '@phosphor-icons/react'
 import QuantitySelector from '../../components/QuantitySelector'
 import formatPrice from '../../utilities/formatPrice'
 
@@ -36,7 +36,7 @@ export default function PageCart() {
             <div className={styles.cartHeader}>
               <span>Produkt</span>
               <span>Antal</span>
-              <span>Pris/st</span>
+              <span>Styckpris</span>
               <span>Summa</span>
               <span />
             </div>
@@ -80,18 +80,20 @@ export default function PageCart() {
 
           <div className={styles.cartButtons}>
             <button
+              className={styles.resetCartButton}
+              onClick={handleResetCart}
+            >
+              <TrashIcon />
+              <span>Töm varukorg</span>
+            </button>
+
+            <button
               className={styles.checkoutButton}
               onClick={() => navigate('/checkout')}
               disabled={cartCount === 0}
             >
-              Gå till kassan
-            </button>
-
-            <button
-              className={styles.resetCartButton}
-              onClick={handleResetCart}
-            >
-              Töm varukorg
+              <span>Gå till kassan</span>
+              <ArrowRightIcon />
             </button>
           </div>
         </>

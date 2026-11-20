@@ -21,6 +21,7 @@ import Ellipsis from '../../components/ui/Ellipsis'
 import type { CreateOrder } from '../../types/orderTypes'
 
 import styles from './PageCheckout.module.css'
+import { ArrowRightIcon } from '@phosphor-icons/react'
 
 export default function PageCheckout() {
   const { cartCount, cart } = useCart()
@@ -242,7 +243,7 @@ export default function PageCheckout() {
             <div className={styles.checkoutHeader}>
               <span>Produkt</span>
               <span>Antal</span>
-              <span>Pris/st</span>
+              <span>Styckpris</span>
               <span>Summa</span>
             </div>
 
@@ -505,7 +506,10 @@ export default function PageCheckout() {
                         <Ellipsis />
                       </>
                     ) : (
-                      'Gå till betalning'
+                      <>
+                        Gå till betalning
+                        <ArrowRightIcon />
+                      </>
                     )}
                   </button>
                 </div>
