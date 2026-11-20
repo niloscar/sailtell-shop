@@ -54,8 +54,8 @@ export function createOrderConfirmationTemplate(order: Order, customer: Customer
     `Tillbaka till SailTell Shop: ${shopUrl}`
   ].join('\n')
 
-  const cellStyle = 'padding:12px 6px; border-bottom:1px solid #e2e8f0; font-size:14px; line-height:20px; color:#334155;'
-  const headerStyle = 'padding:10px 6px; border-bottom:1px solid #cbd5e1; font-size:12px; line-height:18px; color:#64748b; font-weight:bold;'
+  const cellStyle = 'padding:6px; border-bottom:1px solid #e2e8f0; font-size:14px; line-height:20px; color:#334155;'
+  const headerStyle = 'padding:6px; border-bottom:1px solid #cbd5e1; font-size:14px; line-height:20px; color:#64748b; font-weight:bold;'
 
   const html = `
     <!DOCTYPE html>
@@ -128,7 +128,7 @@ export function createOrderConfirmationTemplate(order: Order, customer: Customer
                       </tbody>
                     </table>
 
-                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:20px;">
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:12px;">
                       <tr>
                         <td style="font-size:17px; font-weight:bold; color:#1b2935;">
                           Totalt betalt
@@ -138,8 +138,6 @@ export function createOrderConfirmationTemplate(order: Order, customer: Customer
                         </td>
                       </tr>
                     </table>
-
-                    <div style="border-top:1px solid #e2e8f0; margin:32px 0 24px;"></div>
 
                     <p style="margin:0; text-align:center; font-size:14px; line-height:22px;">
                       <a href="${escapeHtml(shopUrl)}" style="color:#334155; text-decoration:underline;">
