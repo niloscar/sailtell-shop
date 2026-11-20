@@ -71,6 +71,7 @@ export async function getPaymentConfirmation(sessionId: string) {
       quantity: item.quantity,
       unitPrice: Number(item.unit_price)
     })),
+    shippingPrice: Number(order.shipping_price),
     total: Number(order.sum)
   }
 }

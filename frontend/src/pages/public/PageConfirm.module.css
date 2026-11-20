@@ -8,13 +8,25 @@
   gap: .25rem;
 }
 
-.orderItem {
+.orderItemsListHeader {
+  font-weight: 600;
+  border-bottom: 1px solid var(--border-divider);
+  padding-bottom: .25rem;
+}
+
+.orderItem, .orderItemsListHeader {
   display: grid;
   grid-column: 1 / -1;
   grid-template-columns: subgrid;
-  gap: 1rem;
+  gap: 2rem;
+  font-size: var(--font-small);
 
   @media (max-width: 768px) {
     gap: .5rem;
   }
+}
+
+.orderItem:last-child {
+  border-bottom: 1px solid var(--border-divider);
+  padding-bottom: .25rem;
 }

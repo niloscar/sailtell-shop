@@ -8,13 +8,29 @@
   gap: .25rem;
 }
 
-.order {
+.ordersListHeader {
+  font-weight: 600;
+  border-bottom: 1px solid var(--border-divider);
+  padding-bottom: .25rem;
+}
+
+.order, .ordersListHeader {
   display: grid;
   grid-column: 1 / -1;
   grid-template-columns: subgrid;
-  gap: 1rem;
+  gap: 2rem;
+  font-size: var(--font-small);
 
   @media (max-width: 768px) {
     gap: .5rem;
   }
+}
+
+.order:last-child {
+  border-bottom: 1px solid var(--border-divider);
+  padding-bottom: .25rem;
+}
+
+.logoutButton, .adminPanelButton {
+  margin-top: 1rem;
 }

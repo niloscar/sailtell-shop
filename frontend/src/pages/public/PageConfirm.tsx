@@ -89,6 +89,12 @@ export default function PageConfirm() {
       <h2 className="headingSize2">Din beställning</h2>
 
       <ul className={styles.orderItemsList}>
+        <div className={styles.orderItemsListHeader}>
+          <span>Produkt</span>
+          <span>Antal</span>
+          <span>Styckpris</span>
+          <span>Summa</span>
+        </div>
         {order.items.map((item) => (
           <li 
             key={item.productId}
@@ -100,11 +106,17 @@ export default function PageConfirm() {
             <span className={styles.orderItemTotal}>{formatPrice(item.unitPrice * item.quantity)}</span>
           </li>
         ))}
+        <li className={styles.orderItem}>
+          <span className={styles.orderItemName}>Frakt</span>
+          <span className={styles.orderItemQuantity}></span>
+          <span className={styles.orderItemUnitPrice}></span>
+          <span className={styles.orderItemTotal}>{formatPrice(order.shippingPrice)}</span>
+        </li>
       </ul>
 
       {order.items.length > 0 && (
         <p className={styles.orderTotal}>
-          <strong>Totalt: {formatPrice(order.total)}</strong>
+          <strong>Totalt {formatPrice(order.total)}</strong>
         </p>
       )}
 
