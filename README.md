@@ -25,8 +25,6 @@ Den första uppgiften omfattar fem integrationer: produktimport via Sibars speci
 
 Den andra uppgiften utökar shoppen med kundinloggning via Google, admininloggning via GitHub och orderbekräftelser via e-post. För VG tillkommer möjligheten att skapa och visa GitHub-issues från adminsidan med en separat token för shoppens repository.
 
-**Status:** Pågående. Inlämning 22 november 2026.
-
 ## Kom igång
 
 ### Installation
